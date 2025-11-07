@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/sistema-titulacion-servidor-e2e"
+    },
+    {
+      "path": "./apps/sistema-titulacion-servidor"
+    },
+    {
+      "path": "./apps/sistema-titulacion-cliente"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/@sistema-titulacion/sistema-titulacion-servidor-e2e",
+    "esModuleInterop": true,
+    "noUnusedLocals": false,
+    "noImplicitAny": false
+  },
+  "include": ["jest.config.ts", "src/**/*.ts"],
+  "references": []
+}
