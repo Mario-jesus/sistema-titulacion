@@ -1,5 +1,6 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { useAuth } from '@features/auth';
+import { logger } from '@shared/lib';
 import './AuthProvider.scss';
 
 interface AuthProviderProps {
@@ -14,9 +15,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const initAuth = async () => {
       try {
         await checkAuth();
-        console.log('Sesión restaurada exitosamente');
+        logger.info('Sesión restaurada exitosamente');
       } catch (error) {
-        console.log('No hay sesión activa');
+        logger.info('No hay sesión activa');
       } finally {
         setIsInitialized(true);
       }
