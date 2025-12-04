@@ -11,9 +11,20 @@
       "@nx/react/typings/image.d.ts",
       "vite/client"
     ],
-    "rootDir": "src",
     "module": "esnext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "paths": {
+      "@features/*": ["../../libs/frontend/features/src/*"],
+      "@entities/*": ["../../libs/frontend/entities/src/*"],
+      "@pages/*": ["../../libs/frontend/pages/src/*"],
+      "@shared/*": ["../../libs/frontend/shared/src/*"],
+      "@widgets/*": ["../../libs/frontend/widgets/src/*"]
+    }
   },
   "exclude": [
     "out-tsc",
@@ -31,5 +42,16 @@
     "eslint.config.cjs",
     "eslint.config.mjs"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../libs/frontend/pages/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/frontend/entities/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/frontend/features/tsconfig.lib.json"
+    }
+  ]
 }

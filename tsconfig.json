@@ -11,6 +11,21 @@
     },
     {
       "path": "./apps/sistema-titulacion-cliente"
+    },
+    {
+      "path": "./libs/frontend/pages"
+    },
+    {
+      "path": "./libs/frontend/widgets"
+    },
+    {
+      "path": "./libs/frontend/features"
+    },
+    {
+      "path": "./libs/frontend/entities"
+    },
+    {
+      "path": "./libs/frontend/shared"
     }
   ]
 }

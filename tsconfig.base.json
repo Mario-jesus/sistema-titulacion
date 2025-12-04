@@ -16,6 +16,14 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@sistema-titulacion/source"]
+    "customConditions": ["@sistema-titulacion/source"],
+    "baseUrl": ".",
+    "paths": {
+      "@features/*": ["libs/frontend/features/src/*"],
+      "@entities/*": ["libs/frontend/entities/src/*"],
+      "@pages/*": ["libs/frontend/pages/src/*"],
+      "@shared/*": ["libs/frontend/shared/src/*"],
+      "@widgets/*": ["libs/frontend/widgets/src/*"]
+    }
   }
 }
