@@ -6,10 +6,13 @@
       "path": "../../libs/frontend/pages"
     },
     {
-      "path": "../../libs/frontend/features"
+      "path": "../../libs/frontend/entities"
     },
     {
-      "path": "../../libs/frontend/entities"
+      "path": "../../libs/frontend/shared"
+    },
+    {
+      "path": "../../libs/frontend/features"
     },
     {
       "path": "./tsconfig.app.json"
