@@ -1,5 +1,13 @@
 {
   "name": "@sistema-titulacion/sistema-titulacion-cliente",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "scripts": {
+    "init-msw": "node scripts/init-msw.js"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }

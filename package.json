@@ -2,7 +2,9 @@
   "name": "@sistema-titulacion/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "init-msw": "node apps/sistema-titulacion-cliente/scripts/init-msw.js"
+  },
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^2.10.1",
@@ -58,6 +60,7 @@
     "jest-util": "^30.0.2",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
+    "msw": "^2.12.4",
     "nx": "22.0.2",
     "postcss": "8.4.38",
     "prettier": "^2.6.2",
