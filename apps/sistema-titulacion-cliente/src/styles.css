@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/* Incluir librerías compartidas para que Tailwind escanee las clases */
+@source "../../../libs/";
+
+/* You can add global styles to this file, and also import other style files */
+
+/* ============================================
+    Colores personalizados de Tailwind
+    Basados en variables de Figma - Nombres exactos
+   ============================================ */
+@theme {
+  /* ========== Colores Base ========== */
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+
+  /* ========== Modo Claro (Light) ========== */
+  --color-primary-color-light: #7B57E0;
+  --color-gray-1-light: #DCDCDD;
+  --color-gray-2-light: #F1F3F4;
+  --color-gray-3-light: #DCE3EB;
+  --color-green-light: #50C099;
+  --color-blue-light: #5DAAEE;
+  --color-yellow-light: #FFC565;
+  --color-salmon-light: #F9837C;
+
+  /* ========== Modo Oscuro (Dark) ========== */
+  --color-primary-color-dark: #7B57E0;
+  --color-gray-1-dark: #0D0F11;
+  --color-gray-2-dark: #191D23;
+  --color-gray-3-dark: #262C36;
+  --color-gray-4-dark: #334E68;
+  --color-gray-5-dark: #576776;
+  --color-gray-6-dark: #37404E;
+  --color-green-dark: #47A785;
+  --color-blue-dark: #5395CF;
+  --color-yellow-dark: #EFB047;
+  --color-salmon-dark: #F9837C;
+
+  /* ========== Tipografía - Modo Claro ========== */
+  --color-highlight-primary-typo-light: #7B57E0;
+  --color-base-primary-typo-light: #2B2E48;
+  --color-base-secondary-typo-light: #7D7D7D;
+  --color-error-typo-light: #C71026;
+  --color-success-typo-light: #0B8A00;
+
+  /* ========== Tipografía - Modo Oscuro ========== */
+  --color-highlight-primary-typo-dark: #7B57E0;
+  --color-base-primary-typo-dark: #E3E3E3;
+  --color-base-secondary-typo-dark: #B8C0CC;
+  --color-error-typo-dark: #F53B30;
+  --color-success-typo-dark: #2AA31F;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-1-light, currentcolor);
+  }
+}

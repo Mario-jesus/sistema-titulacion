@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import { env } from '@shared/config';
 import { logger } from '@shared/lib/logger';
 import App from './app/app';
-import './styles.scss';
+import './styles.css';
 
 async function enableMocking() {
   if (env.enableMockApi && env.appEnv === 'development') {
