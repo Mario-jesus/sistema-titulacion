@@ -23,15 +23,7 @@ function DashboardPage() {
           <p>Rol: {user.role}</p>
           <button 
             onClick={handleLogout}
-            style={{
-              marginTop: '1rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}
+            className="bg-red-500 text-white m-4 px-4 py-2 rounded-md cursor-pointer"
           >
             Cerrar Sesión
           </button>

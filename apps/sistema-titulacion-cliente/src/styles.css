@@ -1,20 +1,23 @@
 @import "tailwindcss";
 
-/* Incluir librerías compartidas para que Tailwind escanee las clases */
+/* Include shared libraries so that Tailwind scans the classes */
 @source "../../../libs/";
+
+/* Configure dark variant for manual dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* You can add global styles to this file, and also import other style files */
 
 /* ============================================
-    Colores personalizados de Tailwind
-    Basados en variables de Figma - Nombres exactos
+    Tailwind custom colors
+    Based on Figma variables - Exact names
    ============================================ */
 @theme {
-  /* ========== Colores Base ========== */
+  /* ========== Base Colors ========== */
   --color-black: #000000;
   --color-white: #FFFFFF;
 
-  /* ========== Modo Claro (Light) ========== */
+  /* ========== Light Mode ========== */
   --color-primary-color-light: #7B57E0;
   --color-gray-1-light: #DCDCDD;
   --color-gray-2-light: #F1F3F4;
@@ -24,7 +27,7 @@
   --color-yellow-light: #FFC565;
   --color-salmon-light: #F9837C;
 
-  /* ========== Modo Oscuro (Dark) ========== */
+  /* ========== Dark Mode ========== */
   --color-primary-color-dark: #7B57E0;
   --color-gray-1-dark: #0D0F11;
   --color-gray-2-dark: #191D23;
@@ -37,14 +40,14 @@
   --color-yellow-dark: #EFB047;
   --color-salmon-dark: #F9837C;
 
-  /* ========== Tipografía - Modo Claro ========== */
+  /* ========== Typography - Light Mode ========== */
   --color-highlight-primary-typo-light: #7B57E0;
   --color-base-primary-typo-light: #2B2E48;
   --color-base-secondary-typo-light: #7D7D7D;
   --color-error-typo-light: #C71026;
   --color-success-typo-light: #0B8A00;
 
-  /* ========== Tipografía - Modo Oscuro ========== */
+  /* ========== Typography - Dark Mode ========== */
   --color-highlight-primary-typo-dark: #7B57E0;
   --color-base-primary-typo-dark: #E3E3E3;
   --color-base-secondary-typo-dark: #B8C0CC;
@@ -66,6 +69,60 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-1-light, currentcolor);
+    border-color: var(--color-gray-1, currentcolor);
+  }
+
+  /* Dynamic CSS variables for dark/light mode */
+  :root {
+    --color-primary-color: var(--color-primary-color-light);
+    --color-gray-1: var(--color-gray-1-light);
+    --color-gray-2: var(--color-gray-2-light);
+    --color-gray-3: var(--color-gray-3-light);
+    --color-green: var(--color-green-light);
+    --color-blue: var(--color-blue-light);
+    --color-yellow: var(--color-yellow-light);
+    --color-salmon: var(--color-salmon-light);
+    --color-highlight-primary-typo: var(--color-highlight-primary-typo-light);
+    --color-base-primary-typo: var(--color-base-primary-typo-light);
+    --color-base-secondary-typo: var(--color-base-secondary-typo-light);
+    --color-error-typo: var(--color-error-typo-light);
+    --color-success-typo: var(--color-success-typo-light);
+
+    /* Document and component backgrounds */
+    --color-document-bg: var(--color-gray-2-light);
+    --color-component-bg: var(--color-white);
+
+    /* Input specific colors */
+    --color-input-bg: var(--color-white);
+    --color-input-border: var(--color-gray-1-light);
+  }
+
+  .dark {
+    --color-primary-color: var(--color-primary-color-dark);
+    --color-gray-1: var(--color-gray-1-dark);
+    --color-gray-2: var(--color-gray-2-dark);
+    --color-gray-3: var(--color-gray-3-dark);
+    --color-green: var(--color-green-dark);
+    --color-blue: var(--color-blue-dark);
+    --color-yellow: var(--color-yellow-dark);
+    --color-salmon: var(--color-salmon-dark);
+    --color-highlight-primary-typo: var(--color-highlight-primary-typo-dark);
+    --color-base-primary-typo: var(--color-base-primary-typo-dark);
+    --color-base-secondary-typo: var(--color-base-secondary-typo-dark);
+    --color-error-typo: var(--color-error-typo-dark);
+    --color-success-typo: var(--color-success-typo-dark);
+
+    /* Document and component backgrounds */
+    --color-document-bg: var(--color-gray-1-dark);
+    --color-component-bg: var(--color-gray-2-dark);
+
+    /* Input specific colors */
+    --color-input-bg: var(--color-gray-3-dark);
+    --color-input-border: var(--color-gray-6-dark);
+  }
+
+  /* Apply document background to body */
+  body {
+    background-color: var(--color-document-bg);
   }
 }

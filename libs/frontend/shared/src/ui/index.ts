@@ -6,3 +6,8 @@ export type { InputProps } from './Input/Input';
 
 export { Card } from './Card/Card';
 export type { CardProps } from './Card/Card';
+
+export { ThemeToggle } from './ThemeToggle/ThemeToggle';
+
+export { Toast, ToastProvider, useToast } from './Toast';
+export type { ToastProps, ToastType, ToastData } from './Toast';

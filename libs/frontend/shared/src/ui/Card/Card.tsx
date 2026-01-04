@@ -1,5 +1,4 @@
 import { HTMLAttributes, forwardRef } from 'react';
-import './Card.scss';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'elevated' | 'outlined' | 'flat';
@@ -17,10 +16,39 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     },
     ref
   ) => {
+    // Clases base comunes
+    const baseClasses = 'rounded-xl transition-shadow duration-200';
+
+    // Clases de variante
+    const variantClasses = {
+      elevated: [
+        'bg-[var(--color-component-bg)]',
+        'shadow-sm',
+        'hover:shadow-md',
+      ].join(' '),
+      outlined: [
+        'bg-[var(--color-component-bg)]',
+        'border border-[var(--color-gray-1)]',
+        'shadow-none',
+      ].join(' '),
+      flat: [
+        'bg-[var(--color-component-bg)]',
+        'shadow-none',
+      ].join(' '),
+    };
+
+    // Clases de padding
+    const paddingClasses = {
+      none: 'p-0',
+      small: 'p-4',
+      medium: 'p-6',
+      large: 'p-8',
+    };
+
     const classNames = [
-      'card',
-      `card--${variant}`,
-      `card--padding-${padding}`,
+      baseClasses,
+      variantClasses[variant],
+      paddingClasses[padding],
       className,
     ]
       .filter(Boolean)
