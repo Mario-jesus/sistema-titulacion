@@ -1,0 +1,247 @@
+import { ReactNode, useState, useRef, useEffect } from 'react';
+
+export type TableStatus = 'active' | 'paused' | 'cancelled';
+export type SortDirection = 'asc' | 'desc' | null;
+
+export interface TableColumn<T = any> {
+  key: string;
+  label: string;
+  sortable?: boolean;
+  render?: (value: any, row: T) => ReactNode;
+  align?: 'left' | 'center' | 'right';
+}
+
+export interface TableStatusConfig {
+  status: TableStatus;
+  label: string;
+}
+
+export interface TableProps<T = any> {
+  columns: TableColumn<T>[];
+  data: T[];
+  statusColumn?: {
+    key: string;
+    getStatus: (row: T) => TableStatusConfig;
+  };
+  onSort?: (columnKey: string, direction: SortDirection) => void;
+  className?: string;
+  rowClassName?: (row: T, index: number) => string;
+  onRowClick?: (row: T) => void;
+}
+
+const statusColors = {
+  active: {
+    dot: 'bg-[var(--color-green)]',
+    text: 'text-[var(--color-green)]',
+  },
+  paused: {
+    dot: 'bg-[var(--color-yellow)]',
+    text: 'text-[var(--color-yellow)]',
+  },
+  cancelled: {
+    dot: 'bg-[var(--color-salmon)]',
+    text: 'text-[var(--color-salmon)]',
+  },
+};
+
+export function Table<T = any>({
+  columns,
+  data,
+  statusColumn,
+  onSort,
+  className = '',
+  rowClassName,
+  onRowClick,
+}: TableProps<T>) {
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Asegurar que el scroll comience desde el inicio
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = 0;
+    }
+  }, [data, columns]);
+
+  const handleSort = (columnKey: string, sortable?: boolean) => {
+    if (!sortable || !onSort) return;
+
+    let newDirection: SortDirection = 'asc';
+    if (sortColumn === columnKey) {
+      if (sortDirection === 'asc') {
+        newDirection = 'desc';
+      } else if (sortDirection === 'desc') {
+        newDirection = null;
+      }
+    }
+
+    setSortColumn(newDirection ? columnKey : null);
+    setSortDirection(newDirection);
+    onSort(columnKey, newDirection);
+  };
+
+  const getSortIcon = (columnKey: string, sortable?: boolean) => {
+    if (!sortable) return null;
+
+    if (sortColumn === columnKey) {
+      if (sortDirection === 'asc') {
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4 ml-1 scale-120"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="m6.293 13.293 1.414 1.414L12 10.414l4.293 4.293 1.414-1.414L12 7.586z"></path>
+          </svg>
+        );
+      } else {
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4 ml-1 scale-120"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M16.293 9.293 12 13.586 7.707 9.293l-1.414 1.414L12 16.414l5.707-5.707z"></path>
+          </svg>
+        );
+      }
+    }
+
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        className="w-4 h-4 ml-1 opacity-90 scale-75"
+        viewBox="0 0 24 24"
+        style={{ color: 'var(--color-base-secondary-typo)' }}
+      >
+        <path d="M6.227 11h11.547c.862 0 1.32-1.02.747-1.665L12.748 2.84a.998.998 0 0 0-1.494 0L5.479 9.335C4.906 9.98 5.364 11 6.227 11zm5.026 10.159a.998.998 0 0 0 1.494 0l5.773-6.495c.574-.644.116-1.664-.747-1.664H6.227c-.862 0-1.32 1.02-.747 1.665l5.773 6.494z"></path>
+      </svg>
+    );
+  };
+
+  const getCellValue = (row: T, column: TableColumn<T>): any => {
+    const keys = column.key.split('.');
+    let value: any = row;
+    for (const key of keys) {
+      value = value?.[key];
+    }
+    return value;
+  };
+
+  const allColumns = statusColumn
+    ? [...columns, { key: statusColumn.key, label: 'Estado', sortable: false } as TableColumn<T>]
+    : columns;
+
+  return (
+    <div
+      ref={scrollContainerRef}
+      className={`overflow-x-auto border bg-(--color-component-bg) border-(--color-gray-1) w-full ${className}`}
+    >
+      <table
+        className="border-collapse"
+        style={{
+          tableLayout: 'auto',
+          width: 'max-content',
+          minWidth: '100%',
+          display: 'table',
+        }}
+      >
+        <thead>
+          <tr className='bg-gray-2-light dark:bg-gray-3-dark'>
+            {allColumns.map((column) => (
+              <th
+                key={column.key}
+                className={`px-4 py-3 text-left text-sm font-medium whitespace-nowrap hover:bg-gray-3-light/50 active:bg-gray-3-light dark:hover:bg-gray-6-dark/50 dark:active:bg-gray-6-dark ${
+                  column.sortable ? 'cursor-pointer select-none' : ''
+                }`}
+                style={{
+                  color: 'var(--color-base-secondary-typo)',
+                  textAlign: column.align || 'left',
+                }}
+                onClick={() => handleSort(column.key, column.sortable)}
+              >
+                <div className="flex items-center">
+                  {column.label}
+                  {getSortIcon(column.key, column.sortable)}
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.length === 0 ? (
+            <tr>
+              <td
+                colSpan={allColumns.length}
+                className="px-4 py-8 text-center text-sm"
+                style={{ color: 'var(--color-base-secondary-typo)' }}
+              >
+                No hay datos disponibles
+              </td>
+            </tr>
+          ) : (
+            data.map((row, rowIndex) => {
+              const statusConfig = statusColumn ? statusColumn.getStatus(row) : null;
+              const rowClasses = [
+                'border-b border-gray-1-light dark:border-gray-5-dark',
+                onRowClick && 'cursor-pointer hover:bg-gray-3-light/50 active:bg-gray-3-light dark:hover:bg-gray-6-dark/50 dark:active:bg-gray-6-dark',
+                rowClassName && rowClassName(row, rowIndex),
+              ]
+                .filter(Boolean)
+                .join(' ');
+
+              return (
+                <tr
+                  key={rowIndex}
+                  className={rowClasses}
+                  onClick={() => onRowClick?.(row)}
+                >
+                  {columns.map((column) => {
+                    const value = getCellValue(row, column);
+                    const cellContent = column.render ? column.render(value, row) : value;
+
+                    return (
+                      <td
+                        key={column.key}
+                        className="px-4 py-3 text-sm whitespace-nowrap"
+                        style={{
+                          color: 'var(--color-base-primary-typo)',
+                          textAlign: column.align || 'left',
+                        }}
+                      >
+                        {cellContent}
+                      </td>
+                    );
+                  })}
+                  {statusColumn && statusConfig && (
+                    <td
+                      className="px-4 py-3 text-sm whitespace-nowrap"
+                      style={{
+                        textAlign: 'left',
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full ${statusColors[statusConfig.status].dot}`}
+                        />
+                        <span
+                          className={statusColors[statusConfig.status].text}
+                        >
+                          {statusConfig.label}
+                        </span>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}

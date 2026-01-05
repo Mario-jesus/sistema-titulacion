@@ -11,3 +11,12 @@ export { ThemeToggle } from './ThemeToggle/ThemeToggle';
 
 export { Toast, ToastProvider, useToast } from './Toast';
 export type { ToastProps, ToastType, ToastData } from './Toast';
+
+export { Table } from './Table';
+export type {
+  TableProps,
+  TableColumn,
+  TableStatus,
+  TableStatusConfig,
+  SortDirection,
+} from './Table';
