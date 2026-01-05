@@ -3,16 +3,19 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/frontend/widgets"
+    },
+    {
       "path": "../../libs/frontend/pages"
     },
     {
       "path": "../../libs/frontend/entities"
     },
     {
-      "path": "../../libs/frontend/shared"
+      "path": "../../libs/frontend/features"
     },
     {
-      "path": "../../libs/frontend/features"
+      "path": "../../libs/frontend/shared"
     },
     {
       "path": "./tsconfig.app.json"

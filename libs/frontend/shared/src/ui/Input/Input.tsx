@@ -41,7 +41,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       'border border-[var(--color-input-border)]',
       'rounded-lg',
       'outline-none',
-      'transition-all duration-200',
       'w-full',
       'placeholder:text-[var(--color-base-secondary-typo)]',
       'focus:border-[var(--color-primary-color)]',

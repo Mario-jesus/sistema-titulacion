@@ -55,6 +55,9 @@
     },
     {
       "path": "../../libs/frontend/features/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/frontend/widgets/tsconfig.lib.json"
     }
   ]
 }
