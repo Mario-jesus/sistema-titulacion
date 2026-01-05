@@ -170,8 +170,8 @@ export function Sidebar({
                       isCollapsed ? 'justify-center' : ''
                     } ${
                       isParentActive
-                        ? 'bg-[rgba(123,87,224,0.15)] text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
-                        : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-gray-3-light dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
+                        ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
+                        : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
                     }`}
                     type="button"
                   >
@@ -233,10 +233,10 @@ export function Sidebar({
                           <li key={subItem.id}>
                             <button
                               onClick={() => handleSubItemClick(subItem)}
-                              className={`w-full flex items-center gap-3 px-10 py-2 relative active:opacity-80 ${
+                              className={`w-full flex items-center gap-3 px-10 py-2 relative cursor-pointer active:opacity-80 ${
                                 isSubActive
-                                  ? 'bg-[rgba(123,87,224,0.15)] text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
-                                  : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-gray-3-light dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
+                                  ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
+                                  : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
                               }`}
                               type="button"
                             >
