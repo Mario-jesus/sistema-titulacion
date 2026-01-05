@@ -90,18 +90,22 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
         onItemClick={handleItemClick}
         onLogout={handleLogout}
       />
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0 px-6">
-        <Header
-          title={pageTitle}
-          user={userInfo}
-          onUserMenuClick={() => {
-            // Aquí puedes implementar el menú del usuario si es necesario
-            console.log('User menu clicked');
-          }}
-        />
-        <main className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--color-document-bg)' }}>
-          {children}
-        </main>
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--color-document-bg)' }}>
+          <div className="px-6">
+            <Header
+              title={pageTitle}
+              user={userInfo}
+              onUserMenuClick={() => {
+                // Aquí puedes implementar el menú del usuario si es necesario
+                console.log('User menu clicked');
+              }}
+            />
+          </div>
+          <main>
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
