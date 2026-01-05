@@ -8,7 +8,7 @@ export function ComingSoonPage({
   description = 'Esta funcionalidad está en desarrollo y estará disponible pronto.' 
 }: ComingSoonPageProps = {}) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] py-8">
       <div className="text-center max-w-md">
         <div className="mb-6">
           <svg

@@ -91,8 +91,8 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
         onLogout={handleLogout}
       />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--color-document-bg)' }}>
-          <div className="px-6">
+        <div className="flex-1 overflow-y-auto relative" style={{ backgroundColor: 'var(--color-document-bg)' }}>
+          <div className="px-6 sticky top-0 z-10">
             <Header
               title={pageTitle}
               user={userInfo}
@@ -102,7 +102,7 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
               }}
             />
           </div>
-          <main>
+          <main className="px-6">
             {children}
           </main>
         </div>
