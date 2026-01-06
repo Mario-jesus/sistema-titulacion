@@ -1,7 +1,6 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { useAuth } from '@features/auth';
 import { logger } from '@shared/lib';
-import './AuthProvider.scss';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -28,10 +27,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   if (!isInitialized || isCheckingAuth) {
     return (
-      <div className="auth-provider-loading">
-        <div className="auth-provider-spinner">
-          <div className="spinner"></div>
-          <p>Verificando sesión...</p>
+      <div className="flex items-center justify-center min-h-screen bg-(--color-document-bg)">
+        <div className="text-center flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 rounded-full border-(--color-gray-1) border-t-(--color-primary-color) animate-spin"></div>
+          <p className="m-0 text-base text-(--color-base-secondary-typo)">
+            Verificando sesión...
+          </p>
         </div>
       </div>
     );
