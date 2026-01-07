@@ -35,3 +35,9 @@ export type { DropdownMenuProps, DropdownMenuItem } from './DropdownMenu/Dropdow
 
 export { createStatusActions } from './Table/statusTransitions';
 export type { StatusTransitionConfig } from './Table/statusTransitions';
+
+export { useTableSort } from './Table/useTableSort';
+export { sortTableData, getNestedValue } from './Table/utils';
+
+export { DetailModal } from './DetailModal/DetailModal';
+export type { DetailModalProps, DetailField } from './DetailModal/DetailModal';

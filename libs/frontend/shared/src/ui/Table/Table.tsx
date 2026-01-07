@@ -355,7 +355,10 @@ export function Table<T = any>({
                 <tr
                   key={rowIndex}
                   className={rowClasses}
-                  onClick={(e) => {
+                  onContextMenu={(e) => {
+                    // Prevenir el menú contextual del navegador
+                    e.preventDefault();
+
                     if (rowActions) {
                       const items = rowActions(row);
                       if (items.length > 0) {
@@ -369,6 +372,9 @@ export function Table<T = any>({
                         });
                       }
                     }
+                  }}
+                  onClick={() => {
+                    // Mantener onClick solo para onRowClick si existe
                     if (onRowClick) {
                       onRowClick(row);
                     }

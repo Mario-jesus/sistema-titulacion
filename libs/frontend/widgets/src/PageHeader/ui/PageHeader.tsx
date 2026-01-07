@@ -99,7 +99,7 @@ export function PageHeader({
       </div>
 
       {/* Separador */}
-      <div className="h-px w-full bg-gray-3-light dark:bg-[#6D7389]/50"/>
+      <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark"/>
 
       {/* Segunda fila: Búsqueda y filtros */}
       <div className="flex items-center justify-between gap-4 w-full">

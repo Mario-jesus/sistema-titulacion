@@ -115,6 +115,8 @@ export function Modal({
         className={`
           relative w-full ${maxWidthClasses[maxWidth]}
           rounded-lg shadow-2xl
+          flex flex-col
+          max-h-[90vh]
           ${className}
         `}
         onClick={(e) => e.stopPropagation()}
@@ -124,10 +126,7 @@ export function Modal({
       >
           {/* Header */}
           <div
-            className="flex items-center justify-between px-6 py-4 border-b rounded-t-lg"
-            style={{
-              borderColor: 'var(--color-gray-1)',
-            }}
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-3-light dark:border-gray-6-dark rounded-t-lg shrink-0"
           >
             <h2
               className="text-xl font-semibold"
@@ -139,15 +138,9 @@ export function Modal({
             </h2>
             <button
               onClick={onClose}
-              className="flex items-center justify-center p-2 rounded-lg cursor-pointer"
+              className="flex items-center justify-center p-2 rounded-lg cursor-pointer bg-transparent hover:bg-gray-2-light dark:hover:bg-gray-3-dark"
               style={{
                 color: 'var(--color-base-secondary-typo)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-gray-2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
               aria-label="Cerrar modal"
               type="button"
@@ -157,7 +150,7 @@ export function Modal({
           </div>
 
           {/* Body */}
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
             {children}
           </div>
         </div>

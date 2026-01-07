@@ -9,3 +9,6 @@ export type {
 
 export { createStatusActions } from './statusTransitions';
 export type { StatusTransitionConfig } from './statusTransitions';
+
+export { useTableSort } from './useTableSort';
+export { sortTableData, getNestedValue } from './utils';
