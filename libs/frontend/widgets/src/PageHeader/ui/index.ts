@@ -1,2 +1,2 @@
 export { PageHeader } from './PageHeader';
-export { ChevronDownIcon } from './icons';
+export { FilterIcon, PlusIcon } from './icons';

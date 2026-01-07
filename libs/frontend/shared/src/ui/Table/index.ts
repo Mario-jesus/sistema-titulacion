@@ -11,4 +11,5 @@ export { createStatusActions } from './statusTransitions';
 export type { StatusTransitionConfig } from './statusTransitions';
 
 export { useTableSort } from './useTableSort';
+export { useTableFilters } from './useTableFilters';
 export { sortTableData, getNestedValue } from './utils';

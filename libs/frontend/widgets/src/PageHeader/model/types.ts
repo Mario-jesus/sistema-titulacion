@@ -21,6 +21,8 @@ export interface PageHeaderProps {
     label?: string;
     onClick: () => void;
     isActive?: boolean;
+    /** Referencia al botón de filtros (para posicionar el dropdown) */
+    buttonRef?: React.RefObject<HTMLButtonElement | null>;
   };
   /** Clase CSS adicional */
   className?: string;

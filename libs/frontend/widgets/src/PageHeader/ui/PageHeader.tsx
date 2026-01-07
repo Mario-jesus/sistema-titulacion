@@ -1,6 +1,6 @@
 import { Search, Button } from '@shared/ui';
 import { PageHeaderProps } from '../model/types';
-import { ChevronDownIcon, PlusIcon } from './icons';
+import { FilterIcon, PlusIcon } from './icons';
 
 /**
  * Componente de header de página con título, búsqueda, acciones y filtros
@@ -114,13 +114,14 @@ export function PageHeader({
 
         {filters && (
           <Button
+            ref={filters.buttonRef}
             variant="ghost"
             size='small'
             onClick={filters.onClick}
             className="shrink-0"
           >
+            <FilterIcon size={16} className="mr-1" />
             <span>{filters.label || 'Filtros'}</span>
-            <ChevronDownIcon size={16} className="ml-2" />
           </Button>
         )}
       </div>
