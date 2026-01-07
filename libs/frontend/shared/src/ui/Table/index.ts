@@ -6,3 +6,6 @@ export type {
   TableStatusConfig,
   SortDirection,
 } from './Table';
+
+export { createStatusActions } from './statusTransitions';
+export type { StatusTransitionConfig } from './statusTransitions';

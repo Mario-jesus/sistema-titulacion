@@ -39,9 +39,6 @@
       "path": "../features/tsconfig.lib.json"
     },
     {
-      "path": "../widgets/tsconfig.lib.json"
-    },
-    {
       "path": "../shared/tsconfig.lib.json"
     }
   ]

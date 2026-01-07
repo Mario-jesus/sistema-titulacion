@@ -29,3 +29,9 @@ export type { PaginationProps } from './Pagination/Pagination';
 
 export { Modal } from './Modal/Modal';
 export type { ModalProps } from './Modal/Modal';
+
+export { DropdownMenu } from './DropdownMenu/DropdownMenu';
+export type { DropdownMenuProps, DropdownMenuItem } from './DropdownMenu/DropdownMenu';
+
+export { createStatusActions } from './Table/statusTransitions';
+export type { StatusTransitionConfig } from './Table/statusTransitions';

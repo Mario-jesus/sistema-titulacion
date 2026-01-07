@@ -1,6 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
+import { DropdownMenu, DropdownMenuItem } from '../DropdownMenu/DropdownMenu';
 
-export type TableStatus = 'active' | 'paused' | 'cancelled';
+export type TableStatus = string;
 export type SortDirection = 'asc' | 'desc' | null;
 
 export interface TableColumn<T = any> {
@@ -14,6 +15,18 @@ export interface TableColumn<T = any> {
 export interface TableStatusConfig {
   status: TableStatus;
   label: string;
+  /** Color del punto y texto (opcional, usa el color por defecto del status si no se proporciona) */
+  color?: {
+    dot: string;
+    text: string;
+  };
+}
+
+export interface TableStatusColors {
+  [key: string]: {
+    dot: string;
+    text: string;
+  };
 }
 
 export interface TableProps<T = any> {
@@ -22,14 +35,19 @@ export interface TableProps<T = any> {
   statusColumn?: {
     key: string;
     getStatus: (row: T) => TableStatusConfig;
+    /** Colores personalizados para los estados (opcional) */
+    colors?: TableStatusColors;
   };
   onSort?: (columnKey: string, direction: SortDirection) => void;
   className?: string;
   rowClassName?: (row: T, index: number) => string;
   onRowClick?: (row: T) => void;
+  /** Acciones del menú desplegable para cada fila */
+  rowActions?: (row: T) => DropdownMenuItem[];
 }
 
-const statusColors = {
+// Colores por defecto para compatibilidad hacia atrás
+const defaultStatusColors: TableStatusColors = {
   active: {
     dot: 'bg-[var(--color-green)]',
     text: 'text-[var(--color-green)]',
@@ -42,8 +60,132 @@ const statusColors = {
     dot: 'bg-[var(--color-salmon)]',
     text: 'text-[var(--color-salmon)]',
   },
+  inactive: {
+    dot: 'bg-[var(--color-gray-5)]',
+    text: 'text-[var(--color-gray-5)]',
+  },
 };
 
+/**
+ * Componente de tabla genérico con soporte para modo claro y oscuro
+ * 
+ * Este componente proporciona una tabla completa con funcionalidades de ordenamiento,
+ * columnas personalizables, estados visuales y soporte automático para modo claro y oscuro.
+ * 
+ * @example
+ * ```tsx
+ * // Tabla básica
+ * <Table
+ *   columns={[
+ *     { key: 'nombre', label: 'Nombre', sortable: true },
+ *     { key: 'descripcion', label: 'Descripción' },
+ *   ]}
+ *   data={[
+ *     { nombre: 'Residencia', descripcion: 'Proyecto de residencia' },
+ *     { nombre: 'Tesis', descripcion: 'Proyecto de tesis' },
+ *   ]}
+ * />
+ * 
+ * // Tabla con ordenamiento
+ * <Table
+ *   columns={[
+ *     { key: 'nombre', label: 'Nombre', sortable: true },
+ *     { key: 'descripcion', label: 'Descripción', sortable: true },
+ *   ]}
+ *   data={data}
+ *   onSort={(columnKey, direction) => {
+ *     console.log(`Ordenar por ${columnKey}: ${direction}`);
+ *   }}
+ * />
+ * 
+ * // Tabla con columna de estado
+ * <Table
+ *   columns={[
+ *     { key: 'nombre', label: 'Nombre' },
+ *     { key: 'descripcion', label: 'Descripción' },
+ *   ]}
+ *   data={data}
+ *   statusColumn={{
+ *     key: 'estado',
+ *     getStatus: (row) => ({
+ *       status: row.estado === 'activo' ? 'active' : 'paused',
+ *       label: row.estado === 'activo' ? 'Activo' : 'Pausado',
+ *     }),
+ *   }}
+ * />
+ * 
+ * // Tabla con estados personalizados (solo activo/inactivo)
+ * <Table
+ *   columns={columns}
+ *   data={data}
+ *   statusColumn={{
+ *     key: 'estado',
+ *     getStatus: (row) => ({
+ *       status: row.activo ? 'activo' : 'inactivo',
+ *       label: row.activo ? 'Activo' : 'Inactivo',
+ *     }),
+ *     colors: {
+ *       activo: {
+ *         dot: 'bg-[var(--color-green)]',
+ *         text: 'text-[var(--color-green)]',
+ *       },
+ *       inactivo: {
+ *         dot: 'bg-[var(--color-gray-5)]',
+ *         text: 'text-[var(--color-gray-5)]',
+ *       },
+ *     },
+ *   }}
+ * />
+ * 
+ * // Tabla con colores personalizados por fila
+ * <Table
+ *   columns={columns}
+ *   data={data}
+ *   statusColumn={{
+ *     key: 'estado',
+ *     getStatus: (row) => ({
+ *       status: row.estado,
+ *       label: row.estadoLabel,
+ *       color: {
+ *         dot: row.colorDot,
+ *         text: row.colorText,
+ *       },
+ *     }),
+ *   }}
+ * />
+ * 
+ * // Tabla con render personalizado
+ * <Table
+ *   columns={[
+ *     { key: 'nombre', label: 'Nombre' },
+ *     {
+ *       key: 'fecha',
+ *       label: 'Fecha',
+ *       render: (value) => new Date(value).toLocaleDateString(),
+ *     },
+ *   ]}
+ *   data={data}
+ * />
+ * 
+ * // Tabla con click en filas
+ * <Table
+ *   columns={columns}
+ *   data={data}
+ *   onRowClick={(row) => {
+ *     console.log('Fila clickeada:', row);
+ *   }}
+ * />
+ * 
+ * // Tabla con clases personalizadas en filas
+ * <Table
+ *   columns={columns}
+ *   data={data}
+ *   rowClassName={(row, index) => {
+ *     return index % 2 === 0 ? 'bg-gray-2-light' : '';
+ *   }}
+ * />
+ * ```
+ */
 export function Table<T = any>({
   columns,
   data,
@@ -52,9 +194,19 @@ export function Table<T = any>({
   className = '',
   rowClassName,
   onRowClick,
+  rowActions,
 }: TableProps<T>) {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [menuState, setMenuState] = useState<{
+    isOpen: boolean;
+    position: { x: number; y: number };
+    items: DropdownMenuItem[];
+  }>({
+    isOpen: false,
+    position: { x: 0, y: 0 },
+    items: [],
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Asegurar que el scroll comience desde el inicio
@@ -186,9 +338,14 @@ export function Table<T = any>({
           ) : (
             data.map((row, rowIndex) => {
               const statusConfig = statusColumn ? statusColumn.getStatus(row) : null;
+              // Usar colores personalizados del statusConfig, o del statusColumn.colors, o los por defecto
+              const statusColorsMap = statusColumn?.colors || defaultStatusColors;
+              const statusColor = statusConfig?.color || statusColorsMap[statusConfig?.status || ''];
+
               const rowClasses = [
                 'border-b border-gray-1-light dark:border-gray-5-dark',
-                onRowClick && 'cursor-pointer hover:bg-gray-3-light/50 active:bg-gray-3-light dark:hover:bg-gray-6-dark/50 dark:active:bg-gray-6-dark',
+                'hover:bg-gray-3-light/50 active:bg-gray-3-light dark:hover:bg-gray-6-dark/50 dark:active:bg-gray-6-dark',
+                (onRowClick || rowActions) && 'cursor-pointer',
                 rowClassName && rowClassName(row, rowIndex),
               ]
                 .filter(Boolean)
@@ -198,7 +355,24 @@ export function Table<T = any>({
                 <tr
                   key={rowIndex}
                   className={rowClasses}
-                  onClick={() => onRowClick?.(row)}
+                  onClick={(e) => {
+                    if (rowActions) {
+                      const items = rowActions(row);
+                      if (items.length > 0) {
+                        setMenuState({
+                          isOpen: true,
+                          position: {
+                            x: e.clientX + 8,
+                            y: e.clientY - 4,
+                          },
+                          items,
+                        });
+                      }
+                    }
+                    if (onRowClick) {
+                      onRowClick(row);
+                    }
+                  }}
                 >
                   {columns.map((column) => {
                     const value = getCellValue(row, column);
@@ -225,14 +399,27 @@ export function Table<T = any>({
                       }}
                     >
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${statusColors[statusConfig.status].dot}`}
-                        />
-                        <span
-                          className={statusColors[statusConfig.status].text}
-                        >
-                          {statusConfig.label}
-                        </span>
+                        {statusColor && (
+                          <>
+                            <span
+                              className={`w-2 h-2 rounded-full ${statusColor.dot}`}
+                            />
+                            <span
+                              className={statusColor.text}
+                            >
+                              {statusConfig.label}
+                            </span>
+                          </>
+                        )}
+                        {!statusColor && (
+                          <span
+                            style={{
+                              color: 'var(--color-base-primary-typo)',
+                            }}
+                          >
+                            {statusConfig.label}
+                          </span>
+                        )}
                       </div>
                     </td>
                   )}
@@ -242,6 +429,14 @@ export function Table<T = any>({
           )}
         </tbody>
       </table>
+
+      {/* Menú desplegable */}
+      <DropdownMenu
+        isOpen={menuState.isOpen}
+        onClose={() => setMenuState(prev => ({ ...prev, isOpen: false }))}
+        position={menuState.position}
+        items={menuState.items}
+      />
     </div>
   );
 }
