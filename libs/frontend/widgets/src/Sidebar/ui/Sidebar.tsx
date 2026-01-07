@@ -139,7 +139,7 @@ export function Sidebar({
         {!isCollapsed && (
           <button
             onClick={toggleCollapse}
-            className="group absolute flex items-center justify-center bg-[#E6E5F9] dark:bg-gray-2-dark border-3 border-gray-2-light dark:border-gray-1-dark w-8 h-8 rounded-full -right-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+            className="group absolute flex items-center justify-center bg-[#E6E5F9] dark:bg-gray-2-dark border-3 border-gray-2-light dark:border-gray-1-dark w-8 h-8 rounded-full -right-4 top-1/2 -translate-y-1/2 z-20 cursor-pointer"
             style={{
               color: 'var(--color-primary-color)',
             }}

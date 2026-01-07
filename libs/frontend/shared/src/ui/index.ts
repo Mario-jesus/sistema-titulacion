@@ -20,3 +20,6 @@ export type {
   TableStatusConfig,
   SortDirection,
 } from './Table';
+
+export { Pagination } from './Pagination/Pagination';
+export type { PaginationProps } from './Pagination/Pagination';
