@@ -4,6 +4,9 @@ export type { ButtonProps } from './Button/Button';
 export { Input } from './Input/Input';
 export type { InputProps } from './Input/Input';
 
+export { Search } from './Search/Search';
+export type { SearchProps } from './Search/Search';
+
 export { Card } from './Card/Card';
 export type { CardProps } from './Card/Card';
 
