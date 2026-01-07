@@ -6,6 +6,55 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   fullWidth?: boolean;
 }
 
+/**
+ * Componente de input con soporte para modo claro y oscuro
+ * 
+ * Este componente proporciona un campo de entrada de texto con label opcional,
+ * manejo de errores y soporte automático para modo claro y oscuro usando las
+ * variables CSS del sistema.
+ * 
+ * @example
+ * ```tsx
+ * // Input básico
+ * <Input
+ *   placeholder="Ingresa tu nombre"
+ *   value={name}
+ *   onChange={(e) => setName(e.target.value)}
+ * />
+ * 
+ * // Input con label
+ * <Input
+ *   label="Nombre"
+ *   placeholder="Ingresa tu nombre"
+ *   value={name}
+ *   onChange={(e) => setName(e.target.value)}
+ * />
+ * 
+ * // Input con error
+ * <Input
+ *   label="Email"
+ *   type="email"
+ *   value={email}
+ *   onChange={(e) => setEmail(e.target.value)}
+ *   error="El email es requerido"
+ * />
+ * 
+ * // Input de ancho completo
+ * <Input
+ *   label="Descripción"
+ *   fullWidth
+ *   value={description}
+ *   onChange={(e) => setDescription(e.target.value)}
+ * />
+ * 
+ * // Input deshabilitado
+ * <Input
+ *   label="Campo deshabilitado"
+ *   value="Valor fijo"
+ *   disabled
+ * />
+ * ```
+ */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {

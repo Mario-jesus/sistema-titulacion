@@ -26,3 +26,6 @@ export type {
 
 export { Pagination } from './Pagination/Pagination';
 export type { PaginationProps } from './Pagination/Pagination';
+
+export { Modal } from './Modal/Modal';
+export type { ModalProps } from './Modal/Modal';
