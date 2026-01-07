@@ -151,7 +151,7 @@
     --color-component-bg: var(--color-white);
 
     /* Input specific colors */
-    --color-input-bg: var(--color-white);
+    --color-input-bg: var(--color-gray-2-light);
     --color-input-border: var(--color-gray-1-light);
   }
 
