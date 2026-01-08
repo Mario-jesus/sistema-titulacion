@@ -12,4 +12,6 @@ export interface HeaderProps {
   user?: UserInfo;
   onUserMenuClick?: () => void;
   className?: string;
+  // Prop para móviles
+  onMenuClick?: () => void;
 }

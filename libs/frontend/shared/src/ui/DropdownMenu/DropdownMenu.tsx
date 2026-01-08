@@ -135,10 +135,7 @@ export function DropdownMenu({
           return (
             <div
               key={`separator-${index}`}
-              className="h-px my-1"
-              style={{
-                backgroundColor: 'var(--color-gray-1)',
-              }}
+              className="h-px my-1 bg-gray-1-light dark:bg-gray-5-dark/50"
             />
           );
         }

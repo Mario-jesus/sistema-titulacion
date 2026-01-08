@@ -25,4 +25,7 @@ export interface SidebarProps {
   onLogout?: () => void;
   logo?: ReactNode;
   className?: string;
+  // Props para móviles
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }

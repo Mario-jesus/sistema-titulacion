@@ -1,6 +1,6 @@
 import { ThemeToggle } from '@shared/ui';
 import { HeaderProps } from '../model';
-import { BackArrowIcon, ChevronDownIcon } from './icons';
+import { BackArrowIcon, ChevronDownIcon, MenuIcon } from './icons';
 
 export function Header({
   title,
@@ -9,6 +9,7 @@ export function Header({
   user,
   onUserMenuClick,
   className = '',
+  onMenuClick,
 }: HeaderProps) {
 
   const handleUserClick = () => {
@@ -19,15 +20,37 @@ export function Header({
 
   return (
     <header
-      className={`flex items-center justify-between px-6 py-4 border-b rounded-lg ${className}`}
+      className={`flex items-center justify-between px-3 md:px-6 py-3 md:py-4 border-b rounded-lg ${className}`}
       style={{
         backgroundColor: 'var(--color-component-bg)',
         borderColor: 'var(--color-gray-1)',
         maxHeight: '70px',
       }}
     >
-      {/* Sección izquierda: Título */}
+      {/* Sección izquierda: Botón menú móvil y Título */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
+        {/* Botón hamburguesa para móviles */}
+        {onMenuClick && (
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden flex items-center justify-center p-2 rounded-lg cursor-pointer"
+            style={{
+              color: 'var(--color-base-secondary-typo)',
+              backgroundColor: 'transparent',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-gray-2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+            aria-label="Abrir menú"
+            type="button"
+          >
+            <MenuIcon size={24} />
+          </button>
+        )}
+
         {showBackButton && onBack && (
           <button
             onClick={onBack}
@@ -50,7 +73,7 @@ export function Header({
         )}
 
         {title && (
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             {showBackButton && !onBack && (
               <div
                 className="flex items-center justify-center"
@@ -74,7 +97,7 @@ export function Header({
       </div>
 
       {/* Sección central: Toggle de tema */}
-      <div className="flex items-center justify-center px-4">
+      <div className="flex items-center justify-center px-2 md:px-4">
         <ThemeToggle />
       </div>
 

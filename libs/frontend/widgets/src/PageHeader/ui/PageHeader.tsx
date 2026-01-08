@@ -68,11 +68,11 @@ export function PageHeader({
   className = '',
 }: PageHeaderProps) {
   return (
-    <div className={`flex flex-col gap-4 w-full ${className}`}>
+    <div className={`flex flex-col gap-3 md:gap-4 w-full ${className}`}>
       {/* Primera fila: Título y acción principal */}
-      <div className="flex items-center justify-between gap-4 w-full">
+      <div className="flex items-center justify-between gap-2 md:gap-4 w-full min-w-0">
         <h2
-          className="text-xl font-semibold shrink-0"
+          className="text-lg md:text-xl font-semibold min-w-0 flex-1 truncate"
           style={{
             color: 'var(--color-base-primary-typo)',
           }}

@@ -11,4 +11,6 @@ export {
   BackupsIcon,
   LogoutIcon,
   CollapseIcon,
+  MenuIcon,
+  CloseIcon,
 } from './icons';

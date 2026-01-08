@@ -6,6 +6,9 @@
       "path": "../features"
     },
     {
+      "path": "../widgets"
+    },
+    {
       "path": "../shared"
     },
     {

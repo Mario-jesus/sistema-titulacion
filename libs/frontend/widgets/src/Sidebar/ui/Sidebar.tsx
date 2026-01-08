@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SidebarProps, SidebarItem, SidebarSubItem } from '../model';
-import { CollapseIcon, LogoutIcon, ChevronRightIcon } from './icons';
+import { CollapseIcon, LogoutIcon, ChevronRightIcon, CloseIcon } from './icons';
 
 export function Sidebar({
   items,
@@ -9,6 +9,8 @@ export function Sidebar({
   onLogout,
   logo,
   className = '',
+  isMobileOpen = false,
+  onMobileClose,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -88,18 +90,53 @@ export function Sidebar({
     }
   };
 
+  // Cerrar sidebar móvil cuando se hace clic en un item
+  const handleItemClickWithClose = (item: SidebarItem) => {
+    handleItemClick(item);
+    // Cerrar el drawer en móviles después de hacer clic
+    if (onMobileClose) {
+      onMobileClose();
+    }
+  };
+
+  const handleSubItemClickWithClose = (subItem: SidebarSubItem) => {
+    handleSubItemClick(subItem);
+    // Cerrar el drawer en móviles después de hacer clic
+    if (onMobileClose) {
+      onMobileClose();
+    }
+  };
+
   return (
-    <aside
-      className={`flex flex-col h-screen ${
-        isCollapsed ? 'w-20' : 'w-64'
-      } relative transition-[width] duration-300 ease-in-out ${className}`}
-      style={{
-        backgroundColor: 'var(--color-component-bg)'
-      }}
-    >
+    <>
+      {/* Overlay para móviles */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`
+          fixed lg:static
+          top-0 left-0
+          flex flex-col h-screen
+          ${isCollapsed ? 'w-20' : 'w-64'}
+          lg:relative transition-all duration-300 ease-in-out
+          z-50 lg:z-10
+          lg:overflow-visible
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${className}
+        `}
+        style={{
+          backgroundColor: 'var(--color-component-bg)'
+        }}
+      >
       {/* Header con Logo y Botón de Colapsar */}
       <div
-        className="flex items-center justify-between p-4 relative"
+        className="flex items-center justify-between p-4 relative overflow-visible"
       >
         {!isCollapsed && (
           <div className="flex items-center gap-2 flex-1">
@@ -136,10 +173,27 @@ export function Sidebar({
             )}
           </button>
         )}
+
+        {/* Botón de cerrar para móviles */}
+        {!isCollapsed && onMobileClose && (
+          <button
+            onClick={onMobileClose}
+            className="lg:hidden flex items-center justify-center p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+            style={{
+              color: 'var(--color-base-secondary-typo)',
+            }}
+            aria-label="Cerrar sidebar"
+            type="button"
+          >
+            <CloseIcon size={24} />
+          </button>
+        )}
+
+        {/* Botón de colapsar para desktop */}
         {!isCollapsed && (
           <button
             onClick={toggleCollapse}
-            className="group absolute flex items-center justify-center bg-[#E6E5F9] dark:bg-gray-2-dark border-3 border-gray-2-light dark:border-gray-1-dark w-8 h-8 rounded-full -right-4 top-1/2 -translate-y-1/2 z-20 cursor-pointer"
+            className="hidden lg:flex group absolute items-center justify-center bg-[#E6E5F9] dark:bg-gray-2-dark border-3 border-gray-2-light dark:border-gray-1-dark w-8 h-8 rounded-full right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 cursor-pointer"
             style={{
               color: 'var(--color-primary-color)',
             }}
@@ -165,7 +219,7 @@ export function Sidebar({
               <li key={item.id}>
                 <div>
                   <button
-                    onClick={() => handleItemClick(item)}
+                    onClick={() => handleItemClickWithClose(item)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 relative overflow-hidden cursor-pointer active:opacity-80 ${
                       isCollapsed ? 'justify-center' : ''
                     } ${
@@ -232,7 +286,7 @@ export function Sidebar({
                         return (
                           <li key={subItem.id}>
                             <button
-                              onClick={() => handleSubItemClick(subItem)}
+                              onClick={() => handleSubItemClickWithClose(subItem)}
                               className={`w-full flex items-center gap-3 px-10 py-2 relative cursor-pointer active:opacity-80 ${
                                 isSubActive
                                   ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
@@ -304,5 +358,6 @@ export function Sidebar({
         </button>
       </div>
     </aside>
+    </>
   );
 }

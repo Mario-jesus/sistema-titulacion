@@ -373,8 +373,27 @@ export function Table<T = any>({
                       }
                     }
                   }}
-                  onClick={() => {
-                    // Mantener onClick solo para onRowClick si existe
+                  onClick={(e) => {
+                    // En móviles, si hay rowActions, mostrar el menú en lugar del modal
+                    const isMobile = window.innerWidth < 768; // Breakpoint md de Tailwind
+
+                    if (isMobile && rowActions) {
+                      const items = rowActions(row);
+                      if (items.length > 0) {
+                        e.preventDefault();
+                        setMenuState({
+                          isOpen: true,
+                          position: {
+                            x: e.clientX || window.innerWidth / 2,
+                            y: e.clientY || window.innerHeight / 2,
+                          },
+                          items,
+                        });
+                        return;
+                      }
+                    }
+
+                    // En desktop o si no hay rowActions, mantener comportamiento original
                     if (onRowClick) {
                       onRowClick(row);
                     }

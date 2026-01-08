@@ -1,4 +1,5 @@
 import { ReactNode, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface IconProps {
   className?: string;
@@ -90,8 +91,6 @@ export function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const maxWidthClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -100,15 +99,12 @@ export function Modal({
     '2xl': 'max-w-2xl',
   };
 
-  return (
+  if (!isOpen) return null;
+
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-20 flex items-center justify-center p-4 bg-black/50"
       onClick={onClose}
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(2px)',
-        zIndex: 9999,
-      }}
     >
       {/* Contenedor del modal */}
       <div
@@ -156,4 +152,7 @@ export function Modal({
         </div>
     </div>
   );
+
+  // Renderizar el modal en un portal directamente en el body
+  return createPortal(modalContent, document.body);
 }

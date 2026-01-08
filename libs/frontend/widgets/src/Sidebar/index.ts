@@ -13,4 +13,6 @@ export {
   BackupsIcon,
   LogoutIcon,
   CollapseIcon,
+  MenuIcon,
+  CloseIcon,
 } from './ui';
