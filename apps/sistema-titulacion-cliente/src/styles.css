@@ -111,6 +111,9 @@
   --color-base-secondary-typo-dark: #B8C0CC;
   --color-error-typo-dark: #F53B30;
   --color-success-typo-dark: #2AA31F;
+
+  /* ========== Transitions ========== */
+  --transition-property-width-transform: width, transform;
 }
 
 /*

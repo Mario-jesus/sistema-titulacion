@@ -15,6 +15,13 @@ export function Sidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
+  // Asegurar que el sidebar no esté colapsado cuando se abre en móvil
+  useEffect(() => {
+    if (isMobileOpen && isCollapsed) {
+      setIsCollapsed(false);
+    }
+  }, [isMobileOpen, isCollapsed]);
+
   // Expandir automáticamente el item padre si un subitem está activo (cerrando otros)
   useEffect(() => {
     if (activeItemId) {
@@ -124,7 +131,7 @@ export function Sidebar({
           top-0 left-0
           flex flex-col h-screen
           ${isCollapsed ? 'w-20' : 'w-64'}
-          lg:relative transition-all duration-300 ease-in-out
+          lg:relative transition-width-transform duration-300 ease-in-out
           z-50 lg:z-10
           lg:overflow-visible
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
