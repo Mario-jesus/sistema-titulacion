@@ -1,5 +1,5 @@
-import { env } from '@shared/config';
-import { logger } from '@shared/lib/logger';
+import { env } from '../config/env';
+import { logger } from '../lib/logger/logger';
 
 interface ApiClient {
   get<T>(url: string, options?: RequestInit): Promise<T>;
