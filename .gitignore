@@ -54,3 +54,6 @@ vitest.config.*.timestamp*
 .env.production
 .env.*.local
 !.env.example
+
+# MSW
+apps/sistema-titulacion-cliente/public/mockServiceWorker.js
