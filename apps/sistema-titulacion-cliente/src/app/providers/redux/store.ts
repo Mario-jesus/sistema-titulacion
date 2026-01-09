@@ -6,6 +6,7 @@ import {
   logoutThunk,
   checkAuthThunk,
 } from '@features/auth';
+import { generationsReducer } from '@features/generations';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     user: userReducer,
     login: loginReducer,
     auth: authReducer,
+    generations: generationsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

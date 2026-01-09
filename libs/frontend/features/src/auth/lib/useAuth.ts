@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, BaseAppState } from '@shared/lib/redux/types';
 import type { User } from '@entities/user';
 import type { LoginCredentials } from '../model/types';
 import { loginThunk, logoutThunk, checkAuthThunk } from '../model/authThunks';
@@ -15,12 +16,10 @@ interface UserSliceState {
   isAuthenticated: boolean;
 }
 
-interface AppState {
+interface AppState extends BaseAppState {
   user: UserSliceState;
   auth: AuthSliceState;
 }
-
-type AppDispatch = any;
 
 export function useAuth() {
   const dispatch = useDispatch<AppDispatch>();

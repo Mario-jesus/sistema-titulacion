@@ -5,6 +5,7 @@ interface ApiClient {
   get<T>(url: string, options?: RequestInit): Promise<T>;
   post<T>(url: string, body?: unknown, options?: RequestInit): Promise<T>;
   put<T>(url: string, body?: unknown, options?: RequestInit): Promise<T>;
+  patch<T>(url: string, body?: unknown, options?: RequestInit): Promise<T>;
   delete<T>(url: string, options?: RequestInit): Promise<T>;
 }
 
@@ -122,6 +123,13 @@ export const apiClient: ApiClient = {
     return request<T>(url, {
       ...options,
       method: 'PUT',
+      body,
+    } as RequestInit & { body?: unknown });
+  },
+  patch<T>(url: string, body?: unknown, options?: RequestInit) {
+    return request<T>(url, {
+      ...options,
+      method: 'PATCH',
       body,
     } as RequestInit & { body?: unknown });
   },
