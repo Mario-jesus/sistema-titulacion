@@ -17,6 +17,7 @@ import { FilterIcon, PlusIcon } from './icons';
  *   searchPlaceholder="Buscar alumno"
  *   searchValue={searchTerm}
  *   onSearchChange={(value) => setSearchTerm(value)}
+ *   // onSearchClear es opcional, por defecto limpia el valor
  * />
  * 
  * // Con acción principal (botón Añadir)
@@ -45,6 +46,10 @@ import { FilterIcon, PlusIcon } from './icons';
  *   searchPlaceholder="Buscar alumno"
  *   searchValue={searchTerm}
  *   onSearchChange={(value) => setSearchTerm(value)}
+ *   onSearchClear={() => {
+ *     setSearchTerm('');
+ *     // Opcional: limpiar otros estados relacionados
+ *   }}
  *   primaryAction={{
  *     label: 'Añadir',
  *     onClick: () => handleAdd(),
@@ -57,12 +62,18 @@ import { FilterIcon, PlusIcon } from './icons';
  *   }}
  * />
  * ```
+ * 
+ * **Nota sobre búsqueda con API**: La búsqueda se ejecuta solo cuando el usuario presiona Enter
+ * (usando el callback `onSearch`). El `onSearchChange` solo actualiza el valor local.
+ * El botón de limpiar aparece automáticamente cuando hay texto en el campo de búsqueda.
  */
 export function PageHeader({
   title,
   searchPlaceholder = 'Buscar...',
   searchValue,
   onSearchChange,
+  onSearch,
+  onSearchClear,
   primaryAction,
   filters,
   className = '',
@@ -108,6 +119,11 @@ export function PageHeader({
             placeholder={searchPlaceholder}
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
+            onSearch={onSearch}
+            onClear={onSearchClear || (() => {
+              onSearchChange?.('');
+              onSearch?.('');
+            })}
             fullWidth
           />
         </div>

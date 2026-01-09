@@ -18,7 +18,11 @@ export interface FilterDropdownProps<T = any> extends FilterPanelProps<T> {
  * Este componente posiciona un FilterPanel como un dropdown cerca del botón
  * que lo activa, similar a un menú desplegable.
  * 
+ * Soporta todos los tipos de filtros del FilterPanel: checkbox, toggle y select.
+ * Puede trabajar con datos locales o con opciones predefinidas del backend.
+ * 
  * @example
+ * // Uso básico con datos locales
  * ```tsx
  * const filterButtonRef = useRef<HTMLButtonElement>(null);
  * 
@@ -29,6 +33,41 @@ export interface FilterDropdownProps<T = any> extends FilterPanelProps<T> {
  *   data={tableData}
  *   filterConfigs={[
  *     { columnKey: 'estado', label: 'Estado' },
+ *   ]}
+ *   selectedFilters={filters}
+ *   onFilterChange={handleFilterChange}
+ *   onReset={handleResetFilters}
+ * />
+ * ```
+ * 
+ * @example
+ * // Uso con opciones predefinidas del backend
+ * ```tsx
+ * <FilterDropdown
+ *   isOpen={isFiltersOpen}
+ *   onClose={() => setIsFiltersOpen(false)}
+ *   triggerRef={filterButtonRef}
+ *   filterConfigs={[
+ *     {
+ *       columnKey: 'careerId',
+ *       label: 'Carrera',
+ *       type: 'checkbox',
+ *       options: careers.map(c => ({ value: c.id, label: c.name }))
+ *     },
+ *     {
+ *       columnKey: 'status',
+ *       label: 'Estado',
+ *       type: 'checkbox',
+ *       options: [
+ *         { value: 'ACTIVO', label: 'Activo' },
+ *         { value: 'PAUSADO', label: 'Pausado' }
+ *       ]
+ *     },
+ *     {
+ *       columnKey: 'activeOnly',
+ *       label: 'Solo activos',
+ *       type: 'toggle'
+ *     }
  *   ]}
  *   selectedFilters={filters}
  *   onFilterChange={handleFilterChange}

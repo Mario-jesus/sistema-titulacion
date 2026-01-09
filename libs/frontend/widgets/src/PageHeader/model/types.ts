@@ -7,8 +7,12 @@ export interface PageHeaderProps {
   searchPlaceholder?: string;
   /** Valor del campo de búsqueda */
   searchValue?: string;
-  /** Callback cuando cambia el valor de búsqueda */
+  /** Callback cuando cambia el valor de búsqueda (solo actualiza el valor local) */
   onSearchChange?: (value: string) => void;
+  /** Callback cuando se presiona Enter para ejecutar la búsqueda */
+  onSearch?: (value: string) => void;
+  /** Callback cuando se limpia la búsqueda (opcional, por defecto limpia el valor) */
+  onSearchClear?: () => void;
   /** Acción principal (ej: botón "Añadir") */
   primaryAction?: {
     label: string;

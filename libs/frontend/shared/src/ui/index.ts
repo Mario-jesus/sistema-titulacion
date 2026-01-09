@@ -43,7 +43,7 @@ export { DetailModal } from './DetailModal/DetailModal';
 export type { DetailModalProps, DetailField } from './DetailModal/DetailModal';
 
 export { FilterPanel } from './FilterPanel/FilterPanel';
-export type { FilterPanelProps, FilterConfig } from './FilterPanel/FilterPanel';
+export type { FilterPanelProps, FilterConfig, FilterType, FilterOption } from './FilterPanel/FilterPanel';
 
 export { FilterDropdown } from './FilterDropdown/FilterDropdown';
 export type { FilterDropdownProps } from './FilterDropdown/FilterDropdown';
