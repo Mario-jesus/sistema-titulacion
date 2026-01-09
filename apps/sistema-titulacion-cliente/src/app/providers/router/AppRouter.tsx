@@ -1,11 +1,10 @@
+import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { LoginPage } from '@pages/LoginPage';
-import { ComingSoonPage } from '@pages/ComingSoonPage';
 import { useAuth } from '@features/auth';
-import { ProtectedRoute } from './ProtectedRoute';
-import { PublicRoute } from './PublicRoute';
-import { AdminRoute } from './AdminRoute';
-import { LayoutWithSidebar } from './LayoutWithSidebar';
+import { ProtectedRoute, PublicRoute, AdminRoute } from './guards';
+import { LayoutWithSidebar } from './layouts';
+import { PageLoader } from './components';
+import { LoginPage, ComingSoonPage } from './lazyPages';
 
 export function AppRouter() {
   return (
@@ -18,7 +17,9 @@ export function AppRouter() {
           path="/login"
           element={
             <PublicRoute>
-              <LoginPage />
+              <Suspense fallback={<PageLoader />}>
+                <LoginPage />
+              </Suspense>
             </PublicRoute>
           }
         />
@@ -29,10 +30,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Panel"
-                  description="Esta sección está en desarrollo. Aquí podrás ver el resumen general del sistema."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Panel"
+                    description="Esta sección está en desarrollo. Aquí podrás ver el resumen general del sistema."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -43,10 +46,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Opciones de Titulación"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar las opciones de titulación disponibles para los estudiantes."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Opciones de Titulación"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar las opciones de titulación disponibles para los estudiantes."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -57,10 +62,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Generación"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar las generaciones de estudiantes."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Generación"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar las generaciones de estudiantes."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -71,10 +78,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Ingreso y Egreso"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar el ingreso y egreso de estudiantes."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Ingreso y Egreso"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar el ingreso y egreso de estudiantes."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -85,10 +94,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Alumnos"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar la información de los alumnos."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Alumnos"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar la información de los alumnos."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -99,10 +110,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Alumnos - En Proceso"
-                  description="Esta sección está en desarrollo. Aquí podrás ver los alumnos que están en proceso de titulación."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Alumnos - En Proceso"
+                    description="Esta sección está en desarrollo. Aquí podrás ver los alumnos que están en proceso de titulación."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -113,10 +126,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Alumnos - Titulados"
-                  description="Esta sección está en desarrollo. Aquí podrás ver los alumnos que ya están titulados."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Alumnos - Titulados"
+                    description="Esta sección está en desarrollo. Aquí podrás ver los alumnos que ya están titulados."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -127,10 +142,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Carreras"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar las carreras disponibles."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Carreras"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar las carreras disponibles."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -141,10 +158,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Reportes"
-                  description="Esta sección está en desarrollo. Aquí podrás generar y visualizar reportes del sistema."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Reportes"
+                    description="Esta sección está en desarrollo. Aquí podrás generar y visualizar reportes del sistema."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
@@ -155,10 +174,12 @@ export function AppRouter() {
           element={
             <AdminRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Accesos"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar los accesos y permisos del sistema."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Accesos"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar los accesos y permisos del sistema."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </AdminRoute>
           }
@@ -169,10 +190,12 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
-                <ComingSoonPage
-                  title="Respaldos"
-                  description="Esta sección está en desarrollo. Aquí podrás gestionar los respaldos del sistema."
-                />
+                <Suspense fallback={<PageLoader />}>
+                  <ComingSoonPage
+                    title="Respaldos"
+                    description="Esta sección está en desarrollo. Aquí podrás gestionar los respaldos del sistema."
+                  />
+                </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
           }
