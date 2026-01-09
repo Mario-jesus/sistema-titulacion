@@ -106,7 +106,7 @@ export function generateStudentId(): string {
 /**
  * Genera un nuevo número de control
  */
-export function generateControlNumber(generationId: string): string {
+export function generateControlNumber(_generationId: string): string {
   // Extraer año de la generación (asumiendo formato YYYY en el ID o usando fecha)
   // Por simplicidad, usar año actual
   const year = new Date().getFullYear().toString().slice(2);

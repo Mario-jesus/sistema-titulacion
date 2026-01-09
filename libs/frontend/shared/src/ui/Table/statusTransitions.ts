@@ -135,7 +135,6 @@ export function createStatusActions<T = any>(
       items.push({
         separator: true,
         label: 'separator',
-        onClick: () => {},
       });
     }
 

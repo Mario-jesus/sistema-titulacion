@@ -99,7 +99,7 @@ async function request<T>(
     const data = JSON.parse(text);
     logger.log(`API Response: ${JSON.stringify(data)}`);
     return data as T;
-  } catch (parseError) {
+  } catch {
     logger.error(`Failed to parse JSON response: ${text}`);
     throw new Error(
       `Respuesta inválida del servidor: ${text.substring(0, 100)}`

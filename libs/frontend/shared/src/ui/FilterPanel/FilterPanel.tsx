@@ -11,7 +11,7 @@ export interface FilterOption {
   label: string;
 }
 
-export interface FilterConfig<T = any> {
+export interface FilterConfig {
   /** Clave de la columna a filtrar (o del query parameter si se usa con backend) */
   columnKey: string;
   /** Etiqueta a mostrar */
@@ -24,11 +24,11 @@ export interface FilterConfig<T = any> {
   extractFromData?: boolean;
 }
 
-export interface FilterPanelProps<T = any> {
+export interface FilterPanelProps<T = Record<string, unknown>> {
   /** Datos de la tabla (opcional si todas las opciones están predefinidas) */
   data?: T[];
   /** Configuración de filtros por columna */
-  filterConfigs: FilterConfig<T>[];
+  filterConfigs: FilterConfig[];
   /** Valores seleccionados: { [columnKey]: string | string[] } */
   selectedFilters: Record<string, string | string[] | boolean>;
   /** Callback cuando cambian los filtros */
@@ -99,7 +99,7 @@ export interface FilterPanelProps<T = any> {
  * />
  * ```
  */
-export function FilterPanel<T = any>({
+export function FilterPanel<T = Record<string, unknown>>({
   data,
   filterConfigs,
   selectedFilters,
@@ -170,20 +170,18 @@ export function FilterPanel<T = any>({
     }
   };
 
-  const hasActiveFilters = Object.entries(selectedFilters).some(
-    ([key, value]) => {
-      if (typeof value === 'boolean') {
-        return value === true;
-      }
-      if (typeof value === 'string') {
-        return value !== '';
-      }
-      if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-      return false;
+  const hasActiveFilters = Object.entries(selectedFilters).some(([, value]) => {
+    if (typeof value === 'boolean') {
+      return value === true;
     }
-  );
+    if (typeof value === 'string') {
+      return value !== '';
+    }
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    return false;
+  });
 
   return (
     <div className="p-4 min-w-[240px] max-w-[300px]">

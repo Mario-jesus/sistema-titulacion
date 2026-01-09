@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 export interface DropdownMenuItem {
   /** Etiqueta del item */
   label: string;
-  /** Callback cuando se hace click en el item */
-  onClick: () => void;
+  /** Callback cuando se hace click en el item (no requerido para separadores) */
+  onClick?: () => void;
   /** Si el item está deshabilitado */
   disabled?: boolean;
   /** Si el item es un separador (solo muestra una línea) */
@@ -144,7 +144,7 @@ export function DropdownMenu({
           <button
             key={index}
             onClick={() => {
-              if (!item.disabled) {
+              if (!item.disabled && item.onClick) {
                 item.onClick();
                 onClose();
               }

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { FilterPanel, FilterPanelProps } from '../FilterPanel/FilterPanel';
 
-export interface FilterDropdownProps<T = any> extends FilterPanelProps<T> {
+export interface FilterDropdownProps<T = Record<string, unknown>>
+  extends FilterPanelProps<T> {
   /** Si el dropdown está abierto */
   isOpen: boolean;
   /** Callback cuando se cierra */
@@ -75,7 +76,7 @@ export interface FilterDropdownProps<T = any> extends FilterPanelProps<T> {
  * />
  * ```
  */
-export function FilterDropdown<T = any>({
+export function FilterDropdown<T = Record<string, unknown>>({
   isOpen,
   onClose,
   triggerRef,

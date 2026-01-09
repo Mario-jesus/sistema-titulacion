@@ -15,7 +15,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         await checkAuth();
         logger.info('Sesión restaurada exitosamente');
-      } catch (error) {
+      } catch {
         logger.info('No hay sesión activa');
       } finally {
         setIsInitialized(true);
