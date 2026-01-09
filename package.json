@@ -3,7 +3,17 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "init-msw": "node apps/sistema-titulacion-cliente/scripts/init-msw.js"
+    "init-msw": "node apps/sistema-titulacion-cliente/scripts/init-msw.js",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css,scss}": [
+      "prettier --write"
+    ]
   },
   "private": true,
   "dependencies": {
@@ -55,12 +65,14 @@
     "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.2",
     "jest-environment-jsdom": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
+    "lint-staged": "^16.2.7",
     "msw": "^2.12.4",
     "nx": "22.0.2",
     "prettier": "^2.6.2",

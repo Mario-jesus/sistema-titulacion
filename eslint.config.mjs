@@ -7,8 +7,15 @@ export default [
   {
     ignores: [
       '**/dist',
+      '**/node_modules',
+      '**/build',
+      '**/.nx',
+      '**/coverage',
+      '**/tmp',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
+      '**/*axios.js',
+      '**/mocks/handlers/axios.js',
     ],
   },
   {

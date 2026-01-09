@@ -5,7 +5,16 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist'],
+    ignores: [
+      '**/dist',
+      '**/node_modules',
+      '**/build',
+      '**/.nx',
+      '**/coverage',
+      '**/tmp',
+      '**/*axios.js',
+      '**/mocks/handlers/axios.js',
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
