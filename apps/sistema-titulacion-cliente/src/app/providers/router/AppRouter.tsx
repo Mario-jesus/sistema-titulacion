@@ -4,6 +4,7 @@ import { ComingSoonPage } from "@pages/ComingSoonPage";
 import { useAuth } from "@features/auth";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
+import { AdminRoute } from "./AdminRoute";
 import { LayoutWithSidebar } from "./LayoutWithSidebar";
 
 export function AppRouter() {
@@ -150,14 +151,14 @@ export function AppRouter() {
         <Route 
           path="/accesses" 
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <LayoutWithSidebar>
                 <ComingSoonPage 
                   title="Accesos"
                   description="Esta sección está en desarrollo. Aquí podrás gestionar los accesos y permisos del sistema."
                 />
               </LayoutWithSidebar>
-            </ProtectedRoute>
+            </AdminRoute>
           } 
         />
 

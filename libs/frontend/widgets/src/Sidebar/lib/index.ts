@@ -1,1 +1,1 @@
-export { createDefaultNavigationItems } from './navigationItems';
+export { createDefaultNavigationItems, filterNavigationItemsByRole } from './navigationItems';

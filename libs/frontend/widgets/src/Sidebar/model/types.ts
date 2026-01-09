@@ -1,10 +1,12 @@
 import { ReactNode } from 'react';
+import type { UserRole } from '@entities/user';
 
 export interface SidebarSubItem {
   id: string;
   label: string;
   path: string;
   badge?: number;
+  requiredRole?: UserRole;
 }
 
 export interface SidebarItem {
@@ -16,6 +18,7 @@ export interface SidebarItem {
   badge?: number;
   active?: boolean;
   subItems?: SidebarSubItem[];
+  requiredRole?: UserRole;
 }
 
 export interface SidebarProps {
@@ -25,7 +28,6 @@ export interface SidebarProps {
   onLogout?: () => void;
   logo?: ReactNode;
   className?: string;
-  // Props para móviles
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
 }

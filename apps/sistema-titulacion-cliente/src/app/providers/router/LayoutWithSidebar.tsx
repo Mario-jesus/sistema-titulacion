@@ -1,6 +1,6 @@
 import { ReactNode, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Sidebar, createDefaultNavigationItems } from "@widgets/Sidebar";
+import { Sidebar, createDefaultNavigationItems, filterNavigationItemsByRole } from "@widgets/Sidebar";
 import type { SidebarItem } from "@widgets/Sidebar";
 import { Header } from "@widgets/Header";
 import { useAuth } from "@features/auth";
@@ -20,7 +20,13 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const navigationItems = useMemo(() => createDefaultNavigationItems(), []);
+
+  // Filtrar los items de navegación según el rol del usuario
+  const navigationItems = useMemo(() => {
+    const allItems = createDefaultNavigationItems();
+    return filterNavigationItemsByRole(allItems, user?.role);
+  }, [user?.role]);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleMobileMenuToggle = () => {

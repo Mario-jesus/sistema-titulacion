@@ -1,6 +1,6 @@
 export { Sidebar } from './ui';
 export type { SidebarItem, SidebarProps } from './model';
-export { createDefaultNavigationItems } from './lib';
+export { createDefaultNavigationItems, filterNavigationItemsByRole } from './lib';
 export {
   PanelIcon,
   OptionsIcon,
