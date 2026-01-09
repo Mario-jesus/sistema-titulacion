@@ -27,14 +27,21 @@ interface UpdateGenerationRequest {
   isActive?: boolean;
 }
 
+interface PaginationData {
+  total: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: Generation[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 export const generationsHandlers = [
@@ -44,17 +51,86 @@ export const generationsHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
 
-    // Filtrar solo activas si se solicita
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = ['name', 'startYear', 'endYear', 'createdAt', 'isActive'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'startYear';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'startYear';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+
     let filteredData = activeOnly
       ? mockGenerations.filter((gen: Generation) => gen.isActive)
       : [...mockGenerations];
 
+    // Búsqueda por texto (busca en nombre)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((gen: Generation) => {
+        return gen.name?.toLowerCase().includes(searchLower) ?? false;
+      });
+    }
+
+    // Ordenamiento
+    filteredData.sort((a, b) => {
+      let aValue: string | number | boolean | Date | null;
+      let bValue: string | number | boolean | Date | null;
+
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name?.toLowerCase() ?? '';
+          bValue = b.name?.toLowerCase() ?? '';
+          break;
+        case 'startYear':
+          aValue = a.startYear;
+          bValue = b.startYear;
+          break;
+        case 'endYear':
+          aValue = a.endYear;
+          bValue = b.endYear;
+          break;
+        case 'createdAt':
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+          break;
+        case 'isActive':
+          aValue = a.isActive ? 1 : 0;
+          bValue = b.isActive ? 1 : 0;
+          break;
+        default:
+          aValue = a.startYear;
+          bValue = b.startYear;
+      }
+
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      }
+
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1;
     const paginatedData = filteredData.slice(offset, offset + limit);
+
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData.map((gen) => ({
@@ -67,8 +143,13 @@ export const generationsHandlers = [
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 

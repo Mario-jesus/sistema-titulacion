@@ -45,14 +45,21 @@ interface UpdateStudentRequest {
   status?: StudentStatus;
 }
 
+interface PaginationData {
+  total: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: Student[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 export const studentsHandlers = [
@@ -62,10 +69,21 @@ export const studentsHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
     const status = url.searchParams.get('status');
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = ['firstName', 'paternalLastName', 'controlNumber', 'email', 'birthDate', 'createdAt', 'isEgressed', 'status'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'paternalLastName';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'paternalLastName';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockStudents];
 
@@ -84,9 +102,90 @@ export const studentsHandlers = [
       filteredData = filteredData.filter((student: Student) => student.status === status);
     }
 
+    // Búsqueda por texto (busca en nombre, apellidos, número de control, email)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((student: Student) => {
+        const fullName = `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.toLowerCase();
+        const controlMatch = student.controlNumber?.toLowerCase().includes(searchLower) ?? false;
+        const emailMatch = student.email?.toLowerCase().includes(searchLower) ?? false;
+        const nameMatch = fullName.includes(searchLower);
+        return controlMatch || emailMatch || nameMatch;
+      });
+    }
+
+    // Ordenamiento
+    filteredData.sort((a, b) => {
+      let aValue: string | number | boolean | Date | null;
+      let bValue: string | number | boolean | Date | null;
+
+      switch (sortBy) {
+        case 'firstName':
+          aValue = a.firstName?.toLowerCase() ?? '';
+          bValue = b.firstName?.toLowerCase() ?? '';
+          break;
+        case 'paternalLastName':
+          aValue = a.paternalLastName?.toLowerCase() ?? '';
+          bValue = b.paternalLastName?.toLowerCase() ?? '';
+          break;
+        case 'controlNumber':
+          aValue = a.controlNumber?.toLowerCase() ?? '';
+          bValue = b.controlNumber?.toLowerCase() ?? '';
+          break;
+        case 'email':
+          aValue = a.email?.toLowerCase() ?? '';
+          bValue = b.email?.toLowerCase() ?? '';
+          break;
+        case 'birthDate':
+          aValue = a.birthDate;
+          bValue = b.birthDate;
+          break;
+        case 'createdAt':
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+          break;
+        case 'isEgressed':
+          aValue = a.isEgressed ? 1 : 0;
+          bValue = b.isEgressed ? 1 : 0;
+          break;
+        case 'status':
+          aValue = a.status?.toLowerCase() ?? '';
+          bValue = b.status?.toLowerCase() ?? '';
+          break;
+        default:
+          aValue = a.paternalLastName?.toLowerCase() ?? '';
+          bValue = b.paternalLastName?.toLowerCase() ?? '';
+      }
+
+      // Manejar valores null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Comparación
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      }
+
+      // Aplicar orden (asc o desc)
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1;
     const paginatedData = filteredData.slice(offset, offset + limit);
+
+    // Calcular pagingCounter (número del primer item de esta página)
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+
+    // Asegurar que page no exceda totalPages
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData.map((student) => ({
@@ -98,8 +197,13 @@ export const studentsHandlers = [
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 

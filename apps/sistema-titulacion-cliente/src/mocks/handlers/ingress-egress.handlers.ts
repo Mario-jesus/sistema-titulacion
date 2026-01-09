@@ -10,14 +10,21 @@ import { mockCareers } from '../data/careers';
  * Handlers para endpoints de ingreso y egreso
  */
 
+interface PaginationData {
+  total: number;       // Total de registros
+  limit: number;       // Items por página
+  totalPages: number;  // Total de páginas calculadas
+  page: number;        // Página actual (Mejora sobre offset)
+  pagingCounter: number; // El número del primer item de esta página (ej. 11)
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: IngressEgress[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 /**
@@ -111,9 +118,20 @@ export const ingressEgressHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10)); // Página actual (default: 1, mínimo: 1)
+    const offset = (page - 1) * limit; // Calcular offset desde page para el slice interno
+
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || ''; // Búsqueda por texto
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = ['careerName', 'generationName', 'admissionNumber', 'egressNumber'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'careerName';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'careerName';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc'; // Normalizar a 'asc' o 'desc'
 
     let data = calculateIngressEgressData();
 
@@ -127,17 +145,83 @@ export const ingressEgressHandlers = [
       data = data.filter((item) => item.generationId === generationId);
     }
 
+    // Búsqueda por texto (busca en nombre de carrera y generación)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      data = data.filter((item) => {
+        const careerMatch = item.careerName?.toLowerCase().includes(searchLower) ?? false;
+        const generationMatch = item.generationName?.toLowerCase().includes(searchLower) ?? false;
+        return careerMatch || generationMatch;
+      });
+    }
+
+    // Ordenamiento
+    data.sort((a, b) => {
+      let aValue: string | number | null;
+      let bValue: string | number | null;
+
+      switch (sortBy) {
+        case 'careerName':
+          aValue = a.careerName?.toLowerCase() ?? '';
+          bValue = b.careerName?.toLowerCase() ?? '';
+          break;
+        case 'generationName':
+          aValue = a.generationName?.toLowerCase() ?? '';
+          bValue = b.generationName?.toLowerCase() ?? '';
+          break;
+        case 'admissionNumber':
+          aValue = a.admissionNumber;
+          bValue = b.admissionNumber;
+          break;
+        case 'egressNumber':
+          aValue = a.egressNumber;
+          bValue = b.egressNumber;
+          break;
+        default:
+          aValue = a.careerName?.toLowerCase() ?? '';
+          bValue = b.careerName?.toLowerCase() ?? '';
+      }
+
+      // Manejar valores null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Comparación
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      }
+
+      // Aplicar orden (asc o desc)
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = data.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1; // Al menos 1 página aunque esté vacía
     const paginatedData = data.slice(offset, offset + limit);
+
+    // Calcular pagingCounter (número del primer item de esta página)
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+
+    // Asegurar que page no exceda totalPages
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData,
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 

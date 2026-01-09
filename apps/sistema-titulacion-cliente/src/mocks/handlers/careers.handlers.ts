@@ -30,14 +30,21 @@ interface UpdateCareerRequest {
   isActive?: boolean;
 }
 
+interface PaginationData {
+  total: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: Career[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 export const careersHandlers = [
@@ -47,17 +54,86 @@ export const careersHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
 
-    // Filtrar solo activas si se solicita
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = ['name', 'shortName', 'createdAt', 'isActive'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'name';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'name';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+
     let filteredData = activeOnly
       ? mockCareers.filter((career: Career) => career.isActive)
       : [...mockCareers];
 
+    // Búsqueda por texto (busca en nombre y nombre corto)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((career: Career) => {
+        const nameMatch = career.name?.toLowerCase().includes(searchLower) ?? false;
+        const shortNameMatch = career.shortName?.toLowerCase().includes(searchLower) ?? false;
+        return nameMatch || shortNameMatch;
+      });
+    }
+
+    // Ordenamiento
+    filteredData.sort((a, b) => {
+      let aValue: string | number | boolean | Date | null;
+      let bValue: string | number | boolean | Date | null;
+
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name?.toLowerCase() ?? '';
+          bValue = b.name?.toLowerCase() ?? '';
+          break;
+        case 'shortName':
+          aValue = a.shortName?.toLowerCase() ?? '';
+          bValue = b.shortName?.toLowerCase() ?? '';
+          break;
+        case 'createdAt':
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+          break;
+        case 'isActive':
+          aValue = a.isActive ? 1 : 0;
+          bValue = b.isActive ? 1 : 0;
+          break;
+        default:
+          aValue = a.name?.toLowerCase() ?? '';
+          bValue = b.name?.toLowerCase() ?? '';
+      }
+
+      // Manejar valores null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Comparación
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      }
+
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1;
     const paginatedData = filteredData.slice(offset, offset + limit);
+
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData.map((career) => ({
@@ -73,8 +149,13 @@ export const careersHandlers = [
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 

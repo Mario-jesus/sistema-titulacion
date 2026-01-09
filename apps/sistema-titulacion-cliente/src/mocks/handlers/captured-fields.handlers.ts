@@ -26,14 +26,21 @@ interface UpdateCapturedFieldsRequest {
   company?: string;
 }
 
+interface PaginationData {
+  total: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: CapturedFields[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 export const capturedFieldsHandlers = [
@@ -43,21 +50,85 @@ export const capturedFieldsHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
     const studentId = url.searchParams.get('studentId');
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    const validSortFields = ['projectName', 'company', 'processDate', 'createdAt'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'processDate';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'processDate';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockCapturedFields];
 
-    // Filtrar por estudiante si se especifica
     if (studentId) {
       filteredData = filteredData.filter(
         (fields: CapturedFields) => fields.studentId === studentId
       );
     }
 
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((fields: CapturedFields) => {
+        const projectMatch = fields.projectName?.toLowerCase().includes(searchLower) ?? false;
+        const companyMatch = fields.company?.toLowerCase().includes(searchLower) ?? false;
+        return projectMatch || companyMatch;
+      });
+    }
+
+    filteredData.sort((a, b) => {
+      let aValue: string | number | Date | null;
+      let bValue: string | number | Date | null;
+
+      switch (sortBy) {
+        case 'projectName':
+          aValue = a.projectName?.toLowerCase() ?? '';
+          bValue = b.projectName?.toLowerCase() ?? '';
+          break;
+        case 'company':
+          aValue = a.company?.toLowerCase() ?? '';
+          bValue = b.company?.toLowerCase() ?? '';
+          break;
+        case 'processDate':
+          aValue = a.processDate;
+          bValue = b.processDate;
+          break;
+        case 'createdAt':
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+          break;
+        default:
+          aValue = a.processDate;
+          bValue = b.processDate;
+      }
+
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      }
+
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1;
     const paginatedData = filteredData.slice(offset, offset + limit);
+
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData.map((fields) => ({
@@ -69,8 +140,13 @@ export const capturedFieldsHandlers = [
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 

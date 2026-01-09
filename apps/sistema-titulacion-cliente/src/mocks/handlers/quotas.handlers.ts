@@ -30,14 +30,21 @@ interface UpdateQuotaRequest {
   isActive?: boolean;
 }
 
+interface PaginationData {
+  total: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: Quota[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 export const quotasHandlers = [
@@ -47,31 +54,87 @@ export const quotasHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    const validSortFields = ['newAdmissionQuotas', 'createdAt', 'isActive'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'createdAt';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'createdAt';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockQuotas];
 
-    // Filtrar por carrera si se especifica
     if (careerId) {
       filteredData = filteredData.filter((quota: Quota) => quota.careerId === careerId);
     }
 
-    // Filtrar por generación si se especifica
     if (generationId) {
       filteredData = filteredData.filter((quota: Quota) => quota.generationId === generationId);
     }
 
-    // Filtrar solo activas si se solicita
     if (activeOnly) {
       filteredData = filteredData.filter((quota: Quota) => quota.isActive);
     }
 
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((quota: Quota) => {
+        return quota.description?.toLowerCase().includes(searchLower) ?? false;
+      });
+    }
+
+    filteredData.sort((a, b) => {
+      let aValue: string | number | boolean | Date | null;
+      let bValue: string | number | boolean | Date | null;
+
+      switch (sortBy) {
+        case 'newAdmissionQuotas':
+          aValue = a.newAdmissionQuotas;
+          bValue = b.newAdmissionQuotas;
+          break;
+        case 'createdAt':
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+          break;
+        case 'isActive':
+          aValue = a.isActive ? 1 : 0;
+          bValue = b.isActive ? 1 : 0;
+          break;
+        default:
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+      }
+
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      }
+
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1;
     const paginatedData = filteredData.slice(offset, offset + limit);
+
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData.map((quota) => ({
@@ -82,8 +145,13 @@ export const quotasHandlers = [
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 

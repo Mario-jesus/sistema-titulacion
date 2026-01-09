@@ -33,9 +33,17 @@ const ChevronRightIcon = ({ className = '', size = 20 }: IconProps) => (
 
 export interface PaginationProps {
   /** Página actual (1-indexed) */
-  currentPage: number;
+  page: number;
   /** Número total de páginas */
   totalPages: number;
+  /** Si hay página anterior */
+  hasPrevPage: boolean;
+  /** Si hay página siguiente */
+  hasNextPage: boolean;
+  /** Número de página anterior (null si no hay) */
+  prevPage: number | null;
+  /** Número de página siguiente (null si no hay) */
+  nextPage: number | null;
   /** Callback cuando cambia la página */
   onPageChange: (page: number) => void;
   /** Número máximo de páginas visibles a cada lado de la página actual */
@@ -47,20 +55,29 @@ export interface PaginationProps {
 /**
  * Componente de paginación con soporte para modo claro y oscuro
  * 
+ * Requiere la estructura de paginación completa del backend que incluye
+ * `page`, `totalPages`, `hasPrevPage`, `hasNextPage`, `prevPage`, y `nextPage`.
+ * 
  * @example
  * ```tsx
  * <Pagination
- *   currentPage={1}
- *   totalPages={68}
- *   onPageChange={(page) => console.log(page)}
- *   siblingCount={1}
- *   className="..."
+ *   page={pagination.page}
+ *   totalPages={pagination.totalPages}
+ *   hasPrevPage={pagination.hasPrevPage}
+ *   hasNextPage={pagination.hasNextPage}
+ *   prevPage={pagination.prevPage}
+ *   nextPage={pagination.nextPage}
+ *   onPageChange={(page) => handlePageChange(page)}
  * />
  * ```
  */
 export function Pagination({
-  currentPage,
+  page,
   totalPages,
+  hasPrevPage,
+  hasNextPage,
+  prevPage,
+  nextPage,
   onPageChange,
   siblingCount = 1,
   className = '',
@@ -69,8 +86,8 @@ export function Pagination({
     const pages: (number | 'ellipsis')[] = [];
 
     // Calcular el rango ideal: siblingCount páginas a cada lado de la actual
-    const idealLeft = currentPage - siblingCount;
-    const idealRight = currentPage + siblingCount;
+    const idealLeft = page - siblingCount;
+    const idealRight = page + siblingCount;
 
     // Calcular el rango real, ajustado a los límites
     let leftSiblingIndex = Math.max(idealLeft, 1);
@@ -133,23 +150,23 @@ export function Pagination({
     }
 
     return pages;
-  }, [currentPage, totalPages, siblingCount]);
+  }, [page, totalPages, siblingCount]);
 
   const handlePrevious = () => {
-    if (currentPage > 1) {
-      onPageChange(currentPage - 1);
+    if (prevPage !== null) {
+      onPageChange(prevPage);
     }
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
+    if (nextPage !== null) {
+      onPageChange(nextPage);
     }
   };
 
-  const handlePageClick = (page: number) => {
-    if (page !== currentPage) {
-      onPageChange(page);
+  const handlePageClick = (pageNumber: number) => {
+    if (pageNumber !== page) {
+      onPageChange(pageNumber);
     }
   };
 
@@ -157,8 +174,8 @@ export function Pagination({
     return null;
   }
 
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === totalPages;
+  const isFirstPage = !hasPrevPage;
+  const isLastPage = !hasNextPage;
 
   return (
     <nav
@@ -188,8 +205,8 @@ export function Pagination({
 
       {/* Números de página */}
       <div className="flex items-center gap-1">
-        {pageNumbers.map((page, index) => {
-          if (page === 'ellipsis') {
+        {pageNumbers.map((pageNumber, index) => {
+          if (pageNumber === 'ellipsis') {
             return (
               <span
                 key={`ellipsis-${index}`}
@@ -201,12 +218,12 @@ export function Pagination({
             );
           }
 
-          const isActive = page === currentPage;
+          const isActive = pageNumber === page;
 
           return (
             <button
-              key={page}
-              onClick={() => handlePageClick(page)}
+              key={pageNumber}
+              onClick={() => handlePageClick(pageNumber)}
               className={`
                 min-w-10 h-10 px-3 rounded-lg
                 text-sm font-medium
@@ -216,10 +233,10 @@ export function Pagination({
                     : 'cursor-pointer text-(--color-base-secondary-typo) hover:text-(--color-base-primary-typo) hover:bg-gray-2-light/80 dark:hover:bg-gray-3-dark/80 active:bg-gray-3-light/80 dark:active:bg-gray-5-dark/50'
                 }
               `}
-              aria-label={`Ir a la página ${page}`}
+              aria-label={`Ir a la página ${pageNumber}`}
               aria-current={isActive ? 'page' : undefined}
             >
-              {page}
+              {pageNumber}
             </button>
           );
         })}

@@ -43,14 +43,21 @@ interface ChangePasswordRequest {
   newPassword: string;
 }
 
+interface PaginationData {
+  total: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
+}
+
 interface ListResponse {
   data: User[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    totalPages: number;
-  };
+  pagination: PaginationData;
 }
 
 /**
@@ -116,16 +123,89 @@ export const usersHandlers = [
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
+    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    const validSortFields = ['username', 'email', 'role', 'createdAt', 'lastLogin', 'isActive'];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'username';
+    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'username';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = activeOnly
       ? mockUsers.filter((user: User) => user.isActive)
       : [...mockUsers];
 
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((user: User) => {
+        const usernameMatch = user.username?.toLowerCase().includes(searchLower) ?? false;
+        const emailMatch = user.email?.toLowerCase().includes(searchLower) ?? false;
+        return usernameMatch || emailMatch;
+      });
+    }
+
+    filteredData.sort((a, b) => {
+      let aValue: string | number | boolean | Date | null;
+      let bValue: string | number | boolean | Date | null;
+
+      switch (sortBy) {
+        case 'username':
+          aValue = a.username?.toLowerCase() ?? '';
+          bValue = b.username?.toLowerCase() ?? '';
+          break;
+        case 'email':
+          aValue = a.email?.toLowerCase() ?? '';
+          bValue = b.email?.toLowerCase() ?? '';
+          break;
+        case 'role':
+          aValue = a.role?.toLowerCase() ?? '';
+          bValue = b.role?.toLowerCase() ?? '';
+          break;
+        case 'createdAt':
+          aValue = a.createdAt;
+          bValue = b.createdAt;
+          break;
+        case 'lastLogin':
+          aValue = a.lastLogin;
+          bValue = b.lastLogin;
+          break;
+        case 'isActive':
+          aValue = a.isActive ? 1 : 0;
+          bValue = b.isActive ? 1 : 0;
+          break;
+        default:
+          aValue = a.username?.toLowerCase() ?? '';
+          bValue = b.username?.toLowerCase() ?? '';
+      }
+
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        comparison = aValue.getTime() - bValue.getTime();
+      }
+
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
     const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit) || 1;
     const paginatedData = filteredData.slice(offset, offset + limit);
+
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
 
     const response: ListResponse = {
       data: paginatedData.map((user) => ({
@@ -137,8 +217,13 @@ export const usersHandlers = [
       pagination: {
         total,
         limit,
-        offset,
         totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
       },
     };
 
