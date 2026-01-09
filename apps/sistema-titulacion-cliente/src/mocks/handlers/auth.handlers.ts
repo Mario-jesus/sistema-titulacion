@@ -41,7 +41,8 @@ export const authHandlers = [
     if (checkRateLimit(request, 'LOGIN')) {
       return HttpResponse.json(
         {
-          error: 'Demasiados intentos de inicio de sesión. Por favor intenta más tarde.',
+          error:
+            'Demasiados intentos de inicio de sesión. Por favor intenta más tarde.',
           code: 'TOO_MANY_REQUESTS',
         },
         { status: 429 }
@@ -124,7 +125,8 @@ export const authHandlers = [
     if (checkRateLimit(request, 'REFRESH')) {
       return HttpResponse.json(
         {
-          error: 'Demasiados intentos de refrescar token. Por favor intenta más tarde.',
+          error:
+            'Demasiados intentos de refrescar token. Por favor intenta más tarde.',
           code: 'TOO_MANY_REQUESTS',
         },
         { status: 429 }
@@ -269,7 +271,9 @@ export const authHandlers = [
     try {
       const body = (await request.json()) as LogoutRequest;
       if (body.refreshToken) {
-        const refreshTokenUserId = extractUserIdFromRefreshToken(body.refreshToken);
+        const refreshTokenUserId = extractUserIdFromRefreshToken(
+          body.refreshToken
+        );
         if (refreshTokenUserId) {
           invalidateRefreshToken(refreshTokenUserId);
         }

@@ -26,21 +26,28 @@ export function useAuth() {
   const dispatch = useDispatch<AppDispatch>();
 
   const user = useSelector((state: AppState) => state.user.currentUser);
-  const isAuthenticated = useSelector((state: AppState) => state.user.isAuthenticated);
+  const isAuthenticated = useSelector(
+    (state: AppState) => state.user.isAuthenticated
+  );
 
   const isLoading = useSelector((state: AppState) => state.auth.isLoading);
   const error = useSelector((state: AppState) => state.auth.error);
-  const isCheckingAuth = useSelector((state: AppState) => state.auth.isCheckingAuth);
+  const isCheckingAuth = useSelector(
+    (state: AppState) => state.auth.isCheckingAuth
+  );
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    const result = await dispatch(loginThunk(credentials));
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      const result = await dispatch(loginThunk(credentials));
 
-    if (loginThunk.fulfilled.match(result)) {
-      return result.payload;
-    } else {
-      throw new Error(result.payload || 'Error al iniciar sesión');
-    }
-  }, [dispatch]);
+      if (loginThunk.fulfilled.match(result)) {
+        return result.payload;
+      } else {
+        throw new Error(result.payload || 'Error al iniciar sesión');
+      }
+    },
+    [dispatch]
+  );
 
   const logout = useCallback(async () => {
     const result = await dispatch(logoutThunk());

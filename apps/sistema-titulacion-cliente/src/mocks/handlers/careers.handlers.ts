@@ -2,11 +2,7 @@ import { http, HttpResponse } from 'msw';
 import type { Career } from '@entities/career';
 import { buildApiUrl, delay } from '../utils';
 import { findModalityById } from '../data/modalities';
-import {
-  mockCareers,
-  findCareerById,
-  generateCareerId,
-} from '../data';
+import { mockCareers, findCareerById, generateCareerId } from '../data';
 
 /**
  * Handlers para endpoints de carreras
@@ -58,15 +54,19 @@ export const careersHandlers = [
     const offset = (page - 1) * limit;
 
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     // Validar y normalizar parámetros de ordenamiento
     const validSortFields = ['name', 'shortName', 'createdAt', 'isActive'];
     const requestedSortBy = url.searchParams.get('sortBy') || 'name';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'name';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'name';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = activeOnly
       ? mockCareers.filter((career: Career) => career.isActive)
@@ -76,8 +76,10 @@ export const careersHandlers = [
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
       filteredData = filteredData.filter((career: Career) => {
-        const nameMatch = career.name?.toLowerCase().includes(searchLower) ?? false;
-        const shortNameMatch = career.shortName?.toLowerCase().includes(searchLower) ?? false;
+        const nameMatch =
+          career.name?.toLowerCase().includes(searchLower) ?? false;
+        const shortNameMatch =
+          career.shortName?.toLowerCase().includes(searchLower) ?? false;
         return nameMatch || shortNameMatch;
       });
     }
@@ -138,11 +140,13 @@ export const careersHandlers = [
     const response: ListResponse = {
       data: paginatedData.map((career) => ({
         ...career,
-        modality: career.modality ? {
-          ...career.modality,
-          createdAt: career.modality.createdAt.toISOString(),
-          updatedAt: career.modality.updatedAt.toISOString(),
-        } : undefined,
+        modality: career.modality
+          ? {
+              ...career.modality,
+              createdAt: career.modality.createdAt.toISOString(),
+              updatedAt: career.modality.updatedAt.toISOString(),
+            }
+          : undefined,
         createdAt: career.createdAt.toISOString(),
         updatedAt: career.updatedAt.toISOString(),
       })) as unknown as Career[],
@@ -181,11 +185,13 @@ export const careersHandlers = [
 
     return HttpResponse.json({
       ...career,
-      modality: career.modality ? {
-        ...career.modality,
-        createdAt: career.modality.createdAt.toISOString(),
-        updatedAt: career.modality.updatedAt.toISOString(),
-      } : undefined,
+      modality: career.modality
+        ? {
+            ...career.modality,
+            createdAt: career.modality.createdAt.toISOString(),
+            updatedAt: career.modality.updatedAt.toISOString(),
+          }
+        : undefined,
       createdAt: career.createdAt.toISOString(),
       updatedAt: career.updatedAt.toISOString(),
     });
@@ -256,7 +262,8 @@ export const careersHandlers = [
 
     // Verificar duplicados por nombre corto
     const existsByShortName = mockCareers.some(
-      (career: Career) => career.shortName.toLowerCase() === body.shortName.toLowerCase()
+      (career: Career) =>
+        career.shortName.toLowerCase() === body.shortName.toLowerCase()
     );
     if (existsByShortName) {
       return HttpResponse.json(
@@ -285,11 +292,13 @@ export const careersHandlers = [
     return HttpResponse.json(
       {
         ...newCareer,
-        modality: newCareer.modality ? {
-          ...newCareer.modality,
-          createdAt: newCareer.modality.createdAt.toISOString(),
-          updatedAt: newCareer.modality.updatedAt.toISOString(),
-        } : undefined,
+        modality: newCareer.modality
+          ? {
+              ...newCareer.modality,
+              createdAt: newCareer.modality.createdAt.toISOString(),
+              updatedAt: newCareer.modality.updatedAt.toISOString(),
+            }
+          : undefined,
         createdAt: newCareer.createdAt.toISOString(),
         updatedAt: newCareer.updatedAt.toISOString(),
       },
@@ -317,7 +326,10 @@ export const careersHandlers = [
     const body = (await request.json()) as UpdateCareerRequest;
 
     // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
+    if (
+      body.name !== undefined &&
+      (!body.name || body.name.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -327,7 +339,10 @@ export const careersHandlers = [
       );
     }
 
-    if (body.shortName !== undefined && (!body.shortName || body.shortName.trim().length === 0)) {
+    if (
+      body.shortName !== undefined &&
+      (!body.shortName || body.shortName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre corto no puede estar vacío',
@@ -353,7 +368,8 @@ export const careersHandlers = [
     // Verificar duplicados por nombre si se cambia
     if (body.name && body.name.toLowerCase() !== career.name.toLowerCase()) {
       const exists = mockCareers.some(
-        (c: Career) => c.id !== id && c.name.toLowerCase() === body.name!.toLowerCase()
+        (c: Career) =>
+          c.id !== id && c.name.toLowerCase() === body.name!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -367,9 +383,14 @@ export const careersHandlers = [
     }
 
     // Verificar duplicados por nombre corto si se cambia
-    if (body.shortName && body.shortName.toLowerCase() !== career.shortName.toLowerCase()) {
+    if (
+      body.shortName &&
+      body.shortName.toLowerCase() !== career.shortName.toLowerCase()
+    ) {
       const exists = mockCareers.some(
-        (c: Career) => c.id !== id && c.shortName.toLowerCase() === body.shortName!.toLowerCase()
+        (c: Career) =>
+          c.id !== id &&
+          c.shortName.toLowerCase() === body.shortName!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -386,18 +407,23 @@ export const careersHandlers = [
     career.name = body.name?.trim() ?? career.name;
     career.shortName = body.shortName?.trim() ?? career.shortName;
     career.modalityId = body.modalityId ?? career.modalityId;
-    career.modality = body.modality || (body.modalityId ? findModalityById(body.modalityId) : career.modality);
-    career.description = body.description !== undefined ? body.description : career.description;
+    career.modality =
+      body.modality ||
+      (body.modalityId ? findModalityById(body.modalityId) : career.modality);
+    career.description =
+      body.description !== undefined ? body.description : career.description;
     career.isActive = body.isActive ?? career.isActive;
     career.updatedAt = new Date();
 
     return HttpResponse.json({
       ...career,
-      modality: career.modality ? {
-        ...career.modality,
-        createdAt: career.modality.createdAt.toISOString(),
-        updatedAt: career.modality.updatedAt.toISOString(),
-      } : undefined,
+      modality: career.modality
+        ? {
+            ...career.modality,
+            createdAt: career.modality.createdAt.toISOString(),
+            updatedAt: career.modality.updatedAt.toISOString(),
+          }
+        : undefined,
       createdAt: career.createdAt.toISOString(),
       updatedAt: career.updatedAt.toISOString(),
     });
@@ -423,7 +449,10 @@ export const careersHandlers = [
     const body = (await request.json()) as Partial<UpdateCareerRequest>;
 
     // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
+    if (
+      body.name !== undefined &&
+      (!body.name || body.name.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -433,7 +462,10 @@ export const careersHandlers = [
       );
     }
 
-    if (body.shortName !== undefined && (!body.shortName || body.shortName.trim().length === 0)) {
+    if (
+      body.shortName !== undefined &&
+      (!body.shortName || body.shortName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre corto no puede estar vacío',
@@ -459,7 +491,8 @@ export const careersHandlers = [
     // Verificar duplicados por nombre si se cambia
     if (body.name && body.name.toLowerCase() !== career.name.toLowerCase()) {
       const exists = mockCareers.some(
-        (c: Career) => c.id !== id && c.name.toLowerCase() === body.name!.toLowerCase()
+        (c: Career) =>
+          c.id !== id && c.name.toLowerCase() === body.name!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -473,9 +506,14 @@ export const careersHandlers = [
     }
 
     // Verificar duplicados por nombre corto si se cambia
-    if (body.shortName && body.shortName.toLowerCase() !== career.shortName.toLowerCase()) {
+    if (
+      body.shortName &&
+      body.shortName.toLowerCase() !== career.shortName.toLowerCase()
+    ) {
       const exists = mockCareers.some(
-        (c: Career) => c.id !== id && c.shortName.toLowerCase() === body.shortName!.toLowerCase()
+        (c: Career) =>
+          c.id !== id &&
+          c.shortName.toLowerCase() === body.shortName!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -509,11 +547,13 @@ export const careersHandlers = [
 
     return HttpResponse.json({
       ...career,
-      modality: career.modality ? {
-        ...career.modality,
-        createdAt: career.modality.createdAt.toISOString(),
-        updatedAt: career.modality.updatedAt.toISOString(),
-      } : undefined,
+      modality: career.modality
+        ? {
+            ...career.modality,
+            createdAt: career.modality.createdAt.toISOString(),
+            updatedAt: career.modality.updatedAt.toISOString(),
+          }
+        : undefined,
       createdAt: career.createdAt.toISOString(),
       updatedAt: career.updatedAt.toISOString(),
     });
@@ -565,11 +605,13 @@ export const careersHandlers = [
 
     return HttpResponse.json({
       ...career,
-      modality: career.modality ? {
-        ...career.modality,
-        createdAt: career.modality.createdAt.toISOString(),
-        updatedAt: career.modality.updatedAt.toISOString(),
-      } : undefined,
+      modality: career.modality
+        ? {
+            ...career.modality,
+            createdAt: career.modality.createdAt.toISOString(),
+            updatedAt: career.modality.updatedAt.toISOString(),
+          }
+        : undefined,
       createdAt: career.createdAt.toISOString(),
       updatedAt: career.updatedAt.toISOString(),
     });
@@ -597,11 +639,13 @@ export const careersHandlers = [
 
     return HttpResponse.json({
       ...career,
-      modality: career.modality ? {
-        ...career.modality,
-        createdAt: career.modality.createdAt.toISOString(),
-        updatedAt: career.modality.updatedAt.toISOString(),
-      } : undefined,
+      modality: career.modality
+        ? {
+            ...career.modality,
+            createdAt: career.modality.createdAt.toISOString(),
+            updatedAt: career.modality.updatedAt.toISOString(),
+          }
+        : undefined,
       createdAt: career.createdAt.toISOString(),
       updatedAt: career.updatedAt.toISOString(),
     });

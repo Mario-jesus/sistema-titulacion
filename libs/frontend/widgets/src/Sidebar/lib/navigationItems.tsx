@@ -86,7 +86,7 @@ export const createDefaultNavigationItems = (): SidebarItem[] => [
 /**
  * Filtra los items de navegación según el rol del usuario.
  * Solo muestra los items y subitems que el usuario tiene permiso para ver.
- * 
+ *
  * @param items - Lista de items de navegación
  * @param userRole - Rol del usuario actual
  * @returns Lista filtrada de items

@@ -35,7 +35,7 @@ function compareValues(a: any, b: any): number {
   // Comparar strings (case-insensitive)
   const aStr = String(a).toLowerCase();
   const bStr = String(b).toLowerCase();
-  
+
   if (aStr < bStr) return -1;
   if (aStr > bStr) return 1;
   return 0;
@@ -43,12 +43,12 @@ function compareValues(a: any, b: any): number {
 
 /**
  * Ordena un array de datos basándose en una columna y dirección
- * 
+ *
  * @param data - Array de datos a ordenar
  * @param columnKey - Clave de la columna (soporta notación de punto para valores anidados)
  * @param direction - Dirección del ordenamiento ('asc', 'desc', o null)
  * @returns Nuevo array ordenado (no muta el original)
- * 
+ *
  * @example
  * ```tsx
  * const sorted = sortTableData(data, 'nombre', 'asc');

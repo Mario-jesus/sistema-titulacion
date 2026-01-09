@@ -14,18 +14,18 @@ export interface FilterDropdownProps<T = any> extends FilterPanelProps<T> {
 
 /**
  * Dropdown que muestra un panel de filtros
- * 
+ *
  * Este componente posiciona un FilterPanel como un dropdown cerca del botón
  * que lo activa, similar a un menú desplegable.
- * 
+ *
  * Soporta todos los tipos de filtros del FilterPanel: checkbox, toggle y select.
  * Puede trabajar con datos locales o con opciones predefinidas del backend.
- * 
+ *
  * @example
  * // Uso básico con datos locales
  * ```tsx
  * const filterButtonRef = useRef<HTMLButtonElement>(null);
- * 
+ *
  * <FilterDropdown
  *   isOpen={isFiltersOpen}
  *   onClose={() => setIsFiltersOpen(false)}
@@ -39,7 +39,7 @@ export interface FilterDropdownProps<T = any> extends FilterPanelProps<T> {
  *   onReset={handleResetFilters}
  * />
  * ```
- * 
+ *
  * @example
  * // Uso con opciones predefinidas del backend
  * ```tsx
@@ -105,7 +105,7 @@ export function FilterDropdown<T = any>({
 
       // Posición horizontal: alineado a la derecha del botón
       let x = triggerRect.right - dropdownRect.width;
-      
+
       // Si el menú es más ancho que el botón, alinear a la izquierda del botón
       if (dropdownRect.width > triggerRect.width) {
         x = triggerRect.left;

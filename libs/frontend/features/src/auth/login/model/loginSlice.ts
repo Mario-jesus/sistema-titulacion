@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface LoginErrors {
   email?: string;
@@ -18,8 +18,8 @@ const initialState: LoginState = {
   password: '',
   isLoading: false,
   submitError: null,
-  fieldErrors: {}
-}
+  fieldErrors: {},
+};
 
 const loginSlice = createSlice({
   name: 'login',
@@ -37,7 +37,10 @@ const loginSlice = createSlice({
         delete state.fieldErrors.password;
       }
     },
-    setFieldError: (state, action: PayloadAction<{ field: keyof LoginErrors, error: string }>) => {
+    setFieldError: (
+      state,
+      action: PayloadAction<{ field: keyof LoginErrors; error: string }>
+    ) => {
       state.fieldErrors[action.payload.field] = action.payload.error;
     },
     setIsLoading: (state, action: PayloadAction<boolean>) => {
@@ -54,8 +57,8 @@ const loginSlice = createSlice({
     },
     resetForm: () => {
       return initialState;
-    }
-  }
+    },
+  },
 });
 
 export const {

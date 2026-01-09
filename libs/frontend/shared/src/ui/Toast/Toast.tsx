@@ -2,7 +2,8 @@ import { HTMLAttributes, useEffect } from 'react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-export interface ToastProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+export interface ToastProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   id: string;
   type: ToastType;
   message: string;
@@ -144,9 +145,11 @@ export function Toast({
       <button
         onClick={() => onClose(id)}
         className="shrink-0 ml-2 p-1 rounded transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1"
-        style={{
-          '--tw-ring-color': 'var(--color-primary-color)',
-        } as React.CSSProperties & { '--tw-ring-color'?: string }}
+        style={
+          {
+            '--tw-ring-color': 'var(--color-primary-color)',
+          } as React.CSSProperties & { '--tw-ring-color'?: string }
+        }
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = 'var(--color-gray-2)';
         }}

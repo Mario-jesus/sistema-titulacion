@@ -1,4 +1,10 @@
-import { InputHTMLAttributes, forwardRef, type ChangeEvent, type KeyboardEvent, useEffect } from 'react';
+import {
+  InputHTMLAttributes,
+  forwardRef,
+  type ChangeEvent,
+  type KeyboardEvent,
+  useEffect,
+} from 'react';
 
 interface IconProps {
   className?: string;
@@ -31,7 +37,8 @@ const ClearIcon = ({ className = '', size = 20 }: IconProps) => (
   </svg>
 );
 
-export interface SearchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'onKeyDown'> {
+export interface SearchProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'onKeyDown'> {
   /** Clase CSS adicional */
   className?: string;
   /** Ancho completo */
@@ -48,12 +55,12 @@ export interface SearchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
 
 /**
  * Componente de búsqueda con icono de lupa, botón de limpiar y soporte para modo claro y oscuro
- * 
+ *
  * La búsqueda se ejecuta solo cuando el usuario presiona Enter (callback `onSearch`).
  * El `onChange` solo actualiza el valor local sin disparar búsquedas al backend.
- * 
+ *
  * El botón de limpiar nativo del navegador está desactivado, se usa solo el botón personalizado.
- * 
+ *
  * @example
  * // Uso básico con datos locales (búsqueda inmediata)
  * ```tsx
@@ -67,18 +74,18 @@ export interface SearchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
  *   }}
  * />
  * ```
- * 
+ *
  * @example
  * // Uso con backend (búsqueda solo al presionar Enter)
  * ```tsx
  * const [searchTerm, setSearchTerm] = useState('');
  * const [searchQuery, setSearchQuery] = useState(''); // Valor que se envía al backend
- * 
+ *
  * useEffect(() => {
  *   // Hacer petición a la API solo cuando cambia searchQuery
  *   fetchData({ search: searchQuery });
  * }, [searchQuery]);
- * 
+ *
  * <Search
  *   placeholder="Buscar..."
  *   value={searchTerm}
@@ -108,8 +115,10 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
     },
     ref
   ) => {
-    const hasValue = value !== undefined && value !== null && String(value).trim() !== '';
-    const showClear = showClearButton && hasValue && (onClear || props.onChange);
+    const hasValue =
+      value !== undefined && value !== null && String(value).trim() !== '';
+    const showClear =
+      showClearButton && hasValue && (onClear || props.onChange);
 
     const containerClasses = [
       'relative flex items-center',
@@ -146,7 +155,8 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
       .filter(Boolean)
       .join(' ');
 
-    const iconClasses = 'absolute left-3 text-[var(--color-primary-color)] pointer-events-none';
+    const iconClasses =
+      'absolute left-3 text-[var(--color-primary-color)] pointer-events-none';
     const clearButtonClasses = [
       'absolute right-3',
       'flex items-center justify-center',
@@ -223,7 +233,8 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
       if (event.key === 'Enter' && onSearch) {
         event.preventDefault();
         event.stopPropagation();
-        const searchValue = value !== undefined && value !== null ? String(value).trim() : '';
+        const searchValue =
+          value !== undefined && value !== null ? String(value).trim() : '';
         onSearch(searchValue);
         return;
       }
@@ -236,16 +247,16 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
 
     return (
       <div className={containerClasses}>
-          <SearchIcon className={iconClasses} size={20} />
-          <input
-            ref={ref}
-            type="search"
-            className={inputClasses}
-            value={value}
-            onKeyDown={handleKeyDown}
-            autoComplete="off"
-            {...props}
-          />
+        <SearchIcon className={iconClasses} size={20} />
+        <input
+          ref={ref}
+          type="search"
+          className={inputClasses}
+          value={value}
+          onKeyDown={handleKeyDown}
+          autoComplete="off"
+          {...props}
+        />
         {showClear && (
           <button
             type="button"

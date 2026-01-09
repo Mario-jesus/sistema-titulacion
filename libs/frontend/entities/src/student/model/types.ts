@@ -1,6 +1,6 @@
 export enum Sex {
   MASCULINO = 'MASCULINO',
-  FEMENINO = 'FEMENINO'
+  FEMENINO = 'FEMENINO',
 }
 
 export enum StudentStatus {

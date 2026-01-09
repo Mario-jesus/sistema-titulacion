@@ -57,6 +57,9 @@ export function findGenerationById(id: string): Generation | undefined {
  * Genera un nuevo ID para una generación
  */
 export function generateGenerationId(): string {
-  const maxId = Math.max(...mockGenerations.map((gen) => parseInt(gen.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockGenerations.map((gen) => parseInt(gen.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }

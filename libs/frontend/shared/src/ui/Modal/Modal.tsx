@@ -36,7 +36,7 @@ export interface ModalProps {
 
 /**
  * Componente de modal genérico con soporte para modo claro y oscuro
- * 
+ *
  * @example
  * ```tsx
  * // Modal básico
@@ -49,7 +49,7 @@ export interface ModalProps {
  *     {/* Formulario aquí *\/}
  *   </form>
  * </Modal>
- * 
+ *
  * // Modal con ancho personalizado
  * <Modal
  *   title="Editar usuario"
@@ -120,36 +120,34 @@ export function Modal({
           backgroundColor: 'var(--color-component-bg)',
         }}
       >
-          {/* Header */}
-          <div
-            className="flex items-center justify-between px-6 py-4 border-b border-gray-3-light dark:border-gray-6-dark rounded-t-lg shrink-0"
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-3-light dark:border-gray-6-dark rounded-t-lg shrink-0">
+          <h2
+            className="text-xl font-semibold"
+            style={{
+              color: 'var(--color-base-primary-typo)',
+            }}
           >
-            <h2
-              className="text-xl font-semibold"
-              style={{
-                color: 'var(--color-base-primary-typo)',
-              }}
-            >
-              {title}
-            </h2>
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center p-2 rounded-lg cursor-pointer bg-transparent hover:bg-gray-2-light dark:hover:bg-gray-3-dark"
-              style={{
-                color: 'var(--color-base-secondary-typo)',
-              }}
-              aria-label="Cerrar modal"
-              type="button"
-            >
-              <CloseIcon size={20} />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
-            {children}
-          </div>
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center p-2 rounded-lg cursor-pointer bg-transparent hover:bg-gray-2-light dark:hover:bg-gray-3-dark"
+            style={{
+              color: 'var(--color-base-secondary-typo)',
+            }}
+            aria-label="Cerrar modal"
+            type="button"
+          >
+            <CloseIcon size={20} />
+          </button>
         </div>
+
+        {/* Body */}
+        <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
+          {children}
+        </div>
+      </div>
     </div>
   );
 

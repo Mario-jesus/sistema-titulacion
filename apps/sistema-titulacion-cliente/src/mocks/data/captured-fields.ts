@@ -52,7 +52,9 @@ export function findCapturedFieldsById(id: string): CapturedFields | undefined {
 /**
  * Busca campos capturados por ID de estudiante
  */
-export function findCapturedFieldsByStudentId(studentId: string): CapturedFields[] {
+export function findCapturedFieldsByStudentId(
+  studentId: string
+): CapturedFields[] {
   return mockCapturedFields.filter((fields) => fields.studentId === studentId);
 }
 
@@ -60,6 +62,9 @@ export function findCapturedFieldsByStudentId(studentId: string): CapturedFields
  * Genera un nuevo ID para campos capturados
  */
 export function generateCapturedFieldsId(): string {
-  const maxId = Math.max(...mockCapturedFields.map((fields) => parseInt(fields.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockCapturedFields.map((fields) => parseInt(fields.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }

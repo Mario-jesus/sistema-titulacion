@@ -134,237 +134,249 @@ export function Sidebar({
           lg:relative transition-width-transform duration-300 ease-in-out
           z-50 lg:z-10
           lg:overflow-visible
-          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${
+            isMobileOpen
+              ? 'translate-x-0'
+              : '-translate-x-full lg:translate-x-0'
+          }
           ${className}
         `}
         style={{
-          backgroundColor: 'var(--color-component-bg)'
+          backgroundColor: 'var(--color-component-bg)',
         }}
       >
-      {/* Header con Logo y Botón de Colapsar */}
-      <div
-        className="flex items-center justify-between p-4 relative overflow-visible"
-      >
-        {!isCollapsed && (
-          <div className="flex items-center gap-2 flex-1">
-            {logo || (
-              <div className="flex items-center gap-2">
+        {/* Header con Logo y Botón de Colapsar */}
+        <div className="flex items-center justify-between p-4 relative overflow-visible">
+          {!isCollapsed && (
+            <div className="flex items-center gap-2 flex-1">
+              {logo || (
+                <div className="flex items-center gap-2">
+                  <img
+                    src="/images/TECNMRIOS.png"
+                    alt="ITSR Logo"
+                    className="h-8 w-auto"
+                  />
+                  <span
+                    className="font-bold text-3xl pl-1 text-black dark:text-white"
+                    style={{ fontFamily: 'Inria_Serif' }}
+                  >
+                    ITSR
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          {isCollapsed && (
+            <button
+              onClick={toggleCollapse}
+              className="flex items-center justify-center w-full cursor-pointer hover:opacity-80 transition-opacity"
+              aria-label="Expandir sidebar"
+              type="button"
+            >
+              {logo || (
                 <img
                   src="/images/TECNMRIOS.png"
                   alt="ITSR Logo"
                   className="h-8 w-auto"
                 />
-                <span
-                  className="font-bold text-3xl pl-1 text-black dark:text-white"
-                  style={{ fontFamily: 'Inria_Serif' }}
-                >
-                  ITSR
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-        {isCollapsed && (
-          <button
-            onClick={toggleCollapse}
-            className="flex items-center justify-center w-full cursor-pointer hover:opacity-80 transition-opacity"
-            aria-label="Expandir sidebar"
-            type="button"
-          >
-            {logo || (
-              <img
-                src="/images/TECNMRIOS.png"
-                alt="ITSR Logo"
-                className="h-8 w-auto"
-              />
-            )}
-          </button>
-        )}
+              )}
+            </button>
+          )}
 
-        {/* Botón de cerrar para móviles */}
-        {!isCollapsed && onMobileClose && (
+          {/* Botón de cerrar para móviles */}
+          {!isCollapsed && onMobileClose && (
+            <button
+              onClick={onMobileClose}
+              className="lg:hidden flex items-center justify-center p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+              style={{
+                color: 'var(--color-base-secondary-typo)',
+              }}
+              aria-label="Cerrar sidebar"
+              type="button"
+            >
+              <CloseIcon size={24} />
+            </button>
+          )}
+
+          {/* Botón de colapsar para desktop */}
+          {!isCollapsed && (
+            <button
+              onClick={toggleCollapse}
+              className="hidden lg:flex group absolute items-center justify-center bg-[#E6E5F9] dark:bg-gray-2-dark border-3 border-gray-2-light dark:border-gray-1-dark w-8 h-8 rounded-full right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 cursor-pointer"
+              style={{
+                color: 'var(--color-primary-color)',
+              }}
+              aria-label="Colapsar sidebar"
+              type="button"
+            >
+              <CollapseIcon
+                size={16}
+                className="scale-120 group-hover:scale-150 group-active:scale-100 group-active:duration-100 transition-all duration-100 ease-in-out"
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Lista de Items de Navegación */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          <ul className="space-y-1">
+            {items.map((item) => {
+              const isActive = activeItemId === item.id;
+              const hasSubItems = item.subItems && item.subItems.length > 0;
+              const isExpanded = expandedItems.has(item.id);
+              const isSubItemActive =
+                hasSubItems &&
+                item.subItems?.some((si) => activeItemId === si.id);
+              const isParentActive = isActive || isSubItemActive;
+
+              return (
+                <li key={item.id}>
+                  <div>
+                    <button
+                      onClick={() => handleItemClickWithClose(item)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 relative overflow-hidden cursor-pointer active:opacity-80 ${
+                        isCollapsed ? 'justify-center' : ''
+                      } ${
+                        isParentActive
+                          ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
+                          : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
+                      }`}
+                      type="button"
+                    >
+                      {/* Indicador de activación izquierdo para elemento activo */}
+                      {isParentActive && (
+                        <div
+                          className="absolute -left-2.5 top-1/2 bottom-0 w-10 h-10 skew-x-20 rotate-45 rounded-lg -translate-x-1/2 -translate-y-1/2"
+                          style={{
+                            backgroundColor: 'var(--color-primary-color)',
+                          }}
+                        />
+                      )}
+                      <span
+                        className={`shrink-0 ${isCollapsed ? '' : 'pl-3'}`}
+                        style={{
+                          color: 'inherit',
+                        }}
+                      >
+                        {item.icon}
+                      </span>
+                      {!isCollapsed && (
+                        <>
+                          <span className="flex-1 text-left">{item.label}</span>
+                          {hasSubItems && (
+                            <span
+                              className="shrink-0"
+                              style={{
+                                transform: isExpanded
+                                  ? 'rotate(90deg)'
+                                  : 'rotate(0deg)',
+                              }}
+                            >
+                              <ChevronRightIcon size={16} />
+                            </span>
+                          )}
+                          {!hasSubItems &&
+                            item.badge !== undefined &&
+                            item.badge > 0 && (
+                              <span
+                                className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs text-white"
+                                style={{
+                                  backgroundColor: 'var(--color-salmon)',
+                                }}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                        </>
+                      )}
+                    </button>
+                    {/* Subitems */}
+                    {!isCollapsed && hasSubItems && (
+                      <ul
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          isExpanded
+                            ? 'max-h-96 opacity-100'
+                            : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        {item.subItems?.map((subItem) => {
+                          const isSubActive = activeItemId === subItem.id;
+                          return (
+                            <li key={subItem.id}>
+                              <button
+                                onClick={() =>
+                                  handleSubItemClickWithClose(subItem)
+                                }
+                                className={`w-full flex items-center gap-3 px-10 py-2 relative cursor-pointer active:opacity-80 ${
+                                  isSubActive
+                                    ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
+                                    : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
+                                }`}
+                                type="button"
+                              >
+                                <span className="flex-1 text-left text-sm">
+                                  {subItem.label}
+                                </span>
+                                {subItem.badge !== undefined &&
+                                  subItem.badge > 0 && (
+                                    <span
+                                      className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs text-white"
+                                      style={{
+                                        backgroundColor: 'var(--color-salmon)',
+                                      }}
+                                    >
+                                      {subItem.badge}
+                                    </span>
+                                  )}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Sección de Salir */}
+        <div
+          style={{
+            borderColor: 'var(--color-gray-1)',
+          }}
+        >
           <button
-            onClick={onMobileClose}
-            className="lg:hidden flex items-center justify-center p-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-6 py-2.5 cursor-pointer active:opacity-80 ${
+              isCollapsed ? 'justify-center' : ''
+            }`}
             style={{
               color: 'var(--color-base-secondary-typo)',
             }}
-            aria-label="Cerrar sidebar"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-gray-3)';
+              e.currentTarget.style.color = 'var(--color-base-primary-typo)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--color-base-secondary-typo)';
+            }}
             type="button"
           >
-            <CloseIcon size={24} />
+            <span
+              className="shrink-0"
+              style={{
+                color: 'inherit',
+              }}
+            >
+              <LogoutIcon size={20} />
+            </span>
+            {!isCollapsed && <span className="flex-1 text-left">Salir</span>}
           </button>
-        )}
-
-        {/* Botón de colapsar para desktop */}
-        {!isCollapsed && (
-          <button
-            onClick={toggleCollapse}
-            className="hidden lg:flex group absolute items-center justify-center bg-[#E6E5F9] dark:bg-gray-2-dark border-3 border-gray-2-light dark:border-gray-1-dark w-8 h-8 rounded-full right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 cursor-pointer"
-            style={{
-              color: 'var(--color-primary-color)',
-            }}
-            aria-label="Colapsar sidebar"
-            type="button"
-          >
-            <CollapseIcon size={16} className="scale-120 group-hover:scale-150 group-active:scale-100 group-active:duration-100 transition-all duration-100 ease-in-out" />
-          </button>
-        )}
-      </div>
-
-      {/* Lista de Items de Navegación */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1">
-          {items.map((item) => {
-            const isActive = activeItemId === item.id;
-            const hasSubItems = item.subItems && item.subItems.length > 0;
-            const isExpanded = expandedItems.has(item.id);
-            const isSubItemActive = hasSubItems && item.subItems?.some((si) => activeItemId === si.id);
-            const isParentActive = isActive || isSubItemActive;
-
-            return (
-              <li key={item.id}>
-                <div>
-                  <button
-                    onClick={() => handleItemClickWithClose(item)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 relative overflow-hidden cursor-pointer active:opacity-80 ${
-                      isCollapsed ? 'justify-center' : ''
-                    } ${
-                      isParentActive
-                        ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
-                        : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
-                    }`}
-                    type="button"
-                  >
-                    {/* Indicador de activación izquierdo para elemento activo */}
-                    {isParentActive && (
-                      <div
-                        className="absolute -left-2.5 top-1/2 bottom-0 w-10 h-10 skew-x-20 rotate-45 rounded-lg -translate-x-1/2 -translate-y-1/2"
-                        style={{
-                          backgroundColor: 'var(--color-primary-color)',
-                        }}
-                      />
-                    )}
-                    <span
-                      className={`shrink-0 ${isCollapsed ? '' : 'pl-3'}`}
-                      style={{
-                        color: 'inherit',
-                      }}
-                    >
-                      {item.icon}
-                    </span>
-                    {!isCollapsed && (
-                      <>
-                        <span className="flex-1 text-left">
-                          {item.label}
-                        </span>
-                        {hasSubItems && (
-                          <span
-                            className="shrink-0"
-                            style={{
-                              transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                            }}
-                          >
-                            <ChevronRightIcon size={16} />
-                          </span>
-                        )}
-                        {!hasSubItems && item.badge !== undefined && item.badge > 0 && (
-                          <span
-                            className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs text-white"
-                            style={{
-                              backgroundColor: 'var(--color-salmon)',
-                            }}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </button>
-                  {/* Subitems */}
-                  {!isCollapsed && hasSubItems && (
-                    <ul
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                      }`}
-                    >
-                      {item.subItems?.map((subItem) => {
-                        const isSubActive = activeItemId === subItem.id;
-                        return (
-                          <li key={subItem.id}>
-                            <button
-                              onClick={() => handleSubItemClickWithClose(subItem)}
-                              className={`w-full flex items-center gap-3 px-10 py-2 relative cursor-pointer active:opacity-80 ${
-                                isSubActive
-                                  ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
-                                  : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
-                              }`}
-                              type="button"
-                            >
-                              <span className="flex-1 text-left text-sm">
-                                {subItem.label}
-                              </span>
-                              {subItem.badge !== undefined && subItem.badge > 0 && (
-                                <span
-                                  className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs text-white"
-                                  style={{
-                                    backgroundColor: 'var(--color-salmon)',
-                                  }}
-                                >
-                                  {subItem.badge}
-                                </span>
-                              )}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      {/* Sección de Salir */}
-      <div
-        style={{
-          borderColor: 'var(--color-gray-1)',
-        }}
-      >
-        <button
-          onClick={handleLogout}
-          className={`w-full flex items-center gap-3 px-6 py-2.5 cursor-pointer active:opacity-80 ${
-            isCollapsed ? 'justify-center' : ''
-          }`}
-          style={{
-            color: 'var(--color-base-secondary-typo)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--color-gray-3)';
-            e.currentTarget.style.color = 'var(--color-base-primary-typo)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = 'var(--color-base-secondary-typo)';
-          }}
-          type="button"
-        >
-          <span
-            className="shrink-0"
-            style={{
-              color: 'inherit',
-            }}
-          >
-            <LogoutIcon size={20} />
-          </span>
-          {!isCollapsed && (
-            <span className="flex-1 text-left">Salir</span>
-          )}
-        </button>
-      </div>
-    </aside>
+        </div>
+      </aside>
     </>
   );
 }

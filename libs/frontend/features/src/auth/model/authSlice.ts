@@ -1,5 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { loginThunk, logoutThunk, checkAuthThunk, refreshTokenThunk } from './authThunks';
+import { createSlice } from '@reduxjs/toolkit';
+import {
+  loginThunk,
+  logoutThunk,
+  checkAuthThunk,
+  refreshTokenThunk,
+} from './authThunks';
 
 export interface AuthState {
   isLoading: boolean;

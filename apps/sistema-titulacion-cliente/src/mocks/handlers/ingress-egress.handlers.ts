@@ -11,10 +11,10 @@ import { mockCareers } from '../data/careers';
  */
 
 interface PaginationData {
-  total: number;       // Total de registros
-  limit: number;       // Items por página
-  totalPages: number;  // Total de páginas calculadas
-  page: number;        // Página actual (Mejora sobre offset)
+  total: number; // Total de registros
+  limit: number; // Items por página
+  totalPages: number; // Total de páginas calculadas
+  page: number; // Página actual (Mejora sobre offset)
   pagingCounter: number; // El número del primer item de esta página (ej. 11)
   hasPrevPage: boolean;
   hasNextPage: boolean;
@@ -52,7 +52,10 @@ function calculateIngressEgressData(): IngressEgress[] {
 
     // Calcular número de ingreso (suma de newAdmissionQuotas para esta generación y carrera)
     const admissionNumber = mockQuotas
-      .filter((q) => q.generationId === quota.generationId && q.careerId === quota.careerId)
+      .filter(
+        (q) =>
+          q.generationId === quota.generationId && q.careerId === quota.careerId
+      )
       .reduce((sum, q) => sum + q.newAdmissionQuotas, 0);
 
     // Calcular número de egreso (estudiantes con isEgressed = true)
@@ -82,7 +85,9 @@ function calculateIngressEgressData(): IngressEgress[] {
     }
     processedKeys.add(key);
 
-    const generation = mockGenerations.find((g) => g.id === student.generationId);
+    const generation = mockGenerations.find(
+      (g) => g.id === student.generationId
+    );
     const career = mockCareers.find((c) => c.id === student.careerId);
 
     if (!generation || !career) {
@@ -123,15 +128,24 @@ export const ingressEgressHandlers = [
 
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || ''; // Búsqueda por texto
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || ''; // Búsqueda por texto
 
     // Validar y normalizar parámetros de ordenamiento
-    const validSortFields = ['careerName', 'generationName', 'admissionNumber', 'egressNumber'];
+    const validSortFields = [
+      'careerName',
+      'generationName',
+      'admissionNumber',
+      'egressNumber',
+    ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'careerName';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'careerName';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'careerName';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc'; // Normalizar a 'asc' o 'desc'
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc'; // Normalizar a 'asc' o 'desc'
 
     let data = calculateIngressEgressData();
 
@@ -149,8 +163,10 @@ export const ingressEgressHandlers = [
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
       data = data.filter((item) => {
-        const careerMatch = item.careerName?.toLowerCase().includes(searchLower) ?? false;
-        const generationMatch = item.generationName?.toLowerCase().includes(searchLower) ?? false;
+        const careerMatch =
+          item.careerName?.toLowerCase().includes(searchLower) ?? false;
+        const generationMatch =
+          item.generationName?.toLowerCase().includes(searchLower) ?? false;
         return careerMatch || generationMatch;
       });
     }
@@ -229,69 +245,78 @@ export const ingressEgressHandlers = [
   }),
 
   // GET /ingress-egress/:generationId/:careerId (Detail)
-  http.get(buildApiUrl('/ingress-egress/:generationId/:careerId'), async ({ params }) => {
-    await delay(200);
+  http.get(
+    buildApiUrl('/ingress-egress/:generationId/:careerId'),
+    async ({ params }) => {
+      await delay(200);
 
-    const generationId = Array.isArray(params.generationId) ? params.generationId[0] : params.generationId;
-    const careerId = Array.isArray(params.careerId) ? params.careerId[0] : params.careerId;
+      const generationId = Array.isArray(params.generationId)
+        ? params.generationId[0]
+        : params.generationId;
+      const careerId = Array.isArray(params.careerId)
+        ? params.careerId[0]
+        : params.careerId;
 
-    if (!generationId || !careerId) {
-      return HttpResponse.json(
-        {
-          error: 'GenerationId y CareerId son requeridos',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
+      if (!generationId || !careerId) {
+        return HttpResponse.json(
+          {
+            error: 'GenerationId y CareerId son requeridos',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Verificar que la generación existe
+      const generation = mockGenerations.find((g) => g.id === generationId);
+      if (!generation) {
+        return HttpResponse.json(
+          {
+            error: 'Generacion no encontrada',
+            code: 'GENERATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Verificar que la carrera existe
+      const career = mockCareers.find((c) => c.id === careerId);
+      if (!career) {
+        return HttpResponse.json(
+          {
+            error: 'Carrera no encontrada',
+            code: 'CAREER_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Calcular número de ingreso
+      const admissionNumber = mockQuotas
+        .filter(
+          (q) => q.generationId === generationId && q.careerId === careerId
+        )
+        .reduce((sum, q) => sum + q.newAdmissionQuotas, 0);
+
+      // Calcular número de egreso
+      const egressNumber = mockStudents.filter(
+        (student) =>
+          student.generationId === generationId &&
+          student.careerId === careerId &&
+          student.isEgressed === true
+      ).length;
+
+      const result: IngressEgress = {
+        id: `${generationId}-${careerId}`,
+        generationId,
+        careerId,
+        generationName: generation.name,
+        careerName: career.name,
+        admissionNumber,
+        egressNumber,
+      };
+
+      return HttpResponse.json(result);
     }
-
-    // Verificar que la generación existe
-    const generation = mockGenerations.find((g) => g.id === generationId);
-    if (!generation) {
-      return HttpResponse.json(
-        {
-          error: 'Generacion no encontrada',
-          code: 'GENERATION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    // Verificar que la carrera existe
-    const career = mockCareers.find((c) => c.id === careerId);
-    if (!career) {
-      return HttpResponse.json(
-        {
-          error: 'Carrera no encontrada',
-          code: 'CAREER_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    // Calcular número de ingreso
-    const admissionNumber = mockQuotas
-      .filter((q) => q.generationId === generationId && q.careerId === careerId)
-      .reduce((sum, q) => sum + q.newAdmissionQuotas, 0);
-
-    // Calcular número de egreso
-    const egressNumber = mockStudents.filter(
-      (student) =>
-        student.generationId === generationId &&
-        student.careerId === careerId &&
-        student.isEgressed === true
-    ).length;
-
-    const result: IngressEgress = {
-      id: `${generationId}-${careerId}`,
-      generationId,
-      careerId,
-      generationName: generation.name,
-      careerName: career.name,
-      admissionNumber,
-      egressNumber,
-    };
-
-    return HttpResponse.json(result);
-  }),
+  ),
 ];

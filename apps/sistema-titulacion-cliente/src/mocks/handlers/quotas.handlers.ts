@@ -60,23 +60,31 @@ export const quotasHandlers = [
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     const validSortFields = ['newAdmissionQuotas', 'createdAt', 'isActive'];
     const requestedSortBy = url.searchParams.get('sortBy') || 'createdAt';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'createdAt';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'createdAt';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockQuotas];
 
     if (careerId) {
-      filteredData = filteredData.filter((quota: Quota) => quota.careerId === careerId);
+      filteredData = filteredData.filter(
+        (quota: Quota) => quota.careerId === careerId
+      );
     }
 
     if (generationId) {
-      filteredData = filteredData.filter((quota: Quota) => quota.generationId === generationId);
+      filteredData = filteredData.filter(
+        (quota: Quota) => quota.generationId === generationId
+      );
     }
 
     if (activeOnly) {
@@ -244,7 +252,10 @@ export const quotasHandlers = [
     }
 
     // Verificar que no exista ya un cupo para esta carrera y generación
-    const existingQuota = findQuotaByCareerAndGeneration(body.careerId, body.generationId);
+    const existingQuota = findQuotaByCareerAndGeneration(
+      body.careerId,
+      body.generationId
+    );
     if (existingQuota) {
       return HttpResponse.json(
         {
@@ -338,8 +349,14 @@ export const quotasHandlers = [
     const newCareerId = body.careerId ?? quota.careerId;
     const newGenerationId = body.generationId ?? quota.generationId;
 
-    if (newCareerId !== quota.careerId || newGenerationId !== quota.generationId) {
-      const existingQuota = findQuotaByCareerAndGeneration(newCareerId, newGenerationId);
+    if (
+      newCareerId !== quota.careerId ||
+      newGenerationId !== quota.generationId
+    ) {
+      const existingQuota = findQuotaByCareerAndGeneration(
+        newCareerId,
+        newGenerationId
+      );
       if (existingQuota && existingQuota.id !== id) {
         return HttpResponse.json(
           {
@@ -354,8 +371,10 @@ export const quotasHandlers = [
     // Actualizar
     quota.generationId = body.generationId ?? quota.generationId;
     quota.careerId = body.careerId ?? quota.careerId;
-    quota.newAdmissionQuotas = body.newAdmissionQuotas ?? quota.newAdmissionQuotas;
-    quota.description = body.description !== undefined ? body.description : quota.description;
+    quota.newAdmissionQuotas =
+      body.newAdmissionQuotas ?? quota.newAdmissionQuotas;
+    quota.description =
+      body.description !== undefined ? body.description : quota.description;
     quota.isActive = body.isActive ?? quota.isActive;
     quota.updatedAt = new Date();
 
@@ -426,8 +445,14 @@ export const quotasHandlers = [
     const newCareerId = body.careerId ?? quota.careerId;
     const newGenerationId = body.generationId ?? quota.generationId;
 
-    if (newCareerId !== quota.careerId || newGenerationId !== quota.generationId) {
-      const existingQuota = findQuotaByCareerAndGeneration(newCareerId, newGenerationId);
+    if (
+      newCareerId !== quota.careerId ||
+      newGenerationId !== quota.generationId
+    ) {
+      const existingQuota = findQuotaByCareerAndGeneration(
+        newCareerId,
+        newGenerationId
+      );
       if (existingQuota && existingQuota.id !== id) {
         return HttpResponse.json(
           {

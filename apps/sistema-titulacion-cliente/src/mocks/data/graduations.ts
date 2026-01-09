@@ -28,7 +28,8 @@ export const mockGraduations: Graduation[] = [
     secretary: 'Dr. Roberto Morales Díaz',
     vocal: 'Mtra. Patricia Rivera Silva',
     substituteVocal: 'Ing. Juan Carlos Méndez',
-    notes: 'Titulación por residencia profesional. Proyecto implementado exitosamente.',
+    notes:
+      'Titulación por residencia profesional. Proyecto implementado exitosamente.',
     createdAt: new Date('2024-07-20T10:00:00Z'),
     updatedAt: new Date('2024-07-25T10:00:00Z'),
   },
@@ -58,14 +59,21 @@ export function findGraduationById(id: string): Graduation | undefined {
 /**
  * Busca titulaciones por ID de estudiante
  */
-export function findGraduationByStudentId(studentId: string): Graduation | undefined {
-  return mockGraduations.find((graduation) => graduation.studentId === studentId);
+export function findGraduationByStudentId(
+  studentId: string
+): Graduation | undefined {
+  return mockGraduations.find(
+    (graduation) => graduation.studentId === studentId
+  );
 }
 
 /**
  * Genera un nuevo ID para una titulación
  */
 export function generateGraduationId(): string {
-  const maxId = Math.max(...mockGraduations.map((graduation) => parseInt(graduation.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockGraduations.map((graduation) => parseInt(graduation.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }

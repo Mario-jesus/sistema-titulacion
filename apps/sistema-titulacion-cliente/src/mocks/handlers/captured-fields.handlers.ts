@@ -54,14 +54,23 @@ export const capturedFieldsHandlers = [
     const offset = (page - 1) * limit;
 
     const studentId = url.searchParams.get('studentId');
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
-    const validSortFields = ['projectName', 'company', 'processDate', 'createdAt'];
+    const validSortFields = [
+      'projectName',
+      'company',
+      'processDate',
+      'createdAt',
+    ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'processDate';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'processDate';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'processDate';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockCapturedFields];
 
@@ -74,8 +83,10 @@ export const capturedFieldsHandlers = [
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
       filteredData = filteredData.filter((fields: CapturedFields) => {
-        const projectMatch = fields.projectName?.toLowerCase().includes(searchLower) ?? false;
-        const companyMatch = fields.company?.toLowerCase().includes(searchLower) ?? false;
+        const projectMatch =
+          fields.projectName?.toLowerCase().includes(searchLower) ?? false;
+        const companyMatch =
+          fields.company?.toLowerCase().includes(searchLower) ?? false;
         return projectMatch || companyMatch;
       });
     }
@@ -280,7 +291,10 @@ export const capturedFieldsHandlers = [
     const body = (await request.json()) as UpdateCapturedFieldsRequest;
 
     // Validaciones
-    if (body.projectName !== undefined && (!body.projectName || body.projectName.trim().length === 0)) {
+    if (
+      body.projectName !== undefined &&
+      (!body.projectName || body.projectName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre del proyecto no puede estar vacío',
@@ -290,7 +304,10 @@ export const capturedFieldsHandlers = [
       );
     }
 
-    if (body.company !== undefined && (!body.company || body.company.trim().length === 0)) {
+    if (
+      body.company !== undefined &&
+      (!body.company || body.company.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre de la empresa no puede estar vacío',
@@ -315,7 +332,9 @@ export const capturedFieldsHandlers = [
 
     // Actualizar
     fields.studentId = body.studentId ?? fields.studentId;
-    fields.processDate = body.processDate ? new Date(body.processDate) : fields.processDate;
+    fields.processDate = body.processDate
+      ? new Date(body.processDate)
+      : fields.processDate;
     fields.projectName = body.projectName?.trim() ?? fields.projectName;
     fields.company = body.company?.trim() ?? fields.company;
     fields.updatedAt = new Date();
@@ -329,87 +348,99 @@ export const capturedFieldsHandlers = [
   }),
 
   // PATCH /captured-fields/:id (Partial Update)
-  http.patch(buildApiUrl('/captured-fields/:id'), async ({ params, request }) => {
-    await delay(300);
+  http.patch(
+    buildApiUrl('/captured-fields/:id'),
+    async ({ params, request }) => {
+      await delay(300);
 
-    const { id } = params;
-    const fields = findCapturedFieldsById(id as string);
+      const { id } = params;
+      const fields = findCapturedFieldsById(id as string);
 
-    if (!fields) {
-      return HttpResponse.json(
-        {
-          error: 'Campos capturados no encontrados',
-          code: 'CAPTURED_FIELDS_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    const body = (await request.json()) as Partial<UpdateCapturedFieldsRequest>;
-
-    // Validaciones
-    if (body.projectName !== undefined && (!body.projectName || body.projectName.trim().length === 0)) {
-      return HttpResponse.json(
-        {
-          error: 'El nombre del proyecto no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (body.company !== undefined && (!body.company || body.company.trim().length === 0)) {
-      return HttpResponse.json(
-        {
-          error: 'El nombre de la empresa no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (body.studentId !== undefined) {
-      const student = findStudentById(body.studentId);
-      if (!student) {
+      if (!fields) {
         return HttpResponse.json(
           {
-            error: 'Estudiante no encontrado',
-            code: 'STUDENT_NOT_FOUND',
+            error: 'Campos capturados no encontrados',
+            code: 'CAPTURED_FIELDS_NOT_FOUND',
           },
           { status: 404 }
         );
       }
-    }
 
-    // Actualizar solo campos proporcionados
-    if (body.studentId !== undefined) {
-      fields.studentId = body.studentId;
-    }
-    if (body.processDate !== undefined) {
-      fields.processDate = new Date(body.processDate);
-    }
-    if (body.projectName !== undefined) {
-      fields.projectName = body.projectName.trim();
-    }
-    if (body.company !== undefined) {
-      fields.company = body.company.trim();
-    }
-    fields.updatedAt = new Date();
+      const body =
+        (await request.json()) as Partial<UpdateCapturedFieldsRequest>;
 
-    return HttpResponse.json({
-      ...fields,
-      processDate: fields.processDate.toISOString().split('T')[0],
-      createdAt: fields.createdAt.toISOString(),
-      updatedAt: fields.updatedAt.toISOString(),
-    });
-  }),
+      // Validaciones
+      if (
+        body.projectName !== undefined &&
+        (!body.projectName || body.projectName.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El nombre del proyecto no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.company !== undefined &&
+        (!body.company || body.company.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El nombre de la empresa no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (body.studentId !== undefined) {
+        const student = findStudentById(body.studentId);
+        if (!student) {
+          return HttpResponse.json(
+            {
+              error: 'Estudiante no encontrado',
+              code: 'STUDENT_NOT_FOUND',
+            },
+            { status: 404 }
+          );
+        }
+      }
+
+      // Actualizar solo campos proporcionados
+      if (body.studentId !== undefined) {
+        fields.studentId = body.studentId;
+      }
+      if (body.processDate !== undefined) {
+        fields.processDate = new Date(body.processDate);
+      }
+      if (body.projectName !== undefined) {
+        fields.projectName = body.projectName.trim();
+      }
+      if (body.company !== undefined) {
+        fields.company = body.company.trim();
+      }
+      fields.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...fields,
+        processDate: fields.processDate.toISOString().split('T')[0],
+        createdAt: fields.createdAt.toISOString(),
+        updatedAt: fields.updatedAt.toISOString(),
+      });
+    }
+  ),
 
   // DELETE /captured-fields/:id
   http.delete(buildApiUrl('/captured-fields/:id'), async ({ params }) => {
     await delay(300);
 
     const { id } = params;
-    const index = mockCapturedFields.findIndex((fields: CapturedFields) => fields.id === id);
+    const index = mockCapturedFields.findIndex(
+      (fields: CapturedFields) => fields.id === id
+    );
 
     if (index === -1) {
       return HttpResponse.json(

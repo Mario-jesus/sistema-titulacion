@@ -11,7 +11,8 @@ export const mockCareers: Career[] = [
     shortName: 'ISC',
     modalityId: '1',
     modality: findModalityById('1')!,
-    description: 'Carrera enfocada en el desarrollo de software y sistemas computacionales',
+    description:
+      'Carrera enfocada en el desarrollo de software y sistemas computacionales',
     isActive: true,
     createdAt: new Date('2024-01-15T10:00:00Z'),
     updatedAt: new Date('2024-01-15T10:00:00Z'),
@@ -62,6 +63,9 @@ export function findCareerById(id: string): Career | undefined {
  * Genera un nuevo ID para una carrera
  */
 export function generateCareerId(): string {
-  const maxId = Math.max(...mockCareers.map((career) => parseInt(career.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockCareers.map((career) => parseInt(career.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }

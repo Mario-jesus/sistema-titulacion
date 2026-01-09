@@ -8,11 +8,11 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 /**
  * Componente de input con soporte para modo claro y oscuro
- * 
+ *
  * Este componente proporciona un campo de entrada de texto con label opcional,
  * manejo de errores y soporte automático para modo claro y oscuro usando las
  * variables CSS del sistema.
- * 
+ *
  * @example
  * ```tsx
  * // Input básico
@@ -21,7 +21,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  *   value={name}
  *   onChange={(e) => setName(e.target.value)}
  * />
- * 
+ *
  * // Input con label
  * <Input
  *   label="Nombre"
@@ -29,7 +29,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  *   value={name}
  *   onChange={(e) => setName(e.target.value)}
  * />
- * 
+ *
  * // Input con error
  * <Input
  *   label="Email"
@@ -38,7 +38,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  *   onChange={(e) => setEmail(e.target.value)}
  *   error="El email es requerido"
  * />
- * 
+ *
  * // Input de ancho completo
  * <Input
  *   label="Descripción"
@@ -46,7 +46,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  *   value={description}
  *   onChange={(e) => setDescription(e.target.value)}
  * />
- * 
+ *
  * // Input deshabilitado
  * <Input
  *   label="Campo deshabilitado"
@@ -56,29 +56,17 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  * ```
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      label,
-      error,
-      fullWidth = false,
-      className = '',
-      id,
-      ...props
-    },
-    ref
-  ) => {
+  ({ label, error, fullWidth = false, className = '', id, ...props }, ref) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
     // Clases del contenedor
-    const containerClasses = [
-      'flex flex-col gap-2',
-      fullWidth && 'w-full',
-    ]
+    const containerClasses = ['flex flex-col gap-2', fullWidth && 'w-full']
       .filter(Boolean)
       .join(' ');
 
     // Clases del label (soporta modo oscuro automáticamente)
-    const labelClasses = 'text-sm font-medium text-[var(--color-base-primary-typo)] m-0';
+    const labelClasses =
+      'text-sm font-medium text-[var(--color-base-primary-typo)] m-0';
 
     // Clases del input base (soporta modo oscuro automáticamente)
     const inputBaseClasses = [
@@ -99,7 +87,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       'disabled:opacity-60',
       error && 'border-[var(--color-error-typo)]',
       error && 'focus:border-[var(--color-error-typo)]',
-      error && 'focus:ring-2 focus:ring-[var(--color-error-typo)] focus:ring-opacity-10',
+      error &&
+        'focus:ring-2 focus:ring-[var(--color-error-typo)] focus:ring-opacity-10',
       className,
     ]
       .filter(Boolean)
@@ -115,15 +104,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
-          ref={ref}
-          id={inputId}
-          className={inputBaseClasses}
-          {...props}
-        />
-        {error && (
-          <span className={errorClasses}>{error}</span>
-        )}
+        <input ref={ref} id={inputId} className={inputBaseClasses} {...props} />
+        {error && <span className={errorClasses}>{error}</span>}
       </div>
     );
   }

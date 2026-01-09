@@ -24,7 +24,9 @@ export function generateToken(userId: string): string {
  * @returns Refresh token mock
  */
 export function generateRefreshToken(userId: string): string {
-  return `refresh-mock-token-${userId}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  return `refresh-mock-token-${userId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2, 15)}`;
 }
 
 /**
@@ -42,7 +44,10 @@ export function storeRefreshToken(userId: string, refreshToken: string): void {
  * @param refreshToken - Refresh token a validar
  * @returns true si el token es válido, false en caso contrario
  */
-export function validateRefreshToken(userId: string, refreshToken: string): boolean {
+export function validateRefreshToken(
+  userId: string,
+  refreshToken: string
+): boolean {
   const activeToken = activeRefreshTokens.get(userId);
   return activeToken === refreshToken;
 }
@@ -73,7 +78,9 @@ export function extractUserIdFromToken(token: string): string | null {
  * @param refreshToken - Refresh token mock
  * @returns userId o null si el token es inválido
  */
-export function extractUserIdFromRefreshToken(refreshToken: string): string | null {
+export function extractUserIdFromRefreshToken(
+  refreshToken: string
+): string | null {
   if (!refreshToken || !refreshToken.startsWith('refresh-mock-token-')) {
     return null;
   }

@@ -75,40 +75,63 @@ export const studentsHandlers = [
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
     const status = url.searchParams.get('status');
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     // Validar y normalizar parámetros de ordenamiento
-    const validSortFields = ['firstName', 'paternalLastName', 'controlNumber', 'email', 'birthDate', 'createdAt', 'isEgressed', 'status'];
-    const requestedSortBy = url.searchParams.get('sortBy') || 'paternalLastName';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'paternalLastName';
+    const validSortFields = [
+      'firstName',
+      'paternalLastName',
+      'controlNumber',
+      'email',
+      'birthDate',
+      'createdAt',
+      'isEgressed',
+      'status',
+    ];
+    const requestedSortBy =
+      url.searchParams.get('sortBy') || 'paternalLastName';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'paternalLastName';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockStudents];
 
     // Filtrar por carrera si se especifica
     if (careerId) {
-      filteredData = filteredData.filter((student: Student) => student.careerId === careerId);
+      filteredData = filteredData.filter(
+        (student: Student) => student.careerId === careerId
+      );
     }
 
     // Filtrar por generación si se especifica
     if (generationId) {
-      filteredData = filteredData.filter((student: Student) => student.generationId === generationId);
+      filteredData = filteredData.filter(
+        (student: Student) => student.generationId === generationId
+      );
     }
 
     // Filtrar por status si se especifica
     if (status) {
-      filteredData = filteredData.filter((student: Student) => student.status === status);
+      filteredData = filteredData.filter(
+        (student: Student) => student.status === status
+      );
     }
 
     // Búsqueda por texto (busca en nombre, apellidos, número de control, email)
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
       filteredData = filteredData.filter((student: Student) => {
-        const fullName = `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.toLowerCase();
-        const controlMatch = student.controlNumber?.toLowerCase().includes(searchLower) ?? false;
-        const emailMatch = student.email?.toLowerCase().includes(searchLower) ?? false;
+        const fullName =
+          `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.toLowerCase();
+        const controlMatch =
+          student.controlNumber?.toLowerCase().includes(searchLower) ?? false;
+        const emailMatch =
+          student.email?.toLowerCase().includes(searchLower) ?? false;
         const nameMatch = fullName.includes(searchLower);
         return controlMatch || emailMatch || nameMatch;
       });
@@ -327,7 +350,9 @@ export const studentsHandlers = [
     }
 
     // Verificar duplicados por número de control
-    const existsByControlNumber = findStudentByControlNumber(body.controlNumber);
+    const existsByControlNumber = findStudentByControlNumber(
+      body.controlNumber
+    );
     if (existsByControlNumber) {
       return HttpResponse.json(
         {
@@ -340,7 +365,8 @@ export const studentsHandlers = [
 
     // Verificar duplicados por email
     const existsByEmail = mockStudents.some(
-      (student: Student) => student.email.toLowerCase() === body.email.toLowerCase()
+      (student: Student) =>
+        student.email.toLowerCase() === body.email.toLowerCase()
     );
     if (existsByEmail) {
       return HttpResponse.json(
@@ -403,7 +429,10 @@ export const studentsHandlers = [
     const body = (await request.json()) as UpdateStudentRequest;
 
     // Validaciones
-    if (body.firstName !== undefined && (!body.firstName || body.firstName.trim().length === 0)) {
+    if (
+      body.firstName !== undefined &&
+      (!body.firstName || body.firstName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -413,7 +442,10 @@ export const studentsHandlers = [
       );
     }
 
-    if (body.paternalLastName !== undefined && (!body.paternalLastName || body.paternalLastName.trim().length === 0)) {
+    if (
+      body.paternalLastName !== undefined &&
+      (!body.paternalLastName || body.paternalLastName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El apellido paterno no puede estar vacío',
@@ -423,7 +455,10 @@ export const studentsHandlers = [
       );
     }
 
-    if (body.email !== undefined && (!body.email || body.email.trim().length === 0)) {
+    if (
+      body.email !== undefined &&
+      (!body.email || body.email.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El email no puede estar vacío',
@@ -474,9 +509,13 @@ export const studentsHandlers = [
     }
 
     // Verificar duplicados por email si se cambia
-    if (body.email && body.email.toLowerCase() !== student.email.toLowerCase()) {
+    if (
+      body.email &&
+      body.email.toLowerCase() !== student.email.toLowerCase()
+    ) {
       const exists = mockStudents.some(
-        (s: Student) => s.id !== id && s.email.toLowerCase() === body.email!.toLowerCase()
+        (s: Student) =>
+          s.id !== id && s.email.toLowerCase() === body.email!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -502,9 +541,16 @@ export const studentsHandlers = [
         );
       }
       // Activo solo puede pasar a Pausado o Cancelado
-      if (student.status === StudentStatus.ACTIVO && body.status === StudentStatus.ACTIVO) {
+      if (
+        student.status === StudentStatus.ACTIVO &&
+        body.status === StudentStatus.ACTIVO
+      ) {
         // Ya está activo, no hay cambio
-      } else if (student.status === StudentStatus.ACTIVO && body.status !== StudentStatus.PAUSADO && body.status !== StudentStatus.CANCELADO) {
+      } else if (
+        student.status === StudentStatus.ACTIVO &&
+        body.status !== StudentStatus.PAUSADO &&
+        body.status !== StudentStatus.CANCELADO
+      ) {
         return HttpResponse.json(
           {
             error: 'Un estudiante activo solo puede ser pausado o cancelado',
@@ -514,7 +560,10 @@ export const studentsHandlers = [
         );
       }
       // Pausado solo puede pasar a Activo
-      if (student.status === StudentStatus.PAUSADO && body.status !== StudentStatus.ACTIVO) {
+      if (
+        student.status === StudentStatus.PAUSADO &&
+        body.status !== StudentStatus.ACTIVO
+      ) {
         return HttpResponse.json(
           {
             error: 'Un estudiante pausado solo puede ser activado',
@@ -530,11 +579,20 @@ export const studentsHandlers = [
     student.generationId = body.generationId ?? student.generationId;
     student.controlNumber = body.controlNumber?.trim() ?? student.controlNumber;
     student.firstName = body.firstName?.trim() ?? student.firstName;
-    student.paternalLastName = body.paternalLastName?.trim() ?? student.paternalLastName;
-    student.maternalLastName = body.maternalLastName !== undefined ? body.maternalLastName.trim() : student.maternalLastName;
-    student.phoneNumber = body.phoneNumber !== undefined ? body.phoneNumber.trim() : student.phoneNumber;
+    student.paternalLastName =
+      body.paternalLastName?.trim() ?? student.paternalLastName;
+    student.maternalLastName =
+      body.maternalLastName !== undefined
+        ? body.maternalLastName.trim()
+        : student.maternalLastName;
+    student.phoneNumber =
+      body.phoneNumber !== undefined
+        ? body.phoneNumber.trim()
+        : student.phoneNumber;
     student.email = body.email?.trim().toLowerCase() ?? student.email;
-    student.birthDate = body.birthDate ? new Date(body.birthDate) : student.birthDate;
+    student.birthDate = body.birthDate
+      ? new Date(body.birthDate)
+      : student.birthDate;
     student.sex = body.sex ? (body.sex as any) : student.sex;
     student.isEgressed = body.isEgressed ?? student.isEgressed;
     if (body.status !== undefined) {
@@ -570,7 +628,10 @@ export const studentsHandlers = [
     const body = (await request.json()) as Partial<UpdateStudentRequest>;
 
     // Validaciones
-    if (body.firstName !== undefined && (!body.firstName || body.firstName.trim().length === 0)) {
+    if (
+      body.firstName !== undefined &&
+      (!body.firstName || body.firstName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -580,7 +641,10 @@ export const studentsHandlers = [
       );
     }
 
-    if (body.paternalLastName !== undefined && (!body.paternalLastName || body.paternalLastName.trim().length === 0)) {
+    if (
+      body.paternalLastName !== undefined &&
+      (!body.paternalLastName || body.paternalLastName.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El apellido paterno no puede estar vacío',
@@ -590,7 +654,10 @@ export const studentsHandlers = [
       );
     }
 
-    if (body.email !== undefined && (!body.email || body.email.trim().length === 0)) {
+    if (
+      body.email !== undefined &&
+      (!body.email || body.email.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El email no puede estar vacío',
@@ -641,9 +708,13 @@ export const studentsHandlers = [
     }
 
     // Verificar duplicados por email si se cambia
-    if (body.email && body.email.toLowerCase() !== student.email.toLowerCase()) {
+    if (
+      body.email &&
+      body.email.toLowerCase() !== student.email.toLowerCase()
+    ) {
       const exists = mockStudents.some(
-        (s: Student) => s.id !== id && s.email.toLowerCase() === body.email!.toLowerCase()
+        (s: Student) =>
+          s.id !== id && s.email.toLowerCase() === body.email!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -669,9 +740,16 @@ export const studentsHandlers = [
         );
       }
       // Activo solo puede pasar a Pausado o Cancelado
-      if (student.status === StudentStatus.ACTIVO && body.status === StudentStatus.ACTIVO) {
+      if (
+        student.status === StudentStatus.ACTIVO &&
+        body.status === StudentStatus.ACTIVO
+      ) {
         // Ya está activo, no hay cambio
-      } else if (student.status === StudentStatus.ACTIVO && body.status !== StudentStatus.PAUSADO && body.status !== StudentStatus.CANCELADO) {
+      } else if (
+        student.status === StudentStatus.ACTIVO &&
+        body.status !== StudentStatus.PAUSADO &&
+        body.status !== StudentStatus.CANCELADO
+      ) {
         return HttpResponse.json(
           {
             error: 'Un estudiante activo solo puede ser pausado o cancelado',
@@ -681,7 +759,10 @@ export const studentsHandlers = [
         );
       }
       // Pausado solo puede pasar a Activo
-      if (student.status === StudentStatus.PAUSADO && body.status !== StudentStatus.ACTIVO) {
+      if (
+        student.status === StudentStatus.PAUSADO &&
+        body.status !== StudentStatus.ACTIVO
+      ) {
         return HttpResponse.json(
           {
             error: 'Un estudiante pausado solo puede ser activado',
@@ -744,7 +825,9 @@ export const studentsHandlers = [
     await delay(300);
 
     const { id } = params;
-    const index = mockStudents.findIndex((student: Student) => student.id === id);
+    const index = mockStudents.findIndex(
+      (student: Student) => student.id === id
+    );
 
     if (index === -1) {
       return HttpResponse.json(
@@ -764,78 +847,87 @@ export const studentsHandlers = [
   }),
 
   // POST /students/:id/status (Cambiar status)
-  http.post(buildApiUrl('/students/:id/status'), async ({ params, request }) => {
-    await delay(300);
+  http.post(
+    buildApiUrl('/students/:id/status'),
+    async ({ params, request }) => {
+      await delay(300);
 
-    const { id } = params;
-    const student = findStudentById(id as string);
+      const { id } = params;
+      const student = findStudentById(id as string);
 
-    if (!student) {
-      return HttpResponse.json(
-        {
-          error: 'Estudiante no encontrado',
-          code: 'STUDENT_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    const body = (await request.json()) as { status: StudentStatus };
-
-    if (!body.status) {
-      return HttpResponse.json(
-        {
-          error: 'El status es requerido',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar transición de status
-    // Cancelado no puede cambiar de status
-    if (student.status === StudentStatus.CANCELADO) {
-      return HttpResponse.json(
-        {
-          error: 'Un estudiante cancelado no puede cambiar su estado',
-          code: 'INVALID_STATUS_TRANSITION',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Activo solo puede pasar a Pausado o Cancelado
-    if (student.status === StudentStatus.ACTIVO) {
-      if (body.status !== StudentStatus.PAUSADO && body.status !== StudentStatus.CANCELADO) {
+      if (!student) {
         return HttpResponse.json(
           {
-            error: 'Un estudiante activo solo puede ser pausado o cancelado',
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      const body = (await request.json()) as { status: StudentStatus };
+
+      if (!body.status) {
+        return HttpResponse.json(
+          {
+            error: 'El status es requerido',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar transición de status
+      // Cancelado no puede cambiar de status
+      if (student.status === StudentStatus.CANCELADO) {
+        return HttpResponse.json(
+          {
+            error: 'Un estudiante cancelado no puede cambiar su estado',
             code: 'INVALID_STATUS_TRANSITION',
           },
           { status: 400 }
         );
       }
+
+      // Activo solo puede pasar a Pausado o Cancelado
+      if (student.status === StudentStatus.ACTIVO) {
+        if (
+          body.status !== StudentStatus.PAUSADO &&
+          body.status !== StudentStatus.CANCELADO
+        ) {
+          return HttpResponse.json(
+            {
+              error: 'Un estudiante activo solo puede ser pausado o cancelado',
+              code: 'INVALID_STATUS_TRANSITION',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Pausado solo puede pasar a Activo
+      if (
+        student.status === StudentStatus.PAUSADO &&
+        body.status !== StudentStatus.ACTIVO
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'Un estudiante pausado solo puede ser activado',
+            code: 'INVALID_STATUS_TRANSITION',
+          },
+          { status: 400 }
+        );
+      }
+
+      student.status = body.status;
+      student.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...student,
+        birthDate: student.birthDate.toISOString().split('T')[0],
+        createdAt: student.createdAt.toISOString(),
+        updatedAt: student.updatedAt.toISOString(),
+      });
     }
-
-    // Pausado solo puede pasar a Activo
-    if (student.status === StudentStatus.PAUSADO && body.status !== StudentStatus.ACTIVO) {
-      return HttpResponse.json(
-        {
-          error: 'Un estudiante pausado solo puede ser activado',
-          code: 'INVALID_STATUS_TRANSITION',
-        },
-        { status: 400 }
-      );
-    }
-
-    student.status = body.status;
-    student.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...student,
-      birthDate: student.birthDate.toISOString().split('T')[0],
-      createdAt: student.createdAt.toISOString(),
-      updatedAt: student.updatedAt.toISOString(),
-    });
-  }),
+  ),
 ];

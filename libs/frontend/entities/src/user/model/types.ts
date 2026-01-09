@@ -12,5 +12,5 @@ export interface User {
 
 export enum UserRole {
   ADMIN = 'ADMIN',
-  STAFF = 'STAFF'
+  STAFF = 'STAFF',
 }

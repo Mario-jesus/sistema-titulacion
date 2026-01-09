@@ -11,7 +11,6 @@ export function Header({
   className = '',
   onMenuClick,
 }: HeaderProps) {
-
   const handleUserClick = () => {
     if (onUserMenuClick) {
       onUserMenuClick();
@@ -151,10 +150,7 @@ export function Header({
                 {user.role}
               </div>
             </div>
-            <ChevronDownIcon
-              size={16}
-              className="hidden md:block"
-            />
+            <ChevronDownIcon size={16} className="hidden md:block" />
           </button>
         </div>
       )}

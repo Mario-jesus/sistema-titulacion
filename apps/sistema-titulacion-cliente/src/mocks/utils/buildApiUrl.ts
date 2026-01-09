@@ -7,6 +7,8 @@ import { env } from '@shared/config';
  */
 export function buildApiUrl(endpoint: string): string {
   const baseUrl = env.apiBaseUrl || 'http://localhost:3000/api/v1';
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const normalizedEndpoint = endpoint.startsWith('/')
+    ? endpoint
+    : `/${endpoint}`;
   return `${baseUrl}${normalizedEndpoint}`;
 }

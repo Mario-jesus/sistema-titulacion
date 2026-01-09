@@ -61,7 +61,8 @@ export function findQuotaByCareerAndGeneration(
   generationId: string
 ): Quota | undefined {
   return mockQuotas.find(
-    (quota) => quota.careerId === careerId && quota.generationId === generationId
+    (quota) =>
+      quota.careerId === careerId && quota.generationId === generationId
   );
 }
 
@@ -69,6 +70,9 @@ export function findQuotaByCareerAndGeneration(
  * Genera un nuevo ID para un cupo
  */
 export function generateQuotaId(): string {
-  const maxId = Math.max(...mockQuotas.map((quota) => parseInt(quota.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockQuotas.map((quota) => parseInt(quota.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }

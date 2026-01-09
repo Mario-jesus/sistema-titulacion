@@ -68,10 +68,10 @@ const defaultStatusColors: TableStatusColors = {
 
 /**
  * Componente de tabla genérico con soporte para modo claro y oscuro
- * 
+ *
  * Este componente proporciona una tabla completa con funcionalidades de ordenamiento,
  * columnas personalizables, estados visuales y soporte automático para modo claro y oscuro.
- * 
+ *
  * @example
  * ```tsx
  * // Tabla básica
@@ -85,7 +85,7 @@ const defaultStatusColors: TableStatusColors = {
  *     { nombre: 'Tesis', descripcion: 'Proyecto de tesis' },
  *   ]}
  * />
- * 
+ *
  * // Tabla con ordenamiento
  * <Table
  *   columns={[
@@ -97,7 +97,7 @@ const defaultStatusColors: TableStatusColors = {
  *     console.log(`Ordenar por ${columnKey}: ${direction}`);
  *   }}
  * />
- * 
+ *
  * // Tabla con columna de estado
  * <Table
  *   columns={[
@@ -113,7 +113,7 @@ const defaultStatusColors: TableStatusColors = {
  *     }),
  *   }}
  * />
- * 
+ *
  * // Tabla con estados personalizados (solo activo/inactivo)
  * <Table
  *   columns={columns}
@@ -136,7 +136,7 @@ const defaultStatusColors: TableStatusColors = {
  *     },
  *   }}
  * />
- * 
+ *
  * // Tabla con colores personalizados por fila
  * <Table
  *   columns={columns}
@@ -153,7 +153,7 @@ const defaultStatusColors: TableStatusColors = {
  *     }),
  *   }}
  * />
- * 
+ *
  * // Tabla con render personalizado
  * <Table
  *   columns={[
@@ -166,7 +166,7 @@ const defaultStatusColors: TableStatusColors = {
  *   ]}
  *   data={data}
  * />
- * 
+ *
  * // Tabla con click en filas
  * <Table
  *   columns={columns}
@@ -175,7 +175,7 @@ const defaultStatusColors: TableStatusColors = {
  *     console.log('Fila clickeada:', row);
  *   }}
  * />
- * 
+ *
  * // Tabla con clases personalizadas en filas
  * <Table
  *   columns={columns}
@@ -285,7 +285,14 @@ export function Table<T = any>({
   };
 
   const allColumns = statusColumn
-    ? [...columns, { key: statusColumn.key, label: 'Estado', sortable: false } as TableColumn<T>]
+    ? [
+        ...columns,
+        {
+          key: statusColumn.key,
+          label: 'Estado',
+          sortable: false,
+        } as TableColumn<T>,
+      ]
     : columns;
 
   return (
@@ -303,7 +310,7 @@ export function Table<T = any>({
         }}
       >
         <thead>
-          <tr className='bg-gray-2-light dark:bg-gray-3-dark'>
+          <tr className="bg-gray-2-light dark:bg-gray-3-dark">
             {allColumns.map((column) => (
               <th
                 key={column.key}
@@ -337,10 +344,15 @@ export function Table<T = any>({
             </tr>
           ) : (
             data.map((row, rowIndex) => {
-              const statusConfig = statusColumn ? statusColumn.getStatus(row) : null;
+              const statusConfig = statusColumn
+                ? statusColumn.getStatus(row)
+                : null;
               // Usar colores personalizados del statusConfig, o del statusColumn.colors, o los por defecto
-              const statusColorsMap = statusColumn?.colors || defaultStatusColors;
-              const statusColor = statusConfig?.color || statusColorsMap[statusConfig?.status || ''];
+              const statusColorsMap =
+                statusColumn?.colors || defaultStatusColors;
+              const statusColor =
+                statusConfig?.color ||
+                statusColorsMap[statusConfig?.status || ''];
 
               const rowClasses = [
                 'border-b border-gray-1-light dark:border-gray-5-dark',
@@ -401,7 +413,9 @@ export function Table<T = any>({
                 >
                   {columns.map((column) => {
                     const value = getCellValue(row, column);
-                    const cellContent = column.render ? column.render(value, row) : value;
+                    const cellContent = column.render
+                      ? column.render(value, row)
+                      : value;
 
                     return (
                       <td
@@ -429,9 +443,7 @@ export function Table<T = any>({
                             <span
                               className={`w-2 h-2 rounded-full ${statusColor.dot}`}
                             />
-                            <span
-                              className={statusColor.text}
-                            >
+                            <span className={statusColor.text}>
                               {statusConfig.label}
                             </span>
                           </>
@@ -458,7 +470,7 @@ export function Table<T = any>({
       {/* Menú desplegable */}
       <DropdownMenu
         isOpen={menuState.isOpen}
-        onClose={() => setMenuState(prev => ({ ...prev, isOpen: false }))}
+        onClose={() => setMenuState((prev) => ({ ...prev, isOpen: false }))}
         position={menuState.position}
         items={menuState.items}
       />

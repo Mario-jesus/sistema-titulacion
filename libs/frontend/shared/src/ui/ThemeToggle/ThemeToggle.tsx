@@ -8,11 +8,15 @@ export function ThemeToggle() {
     <button
       onClick={toggleTheme}
       className="relative inline-flex items-center w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer"
-      style={{
-        backgroundColor: isDark ? 'var(--color-gray-4-dark)' : 'var(--color-white)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-        '--tw-ring-color': 'var(--color-primary-color)',
-      } as React.CSSProperties & { '--tw-ring-color'?: string }}
+      style={
+        {
+          backgroundColor: isDark
+            ? 'var(--color-gray-4-dark)'
+            : 'var(--color-white)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          '--tw-ring-color': 'var(--color-primary-color)',
+        } as React.CSSProperties & { '--tw-ring-color'?: string }
+      }
       aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
       type="button"
     >

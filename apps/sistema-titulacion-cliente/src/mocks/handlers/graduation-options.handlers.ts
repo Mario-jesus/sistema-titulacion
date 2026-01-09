@@ -51,14 +51,18 @@ export const graduationOptionsHandlers = [
     const offset = (page - 1) * limit;
 
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     const validSortFields = ['name', 'createdAt', 'isActive'];
     const requestedSortBy = url.searchParams.get('sortBy') || 'name';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'name';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'name';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = activeOnly
       ? mockGraduationOptions.filter((opt: GraduationOption) => opt.isActive)
@@ -182,7 +186,8 @@ export const graduationOptionsHandlers = [
 
     // Verificar duplicados
     const exists = mockGraduationOptions.some(
-      (opt: GraduationOption) => opt.name.toLowerCase() === body.name.toLowerCase()
+      (opt: GraduationOption) =>
+        opt.name.toLowerCase() === body.name.toLowerCase()
     );
     if (exists) {
       return HttpResponse.json(
@@ -216,128 +221,144 @@ export const graduationOptionsHandlers = [
   }),
 
   // PUT /graduation-options/:id (Update)
-  http.put(buildApiUrl('/graduation-options/:id'), async ({ params, request }) => {
-    await delay(400);
+  http.put(
+    buildApiUrl('/graduation-options/:id'),
+    async ({ params, request }) => {
+      await delay(400);
 
-    const { id } = params;
-    const option = findGraduationOptionById(id as string);
+      const { id } = params;
+      const option = findGraduationOptionById(id as string);
 
-    if (!option) {
-      return HttpResponse.json(
-        {
-          error: 'Opcion de titulacion no encontrada',
-          code: 'GRADUATION_OPTION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    const body = (await request.json()) as UpdateGraduationOptionRequest;
-
-    // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
-      return HttpResponse.json(
-        {
-          error: 'El nombre no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Verificar duplicados si se cambia el nombre
-    if (body.name && body.name.toLowerCase() !== option.name.toLowerCase()) {
-      const exists = mockGraduationOptions.some(
-        (opt) => opt.id !== id && opt.name.toLowerCase() === body.name!.toLowerCase()
-      );
-      if (exists) {
+      if (!option) {
         return HttpResponse.json(
           {
-            error: 'Ya existe una opción de titulación con ese nombre',
-            code: 'DUPLICATE_ERROR',
+            error: 'Opcion de titulacion no encontrada',
+            code: 'GRADUATION_OPTION_NOT_FOUND',
           },
-          { status: 409 }
+          { status: 404 }
         );
       }
+
+      const body = (await request.json()) as UpdateGraduationOptionRequest;
+
+      // Validaciones
+      if (
+        body.name !== undefined &&
+        (!body.name || body.name.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El nombre no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Verificar duplicados si se cambia el nombre
+      if (body.name && body.name.toLowerCase() !== option.name.toLowerCase()) {
+        const exists = mockGraduationOptions.some(
+          (opt) =>
+            opt.id !== id && opt.name.toLowerCase() === body.name!.toLowerCase()
+        );
+        if (exists) {
+          return HttpResponse.json(
+            {
+              error: 'Ya existe una opción de titulación con ese nombre',
+              code: 'DUPLICATE_ERROR',
+            },
+            { status: 409 }
+          );
+        }
+      }
+
+      // Actualizar
+      option.name = body.name?.trim() ?? option.name;
+      option.description =
+        body.description !== undefined ? body.description : option.description;
+      option.isActive = body.isActive ?? option.isActive;
+      option.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...option,
+        createdAt: option.createdAt.toISOString(),
+        updatedAt: option.updatedAt.toISOString(),
+      });
     }
-
-    // Actualizar
-    option.name = body.name?.trim() ?? option.name;
-    option.description = body.description !== undefined ? body.description : option.description;
-    option.isActive = body.isActive ?? option.isActive;
-    option.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...option,
-      createdAt: option.createdAt.toISOString(),
-      updatedAt: option.updatedAt.toISOString(),
-    });
-  }),
+  ),
 
   // PATCH /graduation-options/:id (Partial Update)
-  http.patch(buildApiUrl('/graduation-options/:id'), async ({ params, request }) => {
-    await delay(300);
+  http.patch(
+    buildApiUrl('/graduation-options/:id'),
+    async ({ params, request }) => {
+      await delay(300);
 
-    const { id } = params;
-    const option = findGraduationOptionById(id as string);
+      const { id } = params;
+      const option = findGraduationOptionById(id as string);
 
-    if (!option) {
-      return HttpResponse.json(
-        {
-          error: 'Opcion de titulacion no encontrada',
-          code: 'GRADUATION_OPTION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    const body = (await request.json()) as Partial<UpdateGraduationOptionRequest>;
-
-    // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
-      return HttpResponse.json(
-        {
-          error: 'El nombre no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Verificar duplicados si se cambia el nombre
-    if (body.name && body.name.toLowerCase() !== option.name.toLowerCase()) {
-      const exists = mockGraduationOptions.some(
-        (opt) => opt.id !== id && opt.name.toLowerCase() === body.name!.toLowerCase()
-      );
-      if (exists) {
+      if (!option) {
         return HttpResponse.json(
           {
-            error: 'Ya existe una opción de titulación con ese nombre',
-            code: 'DUPLICATE_ERROR',
+            error: 'Opcion de titulacion no encontrada',
+            code: 'GRADUATION_OPTION_NOT_FOUND',
           },
-          { status: 409 }
+          { status: 404 }
         );
       }
-    }
 
-    // Actualizar solo campos proporcionados
-    if (body.name !== undefined) {
-      option.name = body.name.trim();
-    }
-    if (body.description !== undefined) {
-      option.description = body.description;
-    }
-    if (body.isActive !== undefined) {
-      option.isActive = body.isActive;
-    }
-    option.updatedAt = new Date();
+      const body =
+        (await request.json()) as Partial<UpdateGraduationOptionRequest>;
 
-    return HttpResponse.json({
-      ...option,
-      createdAt: option.createdAt.toISOString(),
-      updatedAt: option.updatedAt.toISOString(),
-    });
-  }),
+      // Validaciones
+      if (
+        body.name !== undefined &&
+        (!body.name || body.name.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El nombre no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Verificar duplicados si se cambia el nombre
+      if (body.name && body.name.toLowerCase() !== option.name.toLowerCase()) {
+        const exists = mockGraduationOptions.some(
+          (opt) =>
+            opt.id !== id && opt.name.toLowerCase() === body.name!.toLowerCase()
+        );
+        if (exists) {
+          return HttpResponse.json(
+            {
+              error: 'Ya existe una opción de titulación con ese nombre',
+              code: 'DUPLICATE_ERROR',
+            },
+            { status: 409 }
+          );
+        }
+      }
+
+      // Actualizar solo campos proporcionados
+      if (body.name !== undefined) {
+        option.name = body.name.trim();
+      }
+      if (body.description !== undefined) {
+        option.description = body.description;
+      }
+      if (body.isActive !== undefined) {
+        option.isActive = body.isActive;
+      }
+      option.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...option,
+        createdAt: option.createdAt.toISOString(),
+        updatedAt: option.updatedAt.toISOString(),
+      });
+    }
+  ),
 
   // DELETE /graduation-options/:id
   http.delete(buildApiUrl('/graduation-options/:id'), async ({ params }) => {
@@ -364,56 +385,62 @@ export const graduationOptionsHandlers = [
   }),
 
   // POST /graduation-options/:id/activate
-  http.post(buildApiUrl('/graduation-options/:id/activate'), async ({ params }) => {
-    await delay(300);
+  http.post(
+    buildApiUrl('/graduation-options/:id/activate'),
+    async ({ params }) => {
+      await delay(300);
 
-    const { id } = params;
-    const option = findGraduationOptionById(id as string);
+      const { id } = params;
+      const option = findGraduationOptionById(id as string);
 
-    if (!option) {
-      return HttpResponse.json(
-        {
-          error: 'Opcion de titulacion no encontrada',
-          code: 'GRADUATION_OPTION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!option) {
+        return HttpResponse.json(
+          {
+            error: 'Opcion de titulacion no encontrada',
+            code: 'GRADUATION_OPTION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      option.isActive = true;
+      option.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...option,
+        createdAt: option.createdAt.toISOString(),
+        updatedAt: option.updatedAt.toISOString(),
+      });
     }
-
-    option.isActive = true;
-    option.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...option,
-      createdAt: option.createdAt.toISOString(),
-      updatedAt: option.updatedAt.toISOString(),
-    });
-  }),
+  ),
 
   // POST /graduation-options/:id/deactivate
-  http.post(buildApiUrl('/graduation-options/:id/deactivate'), async ({ params }) => {
-    await delay(300);
+  http.post(
+    buildApiUrl('/graduation-options/:id/deactivate'),
+    async ({ params }) => {
+      await delay(300);
 
-    const { id } = params;
-    const option = findGraduationOptionById(id as string);
+      const { id } = params;
+      const option = findGraduationOptionById(id as string);
 
-    if (!option) {
-      return HttpResponse.json(
-        {
-          error: 'Opcion de titulacion no encontrada',
-          code: 'GRADUATION_OPTION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!option) {
+        return HttpResponse.json(
+          {
+            error: 'Opcion de titulacion no encontrada',
+            code: 'GRADUATION_OPTION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      option.isActive = false;
+      option.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...option,
+        createdAt: option.createdAt.toISOString(),
+        updatedAt: option.updatedAt.toISOString(),
+      });
     }
-
-    option.isActive = false;
-    option.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...option,
-      createdAt: option.createdAt.toISOString(),
-      updatedAt: option.updatedAt.toISOString(),
-    });
-  }),
+  ),
 ];

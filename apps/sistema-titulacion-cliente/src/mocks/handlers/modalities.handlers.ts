@@ -1,11 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { Modality } from '@entities/modality';
 import { buildApiUrl, delay } from '../utils';
-import {
-  mockModalities,
-  findModalityById,
-  generateModalityId,
-} from '../data';
+import { mockModalities, findModalityById, generateModalityId } from '../data';
 
 /**
  * Handlers para endpoints de modalidades
@@ -51,14 +47,18 @@ export const modalitiesHandlers = [
     const offset = (page - 1) * limit;
 
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     const validSortFields = ['name', 'createdAt', 'isActive'];
     const requestedSortBy = url.searchParams.get('sortBy') || 'name';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'name';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'name';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = activeOnly
       ? mockModalities.filter((mod: Modality) => mod.isActive)
@@ -235,7 +235,10 @@ export const modalitiesHandlers = [
     const body = (await request.json()) as UpdateModalityRequest;
 
     // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
+    if (
+      body.name !== undefined &&
+      (!body.name || body.name.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -248,7 +251,8 @@ export const modalitiesHandlers = [
     // Verificar duplicados si se cambia el nombre
     if (body.name && body.name.toLowerCase() !== modality.name.toLowerCase()) {
       const exists = mockModalities.some(
-        (mod: Modality) => mod.id !== id && mod.name.toLowerCase() === body.name!.toLowerCase()
+        (mod: Modality) =>
+          mod.id !== id && mod.name.toLowerCase() === body.name!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -263,7 +267,8 @@ export const modalitiesHandlers = [
 
     // Actualizar
     modality.name = body.name?.trim() ?? modality.name;
-    modality.description = body.description !== undefined ? body.description : modality.description;
+    modality.description =
+      body.description !== undefined ? body.description : modality.description;
     modality.isActive = body.isActive ?? modality.isActive;
     modality.updatedAt = new Date();
 
@@ -294,7 +299,10 @@ export const modalitiesHandlers = [
     const body = (await request.json()) as Partial<UpdateModalityRequest>;
 
     // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
+    if (
+      body.name !== undefined &&
+      (!body.name || body.name.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -307,7 +315,8 @@ export const modalitiesHandlers = [
     // Verificar duplicados si se cambia el nombre
     if (body.name && body.name.toLowerCase() !== modality.name.toLowerCase()) {
       const exists = mockModalities.some(
-        (mod: Modality) => mod.id !== id && mod.name.toLowerCase() === body.name!.toLowerCase()
+        (mod: Modality) =>
+          mod.id !== id && mod.name.toLowerCase() === body.name!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(

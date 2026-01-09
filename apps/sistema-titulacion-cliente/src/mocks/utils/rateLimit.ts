@@ -34,7 +34,10 @@ function getIdentifier(request: Request): string {
  * @param type - Tipo de rate limit (LOGIN o REFRESH)
  * @returns true si se excedió el límite, false en caso contrario
  */
-export function checkRateLimit(request: Request, type: 'LOGIN' | 'REFRESH'): boolean {
+export function checkRateLimit(
+  request: Request,
+  type: 'LOGIN' | 'REFRESH'
+): boolean {
   const identifier = getIdentifier(request);
   const limit = RATE_LIMITS[type];
   const now = Date.now();

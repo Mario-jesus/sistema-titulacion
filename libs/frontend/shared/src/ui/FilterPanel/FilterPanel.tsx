@@ -32,23 +32,26 @@ export interface FilterPanelProps<T = any> {
   /** Valores seleccionados: { [columnKey]: string | string[] } */
   selectedFilters: Record<string, string | string[] | boolean>;
   /** Callback cuando cambian los filtros */
-  onFilterChange: (columnKey: string, value: string | string[] | boolean) => void;
+  onFilterChange: (
+    columnKey: string,
+    value: string | string[] | boolean
+  ) => void;
   /** Callback para limpiar filtros */
   onReset?: () => void;
 }
 
 /**
  * Panel de filtros con soporte para múltiples tipos: checkboxes, toggles y selects
- * 
+ *
  * Este componente puede trabajar de dos formas:
  * 1. Con datos locales: extrae automáticamente valores únicos de las columnas
  * 2. Con opciones predefinidas: usa opciones proporcionadas (ideal para trabajar con backend)
- * 
+ *
  * Tipos de filtros soportados:
  * - 'checkbox': Múltiples valores seleccionables (array)
  * - 'toggle': Boolean simple (true/false)
  * - 'select': Valor único (string)
- * 
+ *
  * @example
  * // Uso con datos locales (compatibilidad hacia atrás)
  * ```tsx
@@ -62,7 +65,7 @@ export interface FilterPanelProps<T = any> {
  *   onReset={() => setFilters({})}
  * />
  * ```
- * 
+ *
  * @example
  * // Uso con opciones predefinidas del backend
  * ```tsx
@@ -142,7 +145,11 @@ export function FilterPanel<T = any>({
     return options;
   }, [data, filterConfigs]);
 
-  const handleCheckboxChange = (columnKey: string, value: string, checked: boolean) => {
+  const handleCheckboxChange = (
+    columnKey: string,
+    value: string,
+    checked: boolean
+  ) => {
     const config = filterConfigs.find((c) => c.columnKey === columnKey);
     const filterType = config?.type || 'checkbox';
     const current = selectedFilters[columnKey];
@@ -163,18 +170,20 @@ export function FilterPanel<T = any>({
     }
   };
 
-  const hasActiveFilters = Object.entries(selectedFilters).some(([key, value]) => {
-    if (typeof value === 'boolean') {
-      return value === true;
+  const hasActiveFilters = Object.entries(selectedFilters).some(
+    ([key, value]) => {
+      if (typeof value === 'boolean') {
+        return value === true;
+      }
+      if (typeof value === 'string') {
+        return value !== '';
+      }
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return false;
     }
-    if (typeof value === 'string') {
-      return value !== '';
-    }
-    if (Array.isArray(value)) {
-      return value.length > 0;
-    }
-    return false;
-  });
+  );
 
   return (
     <div className="p-4 min-w-[240px] max-w-[300px]">
@@ -191,13 +200,18 @@ export function FilterPanel<T = any>({
             const isChecked = selected === true || selected === 'true';
 
             return (
-              <div key={config.columnKey} className="flex items-center justify-between gap-2">
+              <div
+                key={config.columnKey}
+                className="flex items-center justify-between gap-2"
+              >
                 <label
                   className="text-sm font-medium cursor-pointer"
                   style={{
                     color: 'var(--color-base-primary-typo)',
                   }}
-                  onClick={() => handleCheckboxChange(config.columnKey, 'true', !isChecked)}
+                  onClick={() =>
+                    handleCheckboxChange(config.columnKey, 'true', !isChecked)
+                  }
                 >
                   {config.label}
                 </label>
@@ -205,7 +219,13 @@ export function FilterPanel<T = any>({
                   <input
                     type="checkbox"
                     checked={isChecked}
-                    onChange={(e) => handleCheckboxChange(config.columnKey, 'true', e.target.checked)}
+                    onChange={(e) =>
+                      handleCheckboxChange(
+                        config.columnKey,
+                        'true',
+                        e.target.checked
+                      )
+                    }
                     className="w-4 h-4 rounded cursor-pointer"
                     style={{
                       accentColor: 'var(--color-primary-color)',
@@ -232,7 +252,9 @@ export function FilterPanel<T = any>({
                 </label>
                 <select
                   value={selectedValue}
-                  onChange={(e) => onFilterChange(config.columnKey, e.target.value)}
+                  onChange={(e) =>
+                    onFilterChange(config.columnKey, e.target.value)
+                  }
                   className="w-full px-3 py-2 text-sm rounded-lg border"
                   style={{
                     backgroundColor: 'var(--color-component-bg)',
@@ -277,7 +299,11 @@ export function FilterPanel<T = any>({
                         type="checkbox"
                         checked={isChecked}
                         onChange={(e) =>
-                          handleCheckboxChange(config.columnKey, option.value, e.target.checked)
+                          handleCheckboxChange(
+                            config.columnKey,
+                            option.value,
+                            e.target.checked
+                          )
                         }
                         className="w-4 h-4 rounded cursor-pointer"
                         style={{
@@ -303,8 +329,8 @@ export function FilterPanel<T = any>({
 
       {/* Botón de limpiar */}
       {onReset && (
-        <div 
-          className="flex items-center justify-start mt-4 pt-4 border-t" 
+        <div
+          className="flex items-center justify-start mt-4 pt-4 border-t"
           style={{ borderColor: 'var(--color-gray-1)' }}
         >
           <Button

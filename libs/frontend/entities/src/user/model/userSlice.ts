@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "./types";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { User } from './types';
 
 export interface UserState {
   currentUser: User | null;
@@ -8,7 +8,7 @@ export interface UserState {
 
 const initialState: UserState = {
   currentUser: null,
-  isAuthenticated: false
+  isAuthenticated: false,
 };
 
 const userSlice = createSlice({
@@ -22,7 +22,7 @@ const userSlice = createSlice({
     clearUser: (state) => {
       state.currentUser = null;
       state.isAuthenticated = false;
-    }
+    },
   },
 });
 

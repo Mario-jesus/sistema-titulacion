@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Include shared libraries so that Tailwind scans the classes */
 @source "../../../libs/";
@@ -13,7 +13,8 @@
    ============================================ */
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/Inter/Inter-VariableFont_opsz,wght.ttf') format('truetype-variations');
+  src: url('/fonts/Inter/Inter-VariableFont_opsz,wght.ttf')
+    format('truetype-variations');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -21,7 +22,8 @@
 
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype-variations');
+  src: url('/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf')
+    format('truetype-variations');
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
@@ -68,49 +70,51 @@
    ============================================ */
 @theme {
   /* ========== Typography ========== */
-  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   --font-family-sans: var(--font-family-base);
 
   /* ========== Base Colors ========== */
   --color-black: #000000;
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
 
   /* ========== Light Mode ========== */
-  --color-primary-color-light: #7B57E0;
-  --color-gray-1-light: #DCDCDD;
-  --color-gray-2-light: #F1F3F4;
-  --color-gray-3-light: #DCE3EB;
-  --color-green-light: #50C099;
-  --color-blue-light: #5DAAEE;
-  --color-yellow-light: #FFC565;
-  --color-salmon-light: #F9837C;
+  --color-primary-color-light: #7b57e0;
+  --color-gray-1-light: #dcdcdd;
+  --color-gray-2-light: #f1f3f4;
+  --color-gray-3-light: #dce3eb;
+  --color-green-light: #50c099;
+  --color-blue-light: #5daaee;
+  --color-yellow-light: #ffc565;
+  --color-salmon-light: #f9837c;
 
   /* ========== Dark Mode ========== */
-  --color-primary-color-dark: #7B57E0;
-  --color-gray-1-dark: #0D0F11;
-  --color-gray-2-dark: #191D23;
-  --color-gray-3-dark: #262C36;
-  --color-gray-4-dark: #334E68;
+  --color-primary-color-dark: #7b57e0;
+  --color-gray-1-dark: #0d0f11;
+  --color-gray-2-dark: #191d23;
+  --color-gray-3-dark: #262c36;
+  --color-gray-4-dark: #334e68;
   --color-gray-5-dark: #576776;
-  --color-gray-6-dark: #37404E;
-  --color-green-dark: #47A785;
-  --color-blue-dark: #5395CF;
-  --color-yellow-dark: #EFB047;
-  --color-salmon-dark: #F9837C;
+  --color-gray-6-dark: #37404e;
+  --color-green-dark: #47a785;
+  --color-blue-dark: #5395cf;
+  --color-yellow-dark: #efb047;
+  --color-salmon-dark: #f9837c;
 
   /* ========== Typography - Light Mode ========== */
-  --color-highlight-primary-typo-light: #7B57E0;
-  --color-base-primary-typo-light: #2B2E48;
-  --color-base-secondary-typo-light: #7D7D7D;
-  --color-error-typo-light: #C71026;
-  --color-success-typo-light: #0B8A00;
+  --color-highlight-primary-typo-light: #7b57e0;
+  --color-base-primary-typo-light: #2b2e48;
+  --color-base-secondary-typo-light: #7d7d7d;
+  --color-error-typo-light: #c71026;
+  --color-success-typo-light: #0b8a00;
 
   /* ========== Typography - Dark Mode ========== */
-  --color-highlight-primary-typo-dark: #7B57E0;
-  --color-base-primary-typo-dark: #E3E3E3;
-  --color-base-secondary-typo-dark: #B8C0CC;
-  --color-error-typo-dark: #F53B30;
-  --color-success-typo-dark: #2AA31F;
+  --color-highlight-primary-typo-dark: #7b57e0;
+  --color-base-primary-typo-dark: #e3e3e3;
+  --color-base-secondary-typo-dark: #b8c0cc;
+  --color-error-typo-dark: #f53b30;
+  --color-success-typo-dark: #2aa31f;
 
   /* ========== Transitions ========== */
   --transition-property-width-transform: width, transform;

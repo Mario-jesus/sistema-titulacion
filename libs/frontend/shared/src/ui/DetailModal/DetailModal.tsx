@@ -31,10 +31,10 @@ export interface DetailModalProps<T = any> {
 
 /**
  * Componente modal para mostrar los detalles de una fila de tabla
- * 
+ *
  * Este componente permite mostrar los datos de una fila de forma estructurada
  * con etiquetas y valores, con soporte para renderizado personalizado.
- * 
+ *
  * @example
  * ```tsx
  * // Uso básico
@@ -46,8 +46,8 @@ export interface DetailModalProps<T = any> {
  *   fields={[
  *     { key: 'nombre', label: 'Nombre' },
  *     { key: 'descripcion', label: 'Descripción', fullWidth: true },
- *     { 
- *       key: 'estado', 
+ *     {
+ *       key: 'estado',
  *       label: 'Estado',
  *       render: (value) => (
  *         <span className={value === 'active' ? 'text-green' : 'text-gray'}>
@@ -57,7 +57,7 @@ export interface DetailModalProps<T = any> {
  *     },
  *   ]}
  * />
- * 
+ *
  * // Con campos anidados
  * <DetailModal
  *   title="Detalles del usuario"
@@ -110,10 +110,7 @@ export function DetailModal<T = any>({
             : value ?? '—';
 
           return (
-            <div
-              key={field.key}
-              className={field.fullWidth ? 'w-full' : ''}
-            >
+            <div key={field.key} className={field.fullWidth ? 'w-full' : ''}>
               <div
                 className="text-sm font-medium mb-1"
                 style={{

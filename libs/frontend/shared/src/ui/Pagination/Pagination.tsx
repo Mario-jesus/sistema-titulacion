@@ -54,10 +54,10 @@ export interface PaginationProps {
 
 /**
  * Componente de paginación con soporte para modo claro y oscuro
- * 
+ *
  * Requiere la estructura de paginación completa del backend que incluye
  * `page`, `totalPages`, `hasPrevPage`, `hasNextPage`, `prevPage`, y `nextPage`.
- * 
+ *
  * @example
  * ```tsx
  * <Pagination
@@ -112,7 +112,8 @@ export function Pagination({
     // Calcular el número total de páginas que se mostrarían
     const pagesInRange = rightSiblingIndex - leftSiblingIndex + 1;
     const totalVisiblePages = 1 + pagesInRange + 1; // primera + rango + última
-    const ellipsisCount = (shouldShowLeftEllipsis ? 1 : 0) + (shouldShowRightEllipsis ? 1 : 0);
+    const ellipsisCount =
+      (shouldShowLeftEllipsis ? 1 : 0) + (shouldShowRightEllipsis ? 1 : 0);
     const totalPagesToShow = totalVisiblePages + ellipsisCount;
 
     // Si el total de páginas es menor o igual a lo que queremos mostrar, mostrar todas

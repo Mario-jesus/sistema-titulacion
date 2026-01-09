@@ -1,10 +1,14 @@
-import { ReactNode, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Sidebar, createDefaultNavigationItems, filterNavigationItemsByRole } from "@widgets/Sidebar";
-import type { SidebarItem } from "@widgets/Sidebar";
-import { Header } from "@widgets/Header";
-import { useAuth } from "@features/auth";
-import type { UserRole } from "@entities/user";
+import { ReactNode, useMemo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Sidebar,
+  createDefaultNavigationItems,
+  filterNavigationItemsByRole,
+} from '@widgets/Sidebar';
+import type { SidebarItem } from '@widgets/Sidebar';
+import { Header } from '@widgets/Header';
+import { useAuth } from '@features/auth';
+import type { UserRole } from '@entities/user';
 
 interface LayoutWithSidebarProps {
   children: ReactNode;
@@ -54,7 +58,9 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
     // Primero buscar en subitems
     for (const item of navigationItems) {
       if (item.subItems) {
-        const activeSubItem = item.subItems.find(subItem => subItem.path === currentPath);
+        const activeSubItem = item.subItems.find(
+          (subItem) => subItem.path === currentPath
+        );
         if (activeSubItem) {
           return activeSubItem.id;
         }
@@ -62,7 +68,9 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
     }
 
     // Si no está en subitems, buscar en items principales
-    const activeItem = navigationItems.find(item => item.path === currentPath);
+    const activeItem = navigationItems.find(
+      (item) => item.path === currentPath
+    );
     return activeItem?.id || 'panel';
   }, [location.pathname, navigationItems]);
 
@@ -73,7 +81,9 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
     // Primero buscar en subitems
     for (const item of navigationItems) {
       if (item.subItems) {
-        const activeSubItem = item.subItems.find(subItem => subItem.path === currentPath);
+        const activeSubItem = item.subItems.find(
+          (subItem) => subItem.path === currentPath
+        );
         if (activeSubItem) {
           return `${item.label} - ${activeSubItem.label}`;
         }
@@ -81,7 +91,9 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
     }
 
     // Si no está en subitems, buscar en items principales
-    const activeItem = navigationItems.find(item => item.path === currentPath);
+    const activeItem = navigationItems.find(
+      (item) => item.path === currentPath
+    );
     return activeItem?.label || 'Panel';
   }, [location.pathname, navigationItems]);
 
@@ -98,8 +110,8 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
   }, [user]);
 
   return (
-    <div 
-      className="h-screen overflow-hidden w-full lg:flex" 
+    <div
+      className="h-screen overflow-hidden w-full lg:flex"
       style={{ backgroundColor: 'var(--color-document-bg)' }}
     >
       {/* Sidebar: position fixed en móviles (fuera del flujo), static en desktop (en el flujo flex) */}
@@ -114,7 +126,10 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
 
       {/* Contenedor principal: ocupa todo el ancho en móviles, flex-1 en desktop */}
       <div className="w-full lg:flex-1 lg:w-auto flex flex-col overflow-hidden min-w-0 lg:z-0">
-        <div className="flex-1 overflow-y-auto relative w-full" style={{ backgroundColor: 'var(--color-document-bg)' }}>
+        <div
+          className="flex-1 overflow-y-auto relative w-full"
+          style={{ backgroundColor: 'var(--color-document-bg)' }}
+        >
           <div className="px-4 lg:px-6 sticky top-0 z-10 lg:z-auto">
             <Header
               title={pageTitle}
@@ -126,9 +141,7 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
               onMenuClick={handleMobileMenuToggle}
             />
           </div>
-          <main className="px-4 lg:px-6 pb-4 w-full">
-            {children}
-          </main>
+          <main className="px-4 lg:px-6 pb-4 w-full">{children}</main>
         </div>
       </div>
     </div>

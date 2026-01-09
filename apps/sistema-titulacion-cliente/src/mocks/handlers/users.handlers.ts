@@ -80,7 +80,10 @@ function getAuthenticatedUser(request: Request): User | null {
  * - Los administradores pueden gestionar cualquier usuario
  * - Los usuarios pueden gestionar su propio usuario
  */
-function canManageUser(authenticatedUser: User | null, targetUserId: string): boolean {
+function canManageUser(
+  authenticatedUser: User | null,
+  targetUserId: string
+): boolean {
   if (!authenticatedUser) {
     return false;
   }
@@ -127,14 +130,25 @@ export const usersHandlers = [
     const offset = (page - 1) * limit;
 
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
-    const validSortFields = ['username', 'email', 'role', 'createdAt', 'lastLogin', 'isActive'];
+    const validSortFields = [
+      'username',
+      'email',
+      'role',
+      'createdAt',
+      'lastLogin',
+      'isActive',
+    ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'username';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'username';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'username';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = activeOnly
       ? mockUsers.filter((user: User) => user.isActive)
@@ -143,8 +157,10 @@ export const usersHandlers = [
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
       filteredData = filteredData.filter((user: User) => {
-        const usernameMatch = user.username?.toLowerCase().includes(searchLower) ?? false;
-        const emailMatch = user.email?.toLowerCase().includes(searchLower) ?? false;
+        const usernameMatch =
+          user.username?.toLowerCase().includes(searchLower) ?? false;
+        const emailMatch =
+          user.email?.toLowerCase().includes(searchLower) ?? false;
         return usernameMatch || emailMatch;
       });
     }
@@ -329,7 +345,8 @@ export const usersHandlers = [
     if (!body.password || body.password.length < 6) {
       return HttpResponse.json(
         {
-          error: 'La contraseña es requerida y debe tener al menos 6 caracteres',
+          error:
+            'La contraseña es requerida y debe tener al menos 6 caracteres',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -847,163 +864,171 @@ export const usersHandlers = [
   }),
 
   // POST /users/:id/deactivate
-  http.post(buildApiUrl('/users/:id/deactivate'), async ({ params, request }) => {
-    await delay(200);
+  http.post(
+    buildApiUrl('/users/:id/deactivate'),
+    async ({ params, request }) => {
+      await delay(200);
 
-    const authenticatedUser = getAuthenticatedUser(request);
-    if (!authenticatedUser) {
-      return HttpResponse.json(
-        {
-          error: 'No autorizado',
-          code: 'UNAUTHORIZED',
-        },
-        { status: 401 }
-      );
-    }
-
-    const { id } = params;
-    const targetUser = findUserById(id as string);
-
-    if (!targetUser) {
-      return HttpResponse.json(
-        {
-          error: 'Usuario no encontrado',
-          code: 'USER_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    // Solo administradores pueden desactivar usuarios (y no pueden desactivarse a sí mismos)
-    if (authenticatedUser.role !== UserRole.ADMIN) {
-      return HttpResponse.json(
-        {
-          error: 'No tienes permisos para desactivar usuarios',
-          code: 'FORBIDDEN',
-        },
-        { status: 403 }
-      );
-    }
-
-    // No permitir que un administrador se desactive a sí mismo
-    if (authenticatedUser.id === id) {
-      return HttpResponse.json(
-        {
-          error: 'No puedes desactivar tu propio usuario',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    targetUser.isActive = false;
-    targetUser.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...targetUser,
-      lastLogin: targetUser.lastLogin.toISOString(),
-      createdAt: targetUser.createdAt.toISOString(),
-      updatedAt: targetUser.updatedAt.toISOString(),
-    });
-  }),
-
-  // POST /users/:id/change-password (Change password)
-  http.post(buildApiUrl('/users/:id/change-password'), async ({ params, request }) => {
-    await delay(300);
-
-    const authenticatedUser = getAuthenticatedUser(request);
-    if (!authenticatedUser) {
-      return HttpResponse.json(
-        {
-          error: 'No autorizado',
-          code: 'UNAUTHORIZED',
-        },
-        { status: 401 }
-      );
-    }
-
-    const { id } = params;
-    const targetUserId = id as string;
-    const targetUser = findUserById(targetUserId);
-
-    if (!targetUser) {
-      return HttpResponse.json(
-        {
-          error: 'Usuario no encontrado',
-          code: 'USER_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    // Solo el usuario autenticado o un administrador pueden cambiar contraseñas
-    const isOwnPassword = authenticatedUser.id === targetUserId;
-    const isAdmin = authenticatedUser.role === UserRole.ADMIN;
-
-    if (!isOwnPassword && !isAdmin) {
-      return HttpResponse.json(
-        {
-          error: 'No tienes permisos para cambiar la contraseña de este usuario',
-          code: 'FORBIDDEN',
-        },
-        { status: 403 }
-      );
-    }
-
-    const body = (await request.json()) as ChangePasswordRequest;
-
-    // Validaciones
-    if (!body.currentPassword || !body.newPassword) {
-      return HttpResponse.json(
-        {
-          error: 'La contraseña actual y la nueva contraseña son requeridas',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Si el usuario está cambiando su propia contraseña, validar la contraseña actual
-    if (isOwnPassword) {
-      if (!validateUserPassword(targetUserId, body.currentPassword)) {
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) {
         return HttpResponse.json(
           {
-            error: 'La contraseña actual es incorrecta',
-            code: 'INVALID_PASSWORD',
+            error: 'No autorizado',
+            code: 'UNAUTHORIZED',
+          },
+          { status: 401 }
+        );
+      }
+
+      const { id } = params;
+      const targetUser = findUserById(id as string);
+
+      if (!targetUser) {
+        return HttpResponse.json(
+          {
+            error: 'Usuario no encontrado',
+            code: 'USER_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Solo administradores pueden desactivar usuarios (y no pueden desactivarse a sí mismos)
+      if (authenticatedUser.role !== UserRole.ADMIN) {
+        return HttpResponse.json(
+          {
+            error: 'No tienes permisos para desactivar usuarios',
+            code: 'FORBIDDEN',
+          },
+          { status: 403 }
+        );
+      }
+
+      // No permitir que un administrador se desactive a sí mismo
+      if (authenticatedUser.id === id) {
+        return HttpResponse.json(
+          {
+            error: 'No puedes desactivar tu propio usuario',
+            code: 'VALIDATION_ERROR',
           },
           { status: 400 }
         );
       }
+
+      targetUser.isActive = false;
+      targetUser.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...targetUser,
+        lastLogin: targetUser.lastLogin.toISOString(),
+        createdAt: targetUser.createdAt.toISOString(),
+        updatedAt: targetUser.updatedAt.toISOString(),
+      });
     }
+  ),
 
-    // Validar que la nueva contraseña tenga al menos 6 caracteres
-    if (body.newPassword.length < 6) {
-      return HttpResponse.json(
-        {
-          error: 'La nueva contraseña debe tener al menos 6 caracteres',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
+  // POST /users/:id/change-password (Change password)
+  http.post(
+    buildApiUrl('/users/:id/change-password'),
+    async ({ params, request }) => {
+      await delay(300);
+
+      const authenticatedUser = getAuthenticatedUser(request);
+      if (!authenticatedUser) {
+        return HttpResponse.json(
+          {
+            error: 'No autorizado',
+            code: 'UNAUTHORIZED',
+          },
+          { status: 401 }
+        );
+      }
+
+      const { id } = params;
+      const targetUserId = id as string;
+      const targetUser = findUserById(targetUserId);
+
+      if (!targetUser) {
+        return HttpResponse.json(
+          {
+            error: 'Usuario no encontrado',
+            code: 'USER_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Solo el usuario autenticado o un administrador pueden cambiar contraseñas
+      const isOwnPassword = authenticatedUser.id === targetUserId;
+      const isAdmin = authenticatedUser.role === UserRole.ADMIN;
+
+      if (!isOwnPassword && !isAdmin) {
+        return HttpResponse.json(
+          {
+            error:
+              'No tienes permisos para cambiar la contraseña de este usuario',
+            code: 'FORBIDDEN',
+          },
+          { status: 403 }
+        );
+      }
+
+      const body = (await request.json()) as ChangePasswordRequest;
+
+      // Validaciones
+      if (!body.currentPassword || !body.newPassword) {
+        return HttpResponse.json(
+          {
+            error: 'La contraseña actual y la nueva contraseña son requeridas',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Si el usuario está cambiando su propia contraseña, validar la contraseña actual
+      if (isOwnPassword) {
+        if (!validateUserPassword(targetUserId, body.currentPassword)) {
+          return HttpResponse.json(
+            {
+              error: 'La contraseña actual es incorrecta',
+              code: 'INVALID_PASSWORD',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Validar que la nueva contraseña tenga al menos 6 caracteres
+      if (body.newPassword.length < 6) {
+        return HttpResponse.json(
+          {
+            error: 'La nueva contraseña debe tener al menos 6 caracteres',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que la nueva contraseña sea diferente a la actual
+      if (isOwnPassword && body.currentPassword === body.newPassword) {
+        return HttpResponse.json(
+          {
+            error:
+              'La nueva contraseña debe ser diferente a la contraseña actual',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Actualizar contraseña
+      setUserPassword(targetUserId, body.newPassword);
+      targetUser.updatedAt = new Date();
+
+      return HttpResponse.json({
+        message: 'Contraseña actualizada exitosamente',
+      });
     }
-
-    // Validar que la nueva contraseña sea diferente a la actual
-    if (isOwnPassword && body.currentPassword === body.newPassword) {
-      return HttpResponse.json(
-        {
-          error: 'La nueva contraseña debe ser diferente a la contraseña actual',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Actualizar contraseña
-    setUserPassword(targetUserId, body.newPassword);
-    targetUser.updatedAt = new Date();
-
-    return HttpResponse.json({
-      message: 'Contraseña actualizada exitosamente',
-    });
-  }),
+  ),
 ];

@@ -3,7 +3,8 @@ export const env = {
   appEnv: import.meta.env.VITE_APP_ENV || 'development',
 
   // API
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
+  apiBaseUrl:
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
   apiTimeout: Number(import.meta.env.VITE_API_TIMEOUT) || 5000,
 
   // Información de la app
@@ -23,20 +24,18 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export function validateEnv(): void {
   if (env.appEnv === 'development') {
     const requiredVars = ['VITE_API_BASE_URL', 'VITE_APP_ENV'];
-    const missing = requiredVars.filter(
-      (varName) => !import.meta.env[varName]
-    );
+    const missing = requiredVars.filter((varName) => !import.meta.env[varName]);
 
     if (missing.length > 0) {
-      console.warn(
-        `Variables de entorno faltantes: ${missing.join(', ')}`
-      );
+      console.warn(`Variables de entorno faltantes: ${missing.join(', ')}`);
     }
 
     const validLogLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
     if (!validLogLevels.includes(env.minLogLevel as LogLevel)) {
       console.warn(
-        `VITE_MIN_LOG_LEVEL inválido: "${env.minLogLevel}". Usar: ${validLogLevels.join(', ')}`
+        `VITE_MIN_LOG_LEVEL inválido: "${
+          env.minLogLevel
+        }". Usar: ${validLogLevels.join(', ')}`
       );
     }
   }

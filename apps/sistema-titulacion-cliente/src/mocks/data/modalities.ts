@@ -49,6 +49,9 @@ export function findModalityById(id: string): Modality | undefined {
  * Genera un nuevo ID para una modalidad
  */
 export function generateModalityId(): string {
-  const maxId = Math.max(...mockModalities.map((mod) => parseInt(mod.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockModalities.map((mod) => parseInt(mod.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }

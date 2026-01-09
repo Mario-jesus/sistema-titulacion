@@ -68,15 +68,19 @@ export const graduationsHandlers = [
     const studentId = url.searchParams.get('studentId');
     const isGraduated = url.searchParams.get('isGraduated');
     const graduationOptionId = url.searchParams.get('graduationOptionId');
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     // Validar y normalizar parámetros de ordenamiento
     const validSortFields = ['date', 'createdAt', 'isGraduated'];
     const requestedSortBy = url.searchParams.get('sortBy') || 'date';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'date';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'date';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = [...mockGraduations];
 
@@ -98,7 +102,8 @@ export const graduationsHandlers = [
     // Filtrar por opción de titulación si se especifica
     if (graduationOptionId) {
       filteredData = filteredData.filter(
-        (graduation: Graduation) => graduation.graduationOptionId === graduationOptionId
+        (graduation: Graduation) =>
+          graduation.graduationOptionId === graduationOptionId
       );
     }
 
@@ -106,10 +111,14 @@ export const graduationsHandlers = [
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
       filteredData = filteredData.filter((graduation: Graduation) => {
-        const notesMatch = graduation.notes?.toLowerCase().includes(searchLower) ?? false;
-        const presidentMatch = graduation.president?.toLowerCase().includes(searchLower) ?? false;
-        const secretaryMatch = graduation.secretary?.toLowerCase().includes(searchLower) ?? false;
-        const vocalMatch = graduation.vocal?.toLowerCase().includes(searchLower) ?? false;
+        const notesMatch =
+          graduation.notes?.toLowerCase().includes(searchLower) ?? false;
+        const presidentMatch =
+          graduation.president?.toLowerCase().includes(searchLower) ?? false;
+        const secretaryMatch =
+          graduation.secretary?.toLowerCase().includes(searchLower) ?? false;
+        const vocalMatch =
+          graduation.vocal?.toLowerCase().includes(searchLower) ?? false;
         return notesMatch || presidentMatch || secretaryMatch || vocalMatch;
       });
     }
@@ -238,7 +247,9 @@ export const graduationsHandlers = [
 
     // Verificar que la opción de titulación existe (si se proporciona)
     if (body.graduationOptionId) {
-      const graduationOption = findGraduationOptionById(body.graduationOptionId);
+      const graduationOption = findGraduationOptionById(
+        body.graduationOptionId
+      );
       if (!graduationOption) {
         return HttpResponse.json(
           {
@@ -373,7 +384,10 @@ export const graduationsHandlers = [
     const body = (await request.json()) as UpdateGraduationRequest;
 
     // Validaciones
-    if (body.president !== undefined && (!body.president || body.president.trim().length === 0)) {
+    if (
+      body.president !== undefined &&
+      (!body.president || body.president.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El presidente del comité no puede estar vacío',
@@ -383,7 +397,10 @@ export const graduationsHandlers = [
       );
     }
 
-    if (body.secretary !== undefined && (!body.secretary || body.secretary.trim().length === 0)) {
+    if (
+      body.secretary !== undefined &&
+      (!body.secretary || body.secretary.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El secretario del comité no puede estar vacío',
@@ -393,7 +410,10 @@ export const graduationsHandlers = [
       );
     }
 
-    if (body.vocal !== undefined && (!body.vocal || body.vocal.trim().length === 0)) {
+    if (
+      body.vocal !== undefined &&
+      (!body.vocal || body.vocal.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El vocal del comité no puede estar vacío',
@@ -403,7 +423,10 @@ export const graduationsHandlers = [
       );
     }
 
-    if (body.substituteVocal !== undefined && (!body.substituteVocal || body.substituteVocal.trim().length === 0)) {
+    if (
+      body.substituteVocal !== undefined &&
+      (!body.substituteVocal || body.substituteVocal.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El vocal suplente del comité no puede estar vacío',
@@ -456,7 +479,9 @@ export const graduationsHandlers = [
 
     // Verificar que la opción de titulación existe (si se proporciona)
     if (body.graduationOptionId !== undefined && body.graduationOptionId) {
-      const graduationOption = findGraduationOptionById(body.graduationOptionId);
+      const graduationOption = findGraduationOptionById(
+        body.graduationOptionId
+      );
       if (!graduationOption) {
         return HttpResponse.json(
           {
@@ -470,14 +495,19 @@ export const graduationsHandlers = [
 
     // Actualizar
     graduation.studentId = body.studentId ?? graduation.studentId;
-    graduation.graduationOptionId = body.graduationOptionId !== undefined ? body.graduationOptionId : graduation.graduationOptionId;
+    graduation.graduationOptionId =
+      body.graduationOptionId !== undefined
+        ? body.graduationOptionId
+        : graduation.graduationOptionId;
     graduation.date = body.date ? new Date(body.date) : graduation.date;
     graduation.isGraduated = body.isGraduated ?? graduation.isGraduated;
     graduation.president = body.president?.trim() ?? graduation.president;
     graduation.secretary = body.secretary?.trim() ?? graduation.secretary;
     graduation.vocal = body.vocal?.trim() ?? graduation.vocal;
-    graduation.substituteVocal = body.substituteVocal?.trim() ?? graduation.substituteVocal;
-    graduation.notes = body.notes !== undefined ? (body.notes?.trim() || null) : graduation.notes;
+    graduation.substituteVocal =
+      body.substituteVocal?.trim() ?? graduation.substituteVocal;
+    graduation.notes =
+      body.notes !== undefined ? body.notes?.trim() || null : graduation.notes;
     graduation.updatedAt = new Date();
 
     return HttpResponse.json({
@@ -508,7 +538,10 @@ export const graduationsHandlers = [
     const body = (await request.json()) as Partial<UpdateGraduationRequest>;
 
     // Validaciones
-    if (body.president !== undefined && (!body.president || body.president.trim().length === 0)) {
+    if (
+      body.president !== undefined &&
+      (!body.president || body.president.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El presidente del comité no puede estar vacío',
@@ -518,7 +551,10 @@ export const graduationsHandlers = [
       );
     }
 
-    if (body.secretary !== undefined && (!body.secretary || body.secretary.trim().length === 0)) {
+    if (
+      body.secretary !== undefined &&
+      (!body.secretary || body.secretary.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El secretario del comité no puede estar vacío',
@@ -528,7 +564,10 @@ export const graduationsHandlers = [
       );
     }
 
-    if (body.vocal !== undefined && (!body.vocal || body.vocal.trim().length === 0)) {
+    if (
+      body.vocal !== undefined &&
+      (!body.vocal || body.vocal.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El vocal del comité no puede estar vacío',
@@ -538,7 +577,10 @@ export const graduationsHandlers = [
       );
     }
 
-    if (body.substituteVocal !== undefined && (!body.substituteVocal || body.substituteVocal.trim().length === 0)) {
+    if (
+      body.substituteVocal !== undefined &&
+      (!body.substituteVocal || body.substituteVocal.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El vocal suplente del comité no puede estar vacío',
@@ -578,7 +620,10 @@ export const graduationsHandlers = [
     }
 
     // Validar que solo estudiantes egresados pueden estar titulados
-    const newIsGraduated = body.isGraduated !== undefined ? body.isGraduated : graduation.isGraduated;
+    const newIsGraduated =
+      body.isGraduated !== undefined
+        ? body.isGraduated
+        : graduation.isGraduated;
     if (newIsGraduated === true && !currentStudent.isEgressed) {
       return HttpResponse.json(
         {
@@ -591,7 +636,9 @@ export const graduationsHandlers = [
 
     // Verificar que la opción de titulación existe (si se proporciona)
     if (body.graduationOptionId !== undefined && body.graduationOptionId) {
-      const graduationOption = findGraduationOptionById(body.graduationOptionId);
+      const graduationOption = findGraduationOptionById(
+        body.graduationOptionId
+      );
       if (!graduationOption) {
         return HttpResponse.json(
           {
@@ -646,7 +693,9 @@ export const graduationsHandlers = [
     await delay(300);
 
     const { id } = params;
-    const index = mockGraduations.findIndex((graduation: Graduation) => graduation.id === id);
+    const index = mockGraduations.findIndex(
+      (graduation: Graduation) => graduation.id === id
+    );
 
     if (index === -1) {
       return HttpResponse.json(

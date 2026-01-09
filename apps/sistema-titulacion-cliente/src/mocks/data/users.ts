@@ -46,7 +46,9 @@ export function findUserById(id: string): User | undefined {
  * Busca un usuario por username
  */
 export function findUserByUsername(username: string): User | undefined {
-  return mockUsers.find((u) => u.username.toLowerCase() === username.toLowerCase());
+  return mockUsers.find(
+    (u) => u.username.toLowerCase() === username.toLowerCase()
+  );
 }
 
 /**
@@ -83,7 +85,10 @@ export function setUserPassword(userId: string, password: string): void {
 /**
  * Valida la contraseña de un usuario
  */
-export function validateUserPassword(userId: string, password: string): boolean {
+export function validateUserPassword(
+  userId: string,
+  password: string
+): boolean {
   const storedPassword = userPasswords.get(userId);
   return storedPassword === password;
 }

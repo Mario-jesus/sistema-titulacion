@@ -55,15 +55,25 @@ export const generationsHandlers = [
     const offset = (page - 1) * limit;
 
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
-    const search = url.searchParams.get('search') || url.searchParams.get('q') || '';
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
 
     // Validar y normalizar parámetros de ordenamiento
-    const validSortFields = ['name', 'startYear', 'endYear', 'createdAt', 'isActive'];
+    const validSortFields = [
+      'name',
+      'startYear',
+      'endYear',
+      'createdAt',
+      'isActive',
+    ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'startYear';
-    const sortBy = validSortFields.includes(requestedSortBy) ? requestedSortBy : 'startYear';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'startYear';
 
     const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
-    const sortOrder = requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
     let filteredData = activeOnly
       ? mockGenerations.filter((gen: Generation) => gen.isActive)
@@ -224,7 +234,8 @@ export const generationsHandlers = [
 
     // Verificar duplicados
     const exists = mockGenerations.some(
-      (gen: Generation) => gen.name && gen.name.toLowerCase() === body.name!.toLowerCase()
+      (gen: Generation) =>
+        gen.name && gen.name.toLowerCase() === body.name!.toLowerCase()
     );
     if (exists) {
       return HttpResponse.json(
@@ -281,7 +292,10 @@ export const generationsHandlers = [
     const body = (await request.json()) as UpdateGenerationRequest;
 
     // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
+    if (
+      body.name !== undefined &&
+      (!body.name || body.name.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -307,9 +321,15 @@ export const generationsHandlers = [
     }
 
     // Verificar duplicados si se cambia el nombre
-    if (body.name && body.name.toLowerCase() !== generation.name?.toLowerCase()) {
+    if (
+      body.name &&
+      body.name.toLowerCase() !== generation.name?.toLowerCase()
+    ) {
       const exists = mockGenerations.some(
-        (gen: Generation) => gen.id !== id && gen.name && gen.name.toLowerCase() === body.name!.toLowerCase()
+        (gen: Generation) =>
+          gen.id !== id &&
+          gen.name &&
+          gen.name.toLowerCase() === body.name!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -323,10 +343,18 @@ export const generationsHandlers = [
     }
 
     // Actualizar
-    generation.name = body.name !== undefined ? body.name.trim() : generation.name;
-    generation.startYear = body.startYear ? new Date(body.startYear) : generation.startYear;
-    generation.endYear = body.endYear ? new Date(body.endYear) : generation.endYear;
-    generation.description = body.description !== undefined ? body.description : generation.description;
+    generation.name =
+      body.name !== undefined ? body.name.trim() : generation.name;
+    generation.startYear = body.startYear
+      ? new Date(body.startYear)
+      : generation.startYear;
+    generation.endYear = body.endYear
+      ? new Date(body.endYear)
+      : generation.endYear;
+    generation.description =
+      body.description !== undefined
+        ? body.description
+        : generation.description;
     generation.isActive = body.isActive ?? generation.isActive;
     generation.updatedAt = new Date();
 
@@ -370,7 +398,10 @@ export const generationsHandlers = [
     const body = (await request.json()) as Partial<UpdateGenerationRequest>;
 
     // Validaciones
-    if (body.name !== undefined && (!body.name || body.name.trim().length === 0)) {
+    if (
+      body.name !== undefined &&
+      (!body.name || body.name.trim().length === 0)
+    ) {
       return HttpResponse.json(
         {
           error: 'El nombre no puede estar vacío',
@@ -381,9 +412,15 @@ export const generationsHandlers = [
     }
 
     // Verificar duplicados si se cambia el nombre
-    if (body.name && body.name.toLowerCase() !== generation.name?.toLowerCase()) {
+    if (
+      body.name &&
+      body.name.toLowerCase() !== generation.name?.toLowerCase()
+    ) {
       const exists = mockGenerations.some(
-        (gen: Generation) => gen.id !== id && gen.name && gen.name.toLowerCase() === body.name!.toLowerCase()
+        (gen: Generation) =>
+          gen.id !== id &&
+          gen.name &&
+          gen.name.toLowerCase() === body.name!.toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -397,8 +434,12 @@ export const generationsHandlers = [
     }
 
     // Validar fechas si se actualizan
-    const newStartYear = body.startYear ? new Date(body.startYear) : generation.startYear;
-    const newEndYear = body.endYear ? new Date(body.endYear) : generation.endYear;
+    const newStartYear = body.startYear
+      ? new Date(body.startYear)
+      : generation.startYear;
+    const newEndYear = body.endYear
+      ? new Date(body.endYear)
+      : generation.endYear;
 
     if (newStartYear >= newEndYear) {
       return HttpResponse.json(

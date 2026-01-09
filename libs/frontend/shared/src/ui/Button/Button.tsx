@@ -39,37 +39,37 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 /**
  * Componente de botón con soporte para modo claro y oscuro
- * 
+ *
  * @example
  * ```tsx
  * // Botón primario (por defecto)
  * <Button variant="primary" onClick={() => console.log('Click')}>
  *   Guardar
  * </Button>
- * 
+ *
  * // Botón outline
  * <Button variant="outline" onClick={() => console.log('Click')}>
  *   Añadir
  * </Button>
- * 
+ *
  * // Botón secundario
  * <Button variant="secondary" onClick={() => console.log('Click')}>
  *   Cancelar
  * </Button>
- * 
+ *
  * // Botón ghost
  * <Button variant="ghost" onClick={() => console.log('Click')}>
  *   Ver más
  * </Button>
- * 
+ *
  * // Botón con diferentes tamaños
  * <Button size="small">Pequeño</Button>
  * <Button size="medium">Mediano</Button>
  * <Button size="large">Grande</Button>
- * 
+ *
  * // Botón con estado de carga
  * <Button isLoading>Cargando...</Button>
- * 
+ *
  * // Botón de ancho completo
  * <Button fullWidth>Ancho completo</Button>
  * ```
@@ -112,7 +112,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         isInteractive && 'hover:opacity-85',
         isInteractive && 'active:opacity-70',
         'focus-visible:outline-(--color-primary-color)',
-      ].filter(Boolean).join(' '),
+      ]
+        .filter(Boolean)
+        .join(' '),
       secondary: [
         'border-none',
         'bg-(--color-gray-3)',
@@ -120,7 +122,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         isInteractive && 'hover:bg-(--color-gray-3)/85',
         isInteractive && 'active:bg-(--color-gray-3)/70',
         'focus-visible:outline-(--color-primary-color)',
-      ].filter(Boolean).join(' '),
+      ]
+        .filter(Boolean)
+        .join(' '),
       ghost: [
         'border-none',
         'bg-transparent',
@@ -128,7 +132,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         isInteractive && 'hover:bg-(--color-gray-3)/85',
         isInteractive && 'active:bg-(--color-gray-3)/60',
         'focus-visible:outline-(--color-primary-color)',
-      ].filter(Boolean).join(' '),
+      ]
+        .filter(Boolean)
+        .join(' '),
       outline: [
         'border border-(--color-primary-color)',
         'bg-transparent',
@@ -139,13 +145,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         isInteractive && 'active:text-(--color-white)',
         isInteractive && 'active:opacity-80',
         'focus-visible:outline-(--color-primary-color)',
-      ].filter(Boolean).join(' '),
+      ]
+        .filter(Boolean)
+        .join(' '),
     };
 
     // Determinar el color del spinner según la variante
-    const spinnerColor = variant === 'primary' || (variant === 'outline' && isLoading)
-      ? 'text-(--color-white)' 
-      : 'text-(--color-base-primary-typo)';
+    const spinnerColor =
+      variant === 'primary' || (variant === 'outline' && isLoading)
+        ? 'text-(--color-white)'
+        : 'text-(--color-base-primary-typo)';
 
     // Tamaño del spinner según el tamaño del botón
     const spinnerSize = {
@@ -176,7 +185,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {isLoading ? (
           <>
             <span className="invisible">{children}</span>
-            <span className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${spinnerColor}`}>
+            <span
+              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${spinnerColor}`}
+            >
               <Spinner size={spinnerSize[size]} />
             </span>
           </>

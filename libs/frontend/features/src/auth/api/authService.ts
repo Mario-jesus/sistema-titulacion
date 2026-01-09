@@ -1,7 +1,11 @@
 import type { User } from '@entities/user';
 import { apiClient, API_ENDPOINTS } from '@shared/api';
 import { logger } from '@shared/lib';
-import type { LoginCredentials, LoginResponse, RefreshTokenResponse } from '../model/types';
+import type {
+  LoginCredentials,
+  LoginResponse,
+  RefreshTokenResponse,
+} from '../model/types';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
@@ -104,7 +108,9 @@ export const authService = {
     try {
       logger.log('Obteniendo usuario actual...');
 
-      const response = await apiClient.get<{ user: User }>(API_ENDPOINTS.AUTH.ME);
+      const response = await apiClient.get<{ user: User }>(
+        API_ENDPOINTS.AUTH.ME
+      );
 
       logger.log('Usuario obtenido exitosamente', { userId: response.user.id });
 

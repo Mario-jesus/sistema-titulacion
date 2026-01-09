@@ -4,11 +4,11 @@ import { FilterIcon, PlusIcon } from './icons';
 
 /**
  * Componente de header de página con título, búsqueda, acciones y filtros
- * 
+ *
  * Este componente proporciona una estructura consistente para los headers de las páginas,
  * incluyendo título, campo de búsqueda, botón de acción principal y filtros.
  * Soporta modo claro y oscuro automáticamente usando las variables CSS del sistema.
- * 
+ *
  * @example
  * ```tsx
  * // Uso básico con título y búsqueda
@@ -19,7 +19,7 @@ import { FilterIcon, PlusIcon } from './icons';
  *   onSearchChange={(value) => setSearchTerm(value)}
  *   // onSearchClear es opcional, por defecto limpia el valor
  * />
- * 
+ *
  * // Con acción principal (botón Añadir)
  * <PageHeader
  *   title="Opciones de titulación"
@@ -29,7 +29,7 @@ import { FilterIcon, PlusIcon } from './icons';
  *     isLoading: false
  *   }}
  * />
- * 
+ *
  * // Con filtros
  * <PageHeader
  *   title="Opciones de titulación"
@@ -39,7 +39,7 @@ import { FilterIcon, PlusIcon } from './icons';
  *     isActive: hasActiveFilters
  *   }}
  * />
- * 
+ *
  * // Uso completo con todas las opciones
  * <PageHeader
  *   title="Opciones de titulación"
@@ -62,7 +62,7 @@ import { FilterIcon, PlusIcon } from './icons';
  *   }}
  * />
  * ```
- * 
+ *
  * **Nota sobre búsqueda con API**: La búsqueda se ejecuta solo cuando el usuario presiona Enter
  * (usando el callback `onSearch`). El `onSearchChange` solo actualiza el valor local.
  * El botón de limpiar aparece automáticamente cuando hay texto en el campo de búsqueda.
@@ -94,7 +94,7 @@ export function PageHeader({
         {primaryAction && (
           <Button
             variant="outline"
-            size='small'
+            size="small"
             onClick={primaryAction.onClick}
             isLoading={primaryAction.isLoading}
             className="shrink-0"
@@ -110,7 +110,7 @@ export function PageHeader({
       </div>
 
       {/* Separador */}
-      <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark"/>
+      <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark" />
 
       {/* Segunda fila: Búsqueda y filtros */}
       <div className="flex items-center justify-between gap-4 w-full">
@@ -120,10 +120,13 @@ export function PageHeader({
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
             onSearch={onSearch}
-            onClear={onSearchClear || (() => {
-              onSearchChange?.('');
-              onSearch?.('');
-            })}
+            onClear={
+              onSearchClear ||
+              (() => {
+                onSearchChange?.('');
+                onSearch?.('');
+              })
+            }
             fullWidth
           />
         </div>
@@ -132,7 +135,7 @@ export function PageHeader({
           <Button
             ref={filters.buttonRef}
             variant="ghost"
-            size='small'
+            size="small"
             onClick={filters.onClick}
             className="shrink-0"
           >

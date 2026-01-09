@@ -23,11 +23,7 @@ export {
   findModalityById,
   generateModalityId,
 } from './modalities';
-export {
-  mockCareers,
-  findCareerById,
-  generateCareerId,
-} from './careers';
+export { mockCareers, findCareerById, generateCareerId } from './careers';
 export {
   mockQuotas,
   findQuotaById,

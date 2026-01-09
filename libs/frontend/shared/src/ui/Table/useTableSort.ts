@@ -4,19 +4,19 @@ import { sortTableData } from './utils';
 
 /**
  * Hook personalizado para manejar el ordenamiento de datos en una tabla
- * 
+ *
  * Este hook maneja el estado del ordenamiento y proporciona los datos ordenados
  * automáticamente basándose en la columna y dirección seleccionadas.
- * 
+ *
  * @param data - Array de datos a ordenar
  * @param initialSortColumn - Columna inicial para ordenar (opcional)
  * @param initialSortDirection - Dirección inicial del ordenamiento (opcional)
  * @returns Objeto con los datos ordenados, funciones de control y estado
- * 
+ *
  * @example
  * ```tsx
  * const { sortedData, handleSort, sortColumn, sortDirection } = useTableSort(tableData);
- * 
+ *
  * <Table
  *   columns={columns}
  *   data={sortedData}
@@ -29,8 +29,11 @@ export function useTableSort<T = any>(
   initialSortColumn: string | null = null,
   initialSortDirection: SortDirection = null
 ) {
-  const [sortColumn, setSortColumn] = useState<string | null>(initialSortColumn);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(initialSortDirection);
+  const [sortColumn, setSortColumn] = useState<string | null>(
+    initialSortColumn
+  );
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>(initialSortDirection);
 
   // Calcular datos ordenados
   const sortedData = useMemo(() => {

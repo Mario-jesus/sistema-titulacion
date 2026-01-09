@@ -36,7 +36,7 @@ export interface StatusTransitionConfig<T = any> {
 
 /**
  * Crea las acciones del menú desplegable basadas en las transiciones de estado configuradas
- * 
+ *
  * @example
  * ```tsx
  * // Ejemplo 1: Estados activo, pausado, cancelado
@@ -75,7 +75,7 @@ export interface StatusTransitionConfig<T = any> {
  *     },
  *   },
  * });
- * 
+ *
  * // Ejemplo 2: Estados activo, inactivo (más simple)
  * const actions = createStatusActions(row, {
  *   currentStatus: row.activo ? 'activo' : 'inactivo',
@@ -127,7 +127,11 @@ export function createStatusActions<T = any>(
 
   // Agregar separador si hay acciones de transición y se requiere
   if (transition.actions.length > 0) {
-    if (transition.showSeparator && transition.additionalActions && transition.additionalActions.length > 0) {
+    if (
+      transition.showSeparator &&
+      transition.additionalActions &&
+      transition.additionalActions.length > 0
+    ) {
       items.push({
         separator: true,
         label: 'separator',

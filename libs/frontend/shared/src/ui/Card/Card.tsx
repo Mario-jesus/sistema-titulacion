@@ -31,10 +31,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         'border border-[var(--color-gray-1)]',
         'shadow-none',
       ].join(' '),
-      flat: [
-        'bg-[var(--color-component-bg)]',
-        'shadow-none',
-      ].join(' '),
+      flat: ['bg-[var(--color-component-bg)]', 'shadow-none'].join(' '),
     };
 
     // Clases de padding

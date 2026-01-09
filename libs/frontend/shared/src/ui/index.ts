@@ -31,7 +31,10 @@ export { Modal } from './Modal/Modal';
 export type { ModalProps } from './Modal/Modal';
 
 export { DropdownMenu } from './DropdownMenu/DropdownMenu';
-export type { DropdownMenuProps, DropdownMenuItem } from './DropdownMenu/DropdownMenu';
+export type {
+  DropdownMenuProps,
+  DropdownMenuItem,
+} from './DropdownMenu/DropdownMenu';
 
 export { createStatusActions } from './Table/statusTransitions';
 export type { StatusTransitionConfig } from './Table/statusTransitions';
@@ -43,7 +46,12 @@ export { DetailModal } from './DetailModal/DetailModal';
 export type { DetailModalProps, DetailField } from './DetailModal/DetailModal';
 
 export { FilterPanel } from './FilterPanel/FilterPanel';
-export type { FilterPanelProps, FilterConfig, FilterType, FilterOption } from './FilterPanel/FilterPanel';
+export type {
+  FilterPanelProps,
+  FilterConfig,
+  FilterType,
+  FilterOption,
+} from './FilterPanel/FilterPanel';
 
 export { FilterDropdown } from './FilterDropdown/FilterDropdown';
 export type { FilterDropdownProps } from './FilterDropdown/FilterDropdown';

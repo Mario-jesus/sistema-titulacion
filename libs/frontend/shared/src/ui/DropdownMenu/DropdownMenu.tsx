@@ -31,7 +31,7 @@ export interface DropdownMenuProps {
 
 /**
  * Componente de menú desplegable con soporte para modo claro y oscuro
- * 
+ *
  * @example
  * ```tsx
  * // Menú básico

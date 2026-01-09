@@ -16,14 +16,16 @@ function buildUrl(endpoint: string): string {
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
     return endpoint;
   }
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const normalizedEndpoint = endpoint.startsWith('/')
+    ? endpoint
+    : `/${endpoint}`;
 
   return `${env.apiBaseUrl}${normalizedEndpoint}`;
 }
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit & { body?: unknown } = {},
+  options: RequestInit & { body?: unknown } = {}
 ): Promise<T> {
   const token = localStorage.getItem('token');
   const url = buildUrl(endpoint);
@@ -56,13 +58,16 @@ async function request<T>(
 
       if (errorData && typeof errorData === 'object') {
         const data = errorData as Record<string, unknown>;
-        errorMessage = (data.message as string) || (data.error as string) || text;
+        errorMessage =
+          (data.message as string) || (data.error as string) || text;
       }
     } catch {
       errorMessage = text || 'Error en la petición';
     }
 
-    logger.error(`API Error: status: ${response.status} statusText: ${response.statusText} message: ${errorMessage}`);
+    logger.error(
+      `API Error: status: ${response.status} statusText: ${response.statusText} message: ${errorMessage}`
+    );
 
     if (response.status === 401) {
       localStorage.removeItem('token');
@@ -96,7 +101,9 @@ async function request<T>(
     return data as T;
   } catch (parseError) {
     logger.error(`Failed to parse JSON response: ${text}`);
-    throw new Error(`Respuesta inválida del servidor: ${text.substring(0, 100)}`);
+    throw new Error(
+      `Respuesta inválida del servidor: ${text.substring(0, 100)}`
+    );
   }
 }
 
@@ -105,10 +112,18 @@ export const apiClient: ApiClient = {
     return request<T>(url, { ...options, method: 'GET' });
   },
   post<T>(url: string, body?: unknown, options?: RequestInit) {
-    return request<T>(url, { ...options, method: 'POST', body } as RequestInit & { body?: unknown });
+    return request<T>(url, {
+      ...options,
+      method: 'POST',
+      body,
+    } as RequestInit & { body?: unknown });
   },
   put<T>(url: string, body?: unknown, options?: RequestInit) {
-    return request<T>(url, { ...options, method: 'PUT', body } as RequestInit & { body?: unknown });
+    return request<T>(url, {
+      ...options,
+      method: 'PUT',
+      body,
+    } as RequestInit & { body?: unknown });
   },
   delete<T>(url: string, options?: RequestInit) {
     return request<T>(url, { ...options, method: 'DELETE' });

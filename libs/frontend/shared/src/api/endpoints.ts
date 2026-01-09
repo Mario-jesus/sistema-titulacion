@@ -108,6 +108,7 @@ export const API_ENDPOINTS = {
   // Ingreso y Egreso
   INGRESS_EGRESS: {
     LIST: '/ingress-egress',
-    DETAIL: (generationId: string, careerId: string) => `/ingress-egress/${generationId}/${careerId}`,
+    DETAIL: (generationId: string, careerId: string) =>
+      `/ingress-egress/${generationId}/${careerId}`,
   },
 } as const;

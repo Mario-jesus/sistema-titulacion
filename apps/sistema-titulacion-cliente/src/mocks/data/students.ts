@@ -84,15 +84,22 @@ export function findStudentById(id: string): Student | undefined {
 /**
  * Busca un estudiante por número de control
  */
-export function findStudentByControlNumber(controlNumber: string): Student | undefined {
-  return mockStudents.find((student) => student.controlNumber === controlNumber);
+export function findStudentByControlNumber(
+  controlNumber: string
+): Student | undefined {
+  return mockStudents.find(
+    (student) => student.controlNumber === controlNumber
+  );
 }
 
 /**
  * Genera un nuevo ID para un estudiante
  */
 export function generateStudentId(): string {
-  const maxId = Math.max(...mockStudents.map((student) => parseInt(student.id, 10)), 0);
+  const maxId = Math.max(
+    ...mockStudents.map((student) => parseInt(student.id, 10)),
+    0
+  );
   return String(maxId + 1);
 }
 
@@ -103,7 +110,11 @@ export function generateControlNumber(generationId: string): string {
   // Extraer año de la generación (asumiendo formato YYYY en el ID o usando fecha)
   // Por simplicidad, usar año actual
   const year = new Date().getFullYear().toString().slice(2);
-  const existingForYear = mockStudents.filter((s) => s.controlNumber.startsWith(year));
-  const nextNumber = String((existingForYear.length + 1).toString().padStart(4, '0'));
+  const existingForYear = mockStudents.filter((s) =>
+    s.controlNumber.startsWith(year)
+  );
+  const nextNumber = String(
+    (existingForYear.length + 1).toString().padStart(4, '0')
+  );
   return `${year}${nextNumber}`;
 }

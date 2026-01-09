@@ -20,7 +20,12 @@ export function LoginForm() {
   // Mostrar error en toast solo si viene de un intento de login, no de checkAuth
   useEffect(() => {
     // Ignorar errores de checkAuth (cuando isCheckingAuth es true o cuando no hemos intentado login)
-    if (error && error !== lastErrorRef.current && hasAttemptedLoginRef.current && !isCheckingAuth) {
+    if (
+      error &&
+      error !== lastErrorRef.current &&
+      hasAttemptedLoginRef.current &&
+      !isCheckingAuth
+    ) {
       lastErrorRef.current = error;
       showToast({
         type: 'error',
@@ -78,7 +83,10 @@ export function LoginForm() {
       <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6">
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-xs sm:max-w-sm md:max-w-sm lg:max-w-md p-4 sm:p-6 md:p-8" padding="none">
+      <Card
+        className="w-full max-w-xs sm:max-w-sm md:max-w-sm lg:max-w-md p-4 sm:p-6 md:p-8"
+        padding="none"
+      >
         <h1
           className="m-0 mb-6 sm:mb-8 text-xl sm:text-2xl md:text-3xl font-semibold text-center"
           style={{
@@ -88,7 +96,10 @@ export function LoginForm() {
           Acceso
         </h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5 md:gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 sm:gap-5 md:gap-6"
+        >
           <Input
             label="Correo electrónico:"
             type="email"
