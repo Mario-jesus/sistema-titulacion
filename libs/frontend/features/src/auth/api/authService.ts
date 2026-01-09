@@ -10,7 +10,10 @@ export const authService = {
 
       const response = await apiClient.post<LoginResponse>(
         API_ENDPOINTS.AUTH.LOGIN,
-        credentials
+        {
+          email: credentials.email,
+          password: credentials.password,
+        }
       );
 
       // Guardar el token en localStorage
@@ -35,9 +38,15 @@ export const authService = {
     try {
       logger.log('Cerrando sesión...');
 
-      // Notificar al servidor
+      // Obtener refresh token antes de limpiarlo
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      // Notificar al servidor (con refresh token opcional)
       try {
-        await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
+        await apiClient.post(
+          API_ENDPOINTS.AUTH.LOGOUT,
+          refreshToken ? { refreshToken } : undefined
+        );
       } catch (error) {
         logger.warn('Error al notificar logout al servidor:', error);
       }
@@ -95,11 +104,11 @@ export const authService = {
     try {
       logger.log('Obteniendo usuario actual...');
 
-      const user = await apiClient.get<User>(API_ENDPOINTS.AUTH.ME);
+      const response = await apiClient.get<{ user: User }>(API_ENDPOINTS.AUTH.ME);
 
-      logger.log('Usuario obtenido exitosamente', { userId: user.id });
+      logger.log('Usuario obtenido exitosamente', { userId: response.user.id });
 
-      return user;
+      return response.user;
     } catch (error) {
       logger.error('Error al obtener usuario actual:', error);
       throw error;

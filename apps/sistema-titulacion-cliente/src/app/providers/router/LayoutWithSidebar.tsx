@@ -84,7 +84,7 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
     if (!user) return undefined;
 
     return {
-      name: user.username,
+      name: user.username || user.email || 'Usuario',
       role: roleLabels[user.role] || user.role,
       avatar: user.avatar || undefined,
       email: user.email,

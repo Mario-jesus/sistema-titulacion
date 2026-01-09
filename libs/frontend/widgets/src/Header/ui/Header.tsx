@@ -129,7 +129,7 @@ export function Header({
                 }}
               >
                 <span className="text-sm font-semibold">
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.name?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
               </div>
             )}
@@ -140,7 +140,7 @@ export function Header({
                   color: 'var(--color-base-primary-typo)',
                 }}
               >
-                {user.name}
+                {user.name || 'Usuario'}
               </div>
               <div
                 className="text-xs"

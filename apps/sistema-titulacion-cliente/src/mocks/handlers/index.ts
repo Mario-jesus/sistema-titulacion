@@ -1,5 +1,15 @@
 import { HttpHandler } from 'msw';
 import { authHandlers } from './auth.handlers';
+import { usersHandlers } from './users.handlers';
+import { graduationOptionsHandlers } from './graduation-options.handlers';
+import { generationsHandlers } from './generations.handlers';
+import { modalitiesHandlers } from './modalities.handlers';
+import { careersHandlers } from './careers.handlers';
+import { quotasHandlers } from './quotas.handlers';
+import { studentsHandlers } from './students.handlers';
+import { capturedFieldsHandlers } from './captured-fields.handlers';
+import { graduationsHandlers } from './graduations.handlers';
+import { ingressEgressHandlers } from './ingress-egress.handlers';
 
 /**
  * Combina todos los handlers de diferentes módulos
@@ -12,8 +22,17 @@ import { authHandlers } from './auth.handlers';
  */
 export const handlers: HttpHandler[] = [
   ...authHandlers,
+  ...usersHandlers,
+  ...graduationOptionsHandlers,
+  ...generationsHandlers,
+  ...modalitiesHandlers,
+  ...careersHandlers,
+  ...quotasHandlers,
+  ...studentsHandlers,
+  ...capturedFieldsHandlers,
+  ...graduationsHandlers,
+  ...ingressEgressHandlers,
   // Agrega más handlers aquí cuando los necesites:
-  // ...usersHandlers,
-  // ...productsHandlers,
+  // ...modulesHandlers,
   // etc.
 ];

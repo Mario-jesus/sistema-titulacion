@@ -9,11 +9,13 @@ export interface LoginResponse {
   user: User;
   token: string;
   refreshToken?: string;
+  expiresIn?: number;
 }
 
 export interface RefreshTokenResponse {
   token: string;
   refreshToken?: string;
+  expiresIn?: number;
 }
 
 export interface AuthError {
