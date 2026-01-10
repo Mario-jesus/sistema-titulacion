@@ -4,3 +4,5 @@ export * from './GenerationsPage';
 export * from './GraduationOptionsPage';
 export * from './CareersPage';
 export * from './ModalitiesPage';
+export * from './QuotasPage';
+export * from './IngressEgressPage';

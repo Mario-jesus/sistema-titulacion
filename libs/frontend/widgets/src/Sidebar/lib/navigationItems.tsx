@@ -35,7 +35,19 @@ export const createDefaultNavigationItems = (): SidebarItem[] => [
     id: 'ingreso-egreso',
     label: 'Ingreso y egreso',
     icon: <EntryExitIcon size={20} />,
-    path: '/admissions-graduates',
+    path: '/ingress-egresses',
+    subItems: [
+      {
+        id: 'ingreso-egreso-list',
+        label: 'Ingreso y Egreso',
+        path: '/ingress-egresses',
+      },
+      {
+        id: 'cupos',
+        label: 'Cupos',
+        path: '/ingress-egresses/quotas',
+      },
+    ],
   },
   {
     id: 'alumnos',

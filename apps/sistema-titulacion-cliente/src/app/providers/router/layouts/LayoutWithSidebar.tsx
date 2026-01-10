@@ -85,7 +85,12 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
           (subItem) => subItem.path === currentPath
         );
         if (activeSubItem) {
-          return `${item.label} - ${activeSubItem.label}`;
+          // Mostrar solo el label del subitem
+          return activeSubItem.label;
+        }
+        // Si la ruta coincide con el item padre pero tiene subitems, mostrar el label del item padre
+        if (item.path === currentPath) {
+          return item.label;
         }
       }
     }
@@ -141,7 +146,9 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
               onMenuClick={handleMobileMenuToggle}
             />
           </div>
-          <main className="px-4 lg:px-6 pb-4 w-full relative z-0">{children}</main>
+          <main className="px-4 lg:px-6 pb-4 w-full relative z-0">
+            {children}
+          </main>
         </div>
       </div>
     </div>

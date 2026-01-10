@@ -11,6 +11,8 @@ import {
   GraduationOptionsPage,
   CareersPage,
   ModalitiesPage,
+  IngressEgressPage,
+  QuotasPage,
 } from './lazyPages';
 
 export function AppRouter() {
@@ -75,15 +77,25 @@ export function AppRouter() {
         />
 
         <Route
-          path="/admissions-graduates"
+          path="/ingress-egresses"
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Ingreso y Egreso"
-                    description="Esta sección está en desarrollo. Aquí podrás gestionar el ingreso y egreso de estudiantes."
-                  />
+                  <IngressEgressPage />
+                </Suspense>
+              </LayoutWithSidebar>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/ingress-egresses/quotas"
+          element={
+            <ProtectedRoute>
+              <LayoutWithSidebar>
+                <Suspense fallback={<PageLoader />}>
+                  <QuotasPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>

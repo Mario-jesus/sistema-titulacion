@@ -49,3 +49,15 @@ export const ModalitiesPage = lazy(() =>
     default: module.ModalitiesPage,
   }))
 );
+
+export const QuotasPage = lazy(() =>
+  import('@pages/QuotasPage').then((module) => ({
+    default: module.QuotasPage,
+  }))
+);
+
+export const IngressEgressPage = lazy(() =>
+  import('@pages/IngressEgressPage').then((module) => ({
+    default: module.IngressEgressPage,
+  }))
+);

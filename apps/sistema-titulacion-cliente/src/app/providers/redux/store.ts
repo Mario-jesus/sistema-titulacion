@@ -10,6 +10,8 @@ import { generationsReducer } from '@features/generations';
 import { graduationOptionsReducer } from '@features/graduation-options';
 import { careersReducer } from '@features/careers';
 import { modalitiesReducer } from '@features/modalities';
+import { quotasReducer } from '@features/quotas';
+import { ingressEgressReducer } from '@features/ingress-egress';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -21,6 +23,8 @@ export const store = configureStore({
     graduationOptions: graduationOptionsReducer,
     careers: careersReducer,
     modalities: modalitiesReducer,
+    quotas: quotasReducer,
+    ingressEgress: ingressEgressReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
