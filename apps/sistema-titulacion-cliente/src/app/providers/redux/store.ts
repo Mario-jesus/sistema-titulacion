@@ -9,6 +9,7 @@ import {
 import { generationsReducer } from '@features/generations';
 import { graduationOptionsReducer } from '@features/graduation-options';
 import { careersReducer } from '@features/careers';
+import { modalitiesReducer } from '@features/modalities';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -19,6 +20,7 @@ export const store = configureStore({
     generations: generationsReducer,
     graduationOptions: graduationOptionsReducer,
     careers: careersReducer,
+    modalities: modalitiesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

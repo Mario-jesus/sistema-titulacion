@@ -6,12 +6,6 @@
       "path": "../features"
     },
     {
-      "path": "../widgets"
-    },
-    {
-      "path": "../shared"
-    },
-    {
       "path": "./tsconfig.lib.json"
     }
   ],

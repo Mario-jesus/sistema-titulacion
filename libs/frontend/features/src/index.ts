@@ -9,3 +9,6 @@ export * from './graduation-options';
 
 // Careers feature
 export * from './careers';
+
+// Modalities feature
+export * from './modalities';

@@ -1,0 +1,1 @@
+export { ModalitiesList } from './ModalitiesList';

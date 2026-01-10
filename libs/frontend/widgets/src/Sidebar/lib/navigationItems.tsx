@@ -60,6 +60,18 @@ export const createDefaultNavigationItems = (): SidebarItem[] => [
     label: 'Carreras',
     icon: <CareersIcon size={20} />,
     path: '/careers',
+    subItems: [
+      {
+        id: 'carreras-list',
+        label: 'Carreras',
+        path: '/careers',
+      },
+      {
+        id: 'modalidades-list',
+        label: 'Modalidades',
+        path: '/modalities',
+      },
+    ],
   },
   {
     id: 'reportes',

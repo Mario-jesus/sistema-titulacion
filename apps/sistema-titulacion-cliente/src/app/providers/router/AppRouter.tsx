@@ -10,6 +10,7 @@ import {
   GenerationsPage,
   GraduationOptionsPage,
   CareersPage,
+  ModalitiesPage,
 } from './lazyPages';
 
 export function AppRouter() {
@@ -144,6 +145,19 @@ export function AppRouter() {
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
                   <CareersPage />
+                </Suspense>
+              </LayoutWithSidebar>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/modalities"
+          element={
+            <ProtectedRoute>
+              <LayoutWithSidebar>
+                <Suspense fallback={<PageLoader />}>
+                  <ModalitiesPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
