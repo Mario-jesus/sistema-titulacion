@@ -7,6 +7,7 @@ import {
   checkAuthThunk,
 } from '@features/auth';
 import { generationsReducer } from '@features/generations';
+import { graduationOptionsReducer } from '@features/graduation-options';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -15,6 +16,7 @@ export const store = configureStore({
     login: loginReducer,
     auth: authReducer,
     generations: generationsReducer,
+    graduationOptions: graduationOptionsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

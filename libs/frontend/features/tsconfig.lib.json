@@ -36,10 +36,13 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../entities/tsconfig.lib.json"
+      "path": "../widgets/tsconfig.lib.json"
     },
     {
       "path": "../shared/tsconfig.lib.json"
+    },
+    {
+      "path": "../entities/tsconfig.lib.json"
     }
   ]
 }

@@ -1,32 +1,39 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { PageHeader } from '@widgets/PageHeader';
-import { Table, Button, useToast, FilterDropdown, createStatusActions, Pagination } from '@shared/ui';
+import {
+  Table,
+  Button,
+  useToast,
+  FilterDropdown,
+  createStatusActions,
+  Pagination,
+} from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
-import { useGenerations } from '../../lib/useGenerations';
-import { GenerationForm } from '../GenerationForm/GenerationForm';
-import type { Generation } from '@entities/generation';
+import { useGraduationOptions } from '../../lib/useGraduationOptions';
+import { GraduationOptionForm } from '../GraduationOptionForm/GraduationOptionForm';
+import type { GraduationOption } from '@entities/graduation-option';
 import type { TableColumn, DetailField } from '@shared/ui';
 
 /**
- * Componente para listar y gestionar generaciones
- * Contiene toda la lógica de negocio y UI para la gestión de generaciones
+ * Componente para listar y gestionar opciones de titulación
+ * Contiene toda la lógica de negocio y UI para la gestión de opciones de titulación
  */
-export function GenerationsList() {
+export function GraduationOptionsList() {
   const { showToast } = useToast();
   const {
-    generations,
+    graduationOptions,
     pagination,
     isLoadingList,
     listError,
-    listGenerations,
-    createGeneration,
-    updateGeneration,
-    deleteGeneration,
-    activateGeneration,
-    deactivateGeneration,
+    listGraduationOptions,
+    createGraduationOption,
+    updateGraduationOption,
+    deleteGraduationOption,
+    activateGraduationOption,
+    deactivateGraduationOption,
     clearListErrors,
-  } = useGenerations();
+  } = useGraduationOptions();
 
   // Estados locales
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,7 +42,9 @@ export function GenerationsList() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
 
   // Estados para filtros
-  const [filters, setFilters] = useState<Record<string, string | string[] | boolean>>({});
+  const [filters, setFilters] = useState<
+    Record<string, string | string[] | boolean>
+  >({});
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -43,16 +52,16 @@ export function GenerationsList() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedGeneration, setSelectedGeneration] =
-    useState<Generation | null>(null);
+  const [selectedOption, setSelectedOption] =
+    useState<GraduationOption | null>(null);
 
   // Obtener activeOnly de filters
   const activeOnly = filters.activeOnly === true;
 
-  // Cargar generaciones
-  const loadGenerations = useCallback(async () => {
+  // Cargar opciones de titulación
+  const loadGraduationOptions = useCallback(async () => {
     try {
-      await listGenerations({
+      await listGraduationOptions({
         page,
         limit: 10,
         search: searchTerm || undefined,
@@ -61,18 +70,29 @@ export function GenerationsList() {
         ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
       });
     } catch (error) {
-      console.error('Error al cargar generaciones:', error);
+      console.error('Error al cargar opciones de titulación:', error);
       showToast({
         type: 'error',
-        title: 'Error al cargar generaciones',
-        message: error instanceof Error ? error.message : 'No se pudieron cargar las generaciones',
+        title: 'Error al cargar opciones de titulación',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudieron cargar las opciones de titulación',
       });
     }
-  }, [page, searchTerm, activeOnly, sortBy, sortOrder, listGenerations, showToast]);
+  }, [
+    page,
+    searchTerm,
+    activeOnly,
+    sortBy,
+    sortOrder,
+    listGraduationOptions,
+    showToast,
+  ]);
 
   useEffect(() => {
-    loadGenerations();
-  }, [loadGenerations]);
+    loadGraduationOptions();
+  }, [loadGraduationOptions]);
 
   // Manejar búsqueda
   const handleSearch = useCallback(
@@ -104,154 +124,151 @@ export function GenerationsList() {
   const handleCreate = useCallback(
     async (data: any) => {
       try {
-        await createGeneration(data);
+        await createGraduationOption(data);
         setIsCreateModalOpen(false);
         showToast({
           type: 'success',
-          title: 'Generación creada',
-          message: 'La generación se ha creado exitosamente',
+          title: 'Opción de titulación creada',
+          message: 'La opción de titulación se ha creado exitosamente',
         });
-        loadGenerations();
+        loadGraduationOptions();
       } catch (error) {
-        console.error('Error al crear generación:', error);
+        console.error('Error al crear opción de titulación:', error);
         showToast({
           type: 'error',
-          title: 'Error al crear generación',
-          message: error instanceof Error ? error.message : 'No se pudo crear la generación',
+          title: 'Error al crear opción de titulación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo crear la opción de titulación',
         });
         throw error;
       }
     },
-    [createGeneration, loadGenerations, showToast]
+    [createGraduationOption, loadGraduationOptions, showToast]
   );
 
   // Manejar editar
   const handleEdit = useCallback(
     async (data: any) => {
-      if (!selectedGeneration) return;
+      if (!selectedOption) return;
       try {
-        await updateGeneration(selectedGeneration.id, data);
+        await updateGraduationOption(selectedOption.id, data);
         setIsEditModalOpen(false);
-        setSelectedGeneration(null);
+        setSelectedOption(null);
         showToast({
           type: 'success',
-          title: 'Generación actualizada',
-          message: 'La generación se ha actualizado exitosamente',
+          title: 'Opción de titulación actualizada',
+          message: 'La opción de titulación se ha actualizado exitosamente',
         });
-        loadGenerations();
+        loadGraduationOptions();
       } catch (error) {
-        console.error('Error al actualizar generación:', error);
+        console.error('Error al actualizar opción de titulación:', error);
         showToast({
           type: 'error',
-          title: 'Error al actualizar generación',
-          message: error instanceof Error ? error.message : 'No se pudo actualizar la generación',
+          title: 'Error al actualizar opción de titulación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo actualizar la opción de titulación',
         });
         throw error;
       }
     },
-    [selectedGeneration, updateGeneration, loadGenerations, showToast]
+    [selectedOption, updateGraduationOption, loadGraduationOptions, showToast]
   );
 
   // Manejar eliminar
   const handleDelete = useCallback(
-    async (generation: Generation) => {
+    async (option: GraduationOption) => {
       if (
         !window.confirm(
-          `¿Estás seguro de eliminar la generación "${generation.name}"?`
+          `¿Estás seguro de eliminar la opción de titulación "${option.name}"?`
         )
       ) {
         return;
       }
       try {
-        await deleteGeneration(generation.id);
+        await deleteGraduationOption(option.id);
         showToast({
           type: 'success',
-          title: 'Generación eliminada',
-          message: `La generación "${generation.name}" se ha eliminado exitosamente`,
+          title: 'Opción de titulación eliminada',
+          message: `La opción de titulación "${option.name}" se ha eliminado exitosamente`,
         });
-        loadGenerations();
+        loadGraduationOptions();
       } catch (error) {
-        console.error('Error al eliminar generación:', error);
+        console.error('Error al eliminar opción de titulación:', error);
         showToast({
           type: 'error',
-          title: 'Error al eliminar generación',
-          message: error instanceof Error ? error.message : 'No se pudo eliminar la generación',
+          title: 'Error al eliminar opción de titulación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo eliminar la opción de titulación',
         });
       }
     },
-    [deleteGeneration, loadGenerations, showToast]
+    [deleteGraduationOption, loadGraduationOptions, showToast]
   );
 
   // Manejar activar/desactivar
   const handleToggleActive = useCallback(
-    async (generation: Generation) => {
+    async (option: GraduationOption) => {
       try {
-        if (generation.isActive) {
-          await deactivateGeneration(generation.id);
+        if (option.isActive) {
+          await deactivateGraduationOption(option.id);
           showToast({
             type: 'success',
-            title: 'Generación desactivada',
-            message: `La generación "${generation.name}" se ha desactivado exitosamente`,
+            title: 'Opción de titulación desactivada',
+            message: `La opción de titulación "${option.name}" se ha desactivado exitosamente`,
           });
         } else {
-          await activateGeneration(generation.id);
+          await activateGraduationOption(option.id);
           showToast({
             type: 'success',
-            title: 'Generación activada',
-            message: `La generación "${generation.name}" se ha activado exitosamente`,
+            title: 'Opción de titulación activada',
+            message: `La opción de titulación "${option.name}" se ha activado exitosamente`,
           });
         }
-        loadGenerations();
+        loadGraduationOptions();
       } catch (error) {
         console.error('Error al cambiar estado:', error);
         showToast({
           type: 'error',
           title: 'Error al cambiar estado',
-          message: error instanceof Error ? error.message : 'No se pudo cambiar el estado de la generación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo cambiar el estado de la opción de titulación',
         });
       }
     },
-    [activateGeneration, deactivateGeneration, loadGenerations, showToast]
+    [
+      activateGraduationOption,
+      deactivateGraduationOption,
+      loadGraduationOptions,
+      showToast,
+    ]
   );
 
   // Abrir modal de edición
-  const handleOpenEdit = useCallback((generation: Generation) => {
-    setSelectedGeneration(generation);
+  const handleOpenEdit = useCallback((option: GraduationOption) => {
+    setSelectedOption(option);
     setIsEditModalOpen(true);
   }, []);
 
   // Abrir modal de detalles
-  const handleOpenDetail = useCallback((generation: Generation) => {
-    setSelectedGeneration(generation);
+  const handleOpenDetail = useCallback((option: GraduationOption) => {
+    setSelectedOption(option);
     setIsDetailModalOpen(true);
   }, []);
 
   // Columnas de la tabla
-  const columns: TableColumn<Generation>[] = [
+  const columns: TableColumn<GraduationOption>[] = [
     {
       key: 'name',
       label: 'Nombre',
       sortable: true,
-    },
-    {
-      key: 'startYear',
-      label: 'Año Inicio',
-      sortable: true,
-      render: (value: Date | string) => {
-        // Manejar tanto Date como string ISO
-        const date = value instanceof Date ? value : new Date(value);
-        return date.getFullYear().toString();
-      },
-    },
-    {
-      key: 'endYear',
-      label: 'Año Fin',
-      sortable: true,
-      render: (value: Date | string) => {
-        // Manejar tanto Date como string ISO
-        const date = value instanceof Date ? value : new Date(value);
-        return date.getFullYear().toString();
-      },
     },
     {
       key: 'description',
@@ -261,26 +278,8 @@ export function GenerationsList() {
   ];
 
   // Campos para el modal de detalles
-  const detailFields: DetailField<Generation>[] = [
+  const detailFields: DetailField<GraduationOption>[] = [
     { key: 'name', label: 'Nombre' },
-    {
-      key: 'startYear',
-      label: 'Año de Inicio',
-      render: (value: Date | string) => {
-        // Manejar tanto Date como string ISO
-        const date = value instanceof Date ? value : new Date(value);
-        return date.getFullYear().toString();
-      },
-    },
-    {
-      key: 'endYear',
-      label: 'Año de Fin',
-      render: (value: Date | string) => {
-        // Manejar tanto Date como string ISO
-        const date = value instanceof Date ? value : new Date(value);
-        return date.getFullYear().toString();
-      },
-    },
     {
       key: 'description',
       label: 'Descripción',
@@ -375,18 +374,18 @@ export function GenerationsList() {
 
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
-    (generation: Generation): DropdownMenuItem[] => {
+    (option: GraduationOption): DropdownMenuItem[] => {
       // Obtener acciones basadas en el estado usando createStatusActions
-      const statusActions = createStatusActions(generation, {
-        currentStatus: generation.isActive ? 'active' : 'inactive',
+      const statusActions = createStatusActions(option, {
+        currentStatus: option.isActive ? 'active' : 'inactive',
         getStatus: (row) => (row.isActive ? 'active' : 'inactive'),
         transitions: {
           active: {
             additionalActions: [
-              { label: 'Editar', onClick: () => handleOpenEdit(generation) },
+              { label: 'Editar', onClick: () => handleOpenEdit(option) },
               {
                 label: 'Eliminar',
-                onClick: () => handleDelete(generation),
+                onClick: () => handleDelete(option),
                 variant: 'danger' as const,
               },
             ],
@@ -394,17 +393,17 @@ export function GenerationsList() {
               {
                 label: 'Desactivar',
                 targetStatus: 'inactive',
-                onClick: () => handleToggleActive(generation),
+                onClick: () => handleToggleActive(option),
               },
             ],
             showSeparator: true,
           },
           inactive: {
             additionalActions: [
-              { label: 'Editar', onClick: () => handleOpenEdit(generation) },
+              { label: 'Editar', onClick: () => handleOpenEdit(option) },
               {
                 label: 'Eliminar',
-                onClick: () => handleDelete(generation),
+                onClick: () => handleDelete(option),
                 variant: 'danger' as const,
               },
             ],
@@ -412,7 +411,7 @@ export function GenerationsList() {
               {
                 label: 'Activar',
                 targetStatus: 'active',
-                onClick: () => handleToggleActive(generation),
+                onClick: () => handleToggleActive(option),
               },
             ],
             showSeparator: true,
@@ -422,7 +421,10 @@ export function GenerationsList() {
 
       // Agregar "Ver detalles" al inicio del menú, seguido de un separador
       return [
-        { label: 'Ver detalles', onClick: () => handleOpenDetail(generation) },
+        {
+          label: 'Ver detalles',
+          onClick: () => handleOpenDetail(option),
+        },
         { separator: true, label: 'separator' },
         ...statusActions,
       ];
@@ -435,8 +437,8 @@ export function GenerationsList() {
       {/* Contenedor para PageHeader */}
       <div className="rounded-lg mt-6 p-6 bg-(--color-component-bg)">
         <PageHeader
-          title="Generaciones"
-          searchPlaceholder="Buscar generación..."
+          title="Opciones de Titulación"
+          searchPlaceholder="Buscar opción de titulación..."
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
@@ -503,7 +505,7 @@ export function GenerationsList() {
         ) : (
           <Table
             columns={columns}
-            data={generations}
+            data={graduationOptions}
             statusColumn={{
               key: 'isActive',
               getStatus: (row) => ({
@@ -539,7 +541,7 @@ export function GenerationsList() {
       </div>
 
       {/* Modal de creación */}
-      <GenerationForm
+      <GraduationOptionForm
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreate}
@@ -547,27 +549,27 @@ export function GenerationsList() {
       />
 
       {/* Modal de edición */}
-      {selectedGeneration && (
-        <GenerationForm
+      {selectedOption && (
+        <GraduationOptionForm
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            setSelectedGeneration(null);
+            setSelectedOption(null);
           }}
           onSubmit={handleEdit}
           mode="edit"
-          initialData={selectedGeneration}
+          initialData={selectedOption}
         />
       )}
 
       {/* Modal de detalles */}
       <DetailModal
-        title="Detalles de la Generación"
-        data={selectedGeneration}
+        title="Detalles de la Opción de Titulación"
+        data={selectedOption}
         isOpen={isDetailModalOpen}
         onClose={() => {
           setIsDetailModalOpen(false);
-          setSelectedGeneration(null);
+          setSelectedOption(null);
         }}
         fields={detailFields}
         maxWidth="lg"
