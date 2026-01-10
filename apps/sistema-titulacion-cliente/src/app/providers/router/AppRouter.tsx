@@ -4,7 +4,13 @@ import { useAuth } from '@features/auth';
 import { ProtectedRoute, PublicRoute, AdminRoute } from './guards';
 import { LayoutWithSidebar } from './layouts';
 import { PageLoader } from './components';
-import { LoginPage, ComingSoonPage, GenerationsPage, GraduationOptionsPage } from './lazyPages';
+import {
+  LoginPage,
+  ComingSoonPage,
+  GenerationsPage,
+  GraduationOptionsPage,
+  CareersPage,
+} from './lazyPages';
 
 export function AppRouter() {
   return (
@@ -137,10 +143,7 @@ export function AppRouter() {
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Carreras"
-                    description="Esta sección está en desarrollo. Aquí podrás gestionar las carreras disponibles."
-                  />
+                  <CareersPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>

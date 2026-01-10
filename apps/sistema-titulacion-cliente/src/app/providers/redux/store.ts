@@ -8,6 +8,7 @@ import {
 } from '@features/auth';
 import { generationsReducer } from '@features/generations';
 import { graduationOptionsReducer } from '@features/graduation-options';
+import { careersReducer } from '@features/careers';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -17,6 +18,7 @@ export const store = configureStore({
     auth: authReducer,
     generations: generationsReducer,
     graduationOptions: graduationOptionsReducer,
+    careers: careersReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

@@ -37,3 +37,9 @@ export const GraduationOptionsPage = lazy(() =>
     default: module.GraduationOptionsPage,
   }))
 );
+
+export const CareersPage = lazy(() =>
+  import('@pages/CareersPage').then((module) => ({
+    default: module.CareersPage,
+  }))
+);
