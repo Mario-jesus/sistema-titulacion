@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { FilterPanel, FilterPanelProps } from '../FilterPanel/FilterPanel';
 
 export interface FilterDropdownProps<T = Record<string, unknown>>
@@ -219,7 +220,7 @@ export function FilterDropdown<T = Record<string, unknown>>({
 
   if (!isOpen) return null;
 
-  return (
+  const dropdownContent = (
     <div
       ref={dropdownRef}
       className={`fixed rounded-lg shadow-lg ${className}`}
@@ -239,4 +240,7 @@ export function FilterDropdown<T = Record<string, unknown>>({
       />
     </div>
   );
+
+  // Renderizar en un portal para evitar problemas de stacking context
+  return createPortal(dropdownContent, document.body);
 }

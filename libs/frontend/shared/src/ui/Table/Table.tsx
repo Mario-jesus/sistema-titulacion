@@ -39,6 +39,10 @@ export interface TableProps<T = any> {
     colors?: TableStatusColors;
   };
   onSort?: (columnKey: string, direction: SortDirection) => void;
+  /** Columna actualmente ordenada (controlado desde fuera) */
+  controlledSortColumn?: string | null;
+  /** Dirección de ordenamiento actual (controlado desde fuera) */
+  controlledSortDirection?: SortDirection;
   className?: string;
   rowClassName?: (row: T, index: number) => string;
   onRowClick?: (row: T) => void;
@@ -49,20 +53,20 @@ export interface TableProps<T = any> {
 // Colores por defecto para compatibilidad hacia atrás
 const defaultStatusColors: TableStatusColors = {
   active: {
-    dot: 'bg-[var(--color-green)]',
-    text: 'text-[var(--color-green)]',
+    dot: 'bg-(--color-green)',
+    text: 'text-(--color-green)',
   },
   paused: {
-    dot: 'bg-[var(--color-yellow)]',
-    text: 'text-[var(--color-yellow)]',
+    dot: 'bg-(--color-yellow)',
+    text: 'text-(--color-yellow)',
   },
   cancelled: {
-    dot: 'bg-[var(--color-salmon)]',
-    text: 'text-[var(--color-salmon)]',
+    dot: 'bg-(--color-salmon)',
+    text: 'text-(--color-salmon)',
   },
   inactive: {
-    dot: 'bg-[var(--color-gray-5)]',
-    text: 'text-[var(--color-gray-5)]',
+    dot: 'bg-(--color-salmon)',
+    text: 'text-(--color-salmon)',
   },
 };
 
@@ -191,13 +195,21 @@ export function Table<T = any>({
   data,
   statusColumn,
   onSort,
+  controlledSortColumn,
+  controlledSortDirection,
   className = '',
   rowClassName,
   onRowClick,
   rowActions,
 }: TableProps<T>) {
-  const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  // Estado interno solo si no se controla desde fuera
+  const [internalSortColumn, setInternalSortColumn] = useState<string | null>(null);
+  const [internalSortDirection, setInternalSortDirection] = useState<SortDirection>(null);
+
+  // Usar estado controlado si se proporciona, sino usar estado interno
+  const sortColumn = controlledSortColumn !== undefined ? controlledSortColumn : internalSortColumn;
+  const sortDirection = controlledSortDirection !== undefined ? controlledSortDirection : internalSortDirection;
+
   const [menuState, setMenuState] = useState<{
     isOpen: boolean;
     position: { x: number; y: number };
@@ -217,7 +229,9 @@ export function Table<T = any>({
   }, [data, columns]);
 
   const handleSort = (columnKey: string, sortable?: boolean) => {
-    if (!sortable || !onSort) return;
+    if (!sortable || !onSort) {
+      return;
+    }
 
     let newDirection: SortDirection = 'asc';
     if (sortColumn === columnKey) {
@@ -228,14 +242,22 @@ export function Table<T = any>({
       }
     }
 
-    setSortColumn(newDirection ? columnKey : null);
-    setSortDirection(newDirection);
+    // Solo actualizar estado interno si no está controlado desde fuera
+    if (controlledSortColumn === undefined) {
+      setInternalSortColumn(newDirection ? columnKey : null);
+      setInternalSortDirection(newDirection);
+    }
+
+    // Siempre llamar al callback para que el padre pueda actualizar su estado
     onSort(columnKey, newDirection);
   };
 
   const getSortIcon = (columnKey: string, sortable?: boolean) => {
-    if (!sortable) return null;
+    if (!sortable) {
+      return null;
+    }
 
+    // Si la columna coincide y hay una dirección de ordenamiento válida
     if (sortColumn === columnKey) {
       if (sortDirection === 'asc') {
         return (
@@ -248,7 +270,7 @@ export function Table<T = any>({
             <path d="m6.293 13.293 1.414 1.414L12 10.414l4.293 4.293 1.414-1.414L12 7.586z"></path>
           </svg>
         );
-      } else {
+      } else if (sortDirection === 'desc') {
         return (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -262,6 +284,7 @@ export function Table<T = any>({
       }
     }
 
+    // Si sortColumn es null, la columna no coincide, o sortDirection es null, mostrar icono neutro
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -298,7 +321,7 @@ export function Table<T = any>({
   return (
     <div
       ref={scrollContainerRef}
-      className={`overflow-x-auto border bg-(--color-component-bg) border-(--color-gray-1) w-full ${className}`}
+      className={`table-scrollbar overflow-x-auto border bg-(--color-component-bg) border-(--color-gray-1) w-full ${className}`}
     >
       <table
         className="border-collapse"

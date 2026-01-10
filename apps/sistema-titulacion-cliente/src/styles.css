@@ -187,10 +187,136 @@
   }
 
   /* Apply document background and font to body */
+  html {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   body {
     background-color: var(--color-document-bg);
     font-family: var(--font-family-base);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
+
+  /* ============================================
+      Modern Scrollbar Styling for Table
+      Compatible with Firefox (scrollbar-width/color) and Webkit (::-webkit-scrollbar)
+   ============================================ */
+  .table-scrollbar {
+    /* Standard scrollbar styling (Firefox, modern browsers) */
+    scrollbar-width: thin;
+    /* thumb track - light mode default */
+    scrollbar-color: var(--color-gray-3-light) transparent;
+  }
+
+  .dark .table-scrollbar {
+    /* In dark mode, use a lighter gray for better visibility */
+    scrollbar-color: var(--color-gray-5-dark) transparent;
+  }
+
+  /* Webkit scrollbar styling (Chrome, Edge, Safari) */
+  .table-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .table-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  /* Light mode scrollbar thumb */
+  .table-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-3-light);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 0.2s ease;
+  }
+
+  .table-scrollbar::-webkit-scrollbar-thumb:hover {
+    /* Use a slightly darker gray for hover in light mode */
+    background-color: var(--color-base-secondary-typo-light);
+  }
+
+  .table-scrollbar::-webkit-scrollbar-thumb:active {
+    /* Darker on active/click */
+    background-color: var(--color-gray-1-light);
+  }
+
+  /* Dark mode scrollbar thumb */
+  .dark .table-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-5-dark);
+  }
+
+  .dark .table-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-gray-6-dark);
+  }
+
+  .dark .table-scrollbar::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-gray-4-dark);
+  }
+
+  /* Vertical scrollbar specific styling */
+  .table-scrollbar::-webkit-scrollbar:vertical {
+    width: 8px;
+  }
+
+  /* Horizontal scrollbar specific styling */
+  .table-scrollbar::-webkit-scrollbar:horizontal {
+    height: 8px;
+  }
+}
+
+/* ============================================
+    Modern Scrollbar Styling for Document
+    Applies the same scrollbar styles to the main document scrollbar
+ ============================================ */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-3-light) transparent;
+}
+
+html.dark {
+  scrollbar-color: var(--color-gray-5-dark) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-3-light);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-base-secondary-typo-light);
+}
+
+html::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-gray-1-light);
+}
+
+html.dark::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-5-dark);
+}
+
+html.dark::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-6-dark);
+}
+
+html.dark::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-gray-4-dark);
 }

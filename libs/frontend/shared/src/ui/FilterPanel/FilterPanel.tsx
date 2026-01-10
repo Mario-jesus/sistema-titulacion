@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { getNestedValue } from '../Table/utils';
 import { Button } from '../Button/Button';
 
@@ -106,6 +106,16 @@ export function FilterPanel<T = Record<string, unknown>>({
   onFilterChange,
   onReset,
 }: FilterPanelProps<T>) {
+  // Estado interno para filtros temporales (antes de aplicar)
+  const [tempFilters, setTempFilters] = useState<
+    Record<string, string | string[] | boolean>
+  >(selectedFilters);
+
+  // Sincronizar filtros temporales cuando cambian los seleccionados externamente
+  useEffect(() => {
+    setTempFilters(selectedFilters);
+  }, [selectedFilters]);
+
   // Obtener opciones para cada filtro (predefinidas o extraídas de datos)
   const filterOptions = useMemo(() => {
     const options: Record<string, FilterOption[]> = {};
@@ -145,6 +155,26 @@ export function FilterPanel<T = Record<string, unknown>>({
     return options;
   }, [data, filterConfigs]);
 
+  const handleTempFilterChange = (
+    columnKey: string,
+    value: string | string[] | boolean
+  ) => {
+    setTempFilters((prev) => {
+      const updated = { ...prev, [columnKey]: value };
+
+      // Si es false, string vacío o array vacío, eliminar el filtro
+      if (value === false) {
+        delete updated[columnKey];
+      } else if (typeof value === 'string' && value === '') {
+        delete updated[columnKey];
+      } else if (Array.isArray(value) && value.length === 0) {
+        delete updated[columnKey];
+      }
+
+      return updated;
+    });
+  };
+
   const handleCheckboxChange = (
     columnKey: string,
     value: string,
@@ -152,24 +182,49 @@ export function FilterPanel<T = Record<string, unknown>>({
   ) => {
     const config = filterConfigs.find((c) => c.columnKey === columnKey);
     const filterType = config?.type || 'checkbox';
-    const current = selectedFilters[columnKey];
+    const current = tempFilters[columnKey];
 
     if (filterType === 'toggle') {
       // Para toggles, solo acepta boolean
-      onFilterChange(columnKey, checked);
+      handleTempFilterChange(columnKey, checked);
     } else if (filterType === 'select') {
       // Para select, solo un valor
-      onFilterChange(columnKey, checked ? value : '');
+      handleTempFilterChange(columnKey, checked ? value : '');
     } else {
       // Para checkbox (múltiples valores)
       const currentArray = Array.isArray(current) ? current : [];
       const updated = checked
         ? [...currentArray, value]
         : currentArray.filter((v) => v !== value);
-      onFilterChange(columnKey, updated);
+      handleTempFilterChange(columnKey, updated);
     }
   };
 
+  // Aplicar filtros temporales
+  const handleApply = () => {
+    // Aplicar filtros que están en tempFilters
+    Object.entries(tempFilters).forEach(([columnKey, value]) => {
+      onFilterChange(columnKey, value);
+    });
+
+    // Eliminar filtros que estaban en selectedFilters pero no en tempFilters
+    Object.keys(selectedFilters).forEach((columnKey) => {
+      if (!(columnKey in tempFilters)) {
+        // Eliminar el filtro (pasar false para toggles, '' para strings, [] para arrays)
+        const config = filterConfigs.find((c) => c.columnKey === columnKey);
+        const filterType = config?.type || 'checkbox';
+        if (filterType === 'toggle') {
+          onFilterChange(columnKey, false);
+        } else if (filterType === 'select') {
+          onFilterChange(columnKey, '');
+        } else {
+          onFilterChange(columnKey, []);
+        }
+      }
+    });
+  };
+
+  // Verificar si hay filtros aplicados (para habilitar botón "Limpiar")
   const hasActiveFilters = Object.entries(selectedFilters).some(([, value]) => {
     if (typeof value === 'boolean') {
       return value === true;
@@ -183,17 +238,22 @@ export function FilterPanel<T = Record<string, unknown>>({
     return false;
   });
 
+  // Verificar si hay cambios pendientes (filtros temporales diferentes a los seleccionados)
+  const hasPendingChanges = useMemo(() => {
+    return JSON.stringify(tempFilters) !== JSON.stringify(selectedFilters);
+  }, [tempFilters, selectedFilters]);
+
   return (
     <div className="p-4 min-w-[240px] max-w-[300px]">
       <div className="flex flex-col gap-4">
         {filterConfigs.map((config) => {
           const options = filterOptions[config.columnKey] || [];
           const filterType = config.type || 'checkbox';
-          const selected = selectedFilters[config.columnKey];
+          const selected = tempFilters[config.columnKey];
 
           if (options.length === 0 && filterType !== 'toggle') return null;
 
-          // Renderizado para toggle (boolean)
+          // Renderizado para toggle (boolean) - Switch visual
           if (filterType === 'toggle') {
             const isChecked = selected === true || selected === 'true';
 
@@ -213,23 +273,30 @@ export function FilterPanel<T = Record<string, unknown>>({
                 >
                   {config.label}
                 </label>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={(e) =>
-                      handleCheckboxChange(
-                        config.columnKey,
-                        'true',
-                        e.target.checked
-                      )
-                    }
-                    className="w-4 h-4 rounded cursor-pointer"
-                    style={{
-                      accentColor: 'var(--color-primary-color)',
-                    }}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isChecked}
+                  onClick={() =>
+                    handleCheckboxChange(config.columnKey, 'true', !isChecked)
+                  }
+                  className={`
+                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                    focus:outline-none focus:ring-2 focus:ring-offset-2
+                    ${isChecked ? 'bg-(--color-primary-color)' : 'bg-(--color-gray-3)'}
+                    focus:ring-(--color-primary-color)
+                  `}
+                  style={{
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span
+                    className={`
+                      inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                      ${isChecked ? 'translate-x-6' : 'translate-x-1'}
+                    `}
                   />
-                </label>
+                </button>
               </div>
             );
           }
@@ -251,7 +318,7 @@ export function FilterPanel<T = Record<string, unknown>>({
                 <select
                   value={selectedValue}
                   onChange={(e) =>
-                    onFilterChange(config.columnKey, e.target.value)
+                    handleTempFilterChange(config.columnKey, e.target.value)
                   }
                   className="w-full px-3 py-2 text-sm rounded-lg border"
                   style={{
@@ -325,12 +392,19 @@ export function FilterPanel<T = Record<string, unknown>>({
         })}
       </div>
 
-      {/* Botón de limpiar */}
-      {onReset && (
-        <div
-          className="flex items-center justify-start mt-4 pt-4 border-t"
-          style={{ borderColor: 'var(--color-gray-1)' }}
+      {/* Botones de acción */}
+      <div
+        className="flex flex-row-reverse items-center justify-between gap-2 mt-4 pt-4 border-t border-gray-3-light dark:border-gray-6-dark"
+      >
+        <Button
+          variant="primary"
+          size="small"
+          onClick={handleApply}
+          disabled={!hasPendingChanges}
         >
+          Aplicar
+        </Button>
+        {onReset && (
           <Button
             variant="ghost"
             size="small"
@@ -339,8 +413,8 @@ export function FilterPanel<T = Record<string, unknown>>({
           >
             Limpiar
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

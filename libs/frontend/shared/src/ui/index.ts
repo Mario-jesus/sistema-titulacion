@@ -2,7 +2,7 @@ export { Button } from './Button/Button';
 export type { ButtonProps } from './Button/Button';
 
 export { Input } from './Input/Input';
-export type { InputProps } from './Input/Input';
+export type { InputProps, InputVariant } from './Input/Input';
 
 export { Search } from './Search/Search';
 export type { SearchProps } from './Search/Search';

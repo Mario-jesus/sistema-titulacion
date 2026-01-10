@@ -26,10 +26,8 @@ export const ComingSoonPage = lazy(() =>
   }))
 );
 
-// TODO: Agregar más páginas aquí cuando estén disponibles
-// Ejemplo:
-// export const DashboardPage = lazy(() =>
-//   import('@pages/DashboardPage').then((module) => ({
-//     default: module.DashboardPage,
-//   }))
-// );
+export const GenerationsPage = lazy(() =>
+  import('@pages/GenerationsPage').then((module) => ({
+    default: module.GenerationsPage,
+  }))
+);

@@ -123,6 +123,7 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(
     const containerClasses = [
       'relative flex items-center',
       fullWidth && 'w-full',
+      'z-0', // Asegurar que está en el stacking context correcto
     ]
       .filter(Boolean)
       .join(' ');

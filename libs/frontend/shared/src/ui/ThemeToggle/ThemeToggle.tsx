@@ -7,12 +7,9 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative inline-flex items-center w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer"
+      className="relative inline-flex items-center w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer bg-white dark:bg-gray-4-dark group"
       style={
         {
-          backgroundColor: isDark
-            ? 'var(--color-gray-4-dark)'
-            : 'var(--color-white)',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
           '--tw-ring-color': 'var(--color-primary-color)',
         } as React.CSSProperties & { '--tw-ring-color'?: string }
@@ -22,7 +19,7 @@ export function ThemeToggle() {
     >
       {/* Thumb/Slider */}
       <div
-        className={`relative flex items-center justify-center w-6 h-6 rounded-full transition-all duration-300 ease-in-out ${
+        className={`relative flex items-center justify-center w-6 h-6 rounded-full transition-all duration-300 ease-in-out group-hover:brightness-120 ${
           isDark ? 'translate-x-7' : 'translate-x-0.5'
         }`}
         style={{

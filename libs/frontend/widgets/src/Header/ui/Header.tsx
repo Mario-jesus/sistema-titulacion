@@ -19,12 +19,7 @@ export function Header({
 
   return (
     <header
-      className={`flex items-center justify-between px-3 md:px-6 py-3 md:py-4 border-b rounded-lg ${className}`}
-      style={{
-        backgroundColor: 'var(--color-component-bg)',
-        borderColor: 'var(--color-gray-1)',
-        maxHeight: '70px',
-      }}
+      className={`flex items-center justify-between px-3 md:px-6 py-3 md:py-4 rounded-lg relative z-10 max-h-17 bg-(--color-component-bg) ${className}`}
     >
       {/* Sección izquierda: Botón menú móvil y Título */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -32,17 +27,7 @@ export function Header({
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            className="lg:hidden flex items-center justify-center p-2 rounded-lg cursor-pointer"
-            style={{
-              color: 'var(--color-base-secondary-typo)',
-              backgroundColor: 'transparent',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-gray-2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className="lg:hidden flex items-center justify-center p-2 rounded-lg cursor-pointer bg-transparent hover:bg-(--color-gray-2) text-(--color-base-secondary-typo)"
             aria-label="Abrir menú"
             type="button"
           >

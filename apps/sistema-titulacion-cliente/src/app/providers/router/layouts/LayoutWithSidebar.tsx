@@ -111,7 +111,7 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
 
   return (
     <div
-      className="h-screen overflow-hidden w-full lg:flex"
+      className="min-h-screen w-full lg:flex lg:h-screen lg:overflow-hidden"
       style={{ backgroundColor: 'var(--color-document-bg)' }}
     >
       {/* Sidebar: position fixed en móviles (fuera del flujo), static en desktop (en el flujo flex) */}
@@ -125,12 +125,12 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
       />
 
       {/* Contenedor principal: ocupa todo el ancho en móviles, flex-1 en desktop */}
-      <div className="w-full lg:flex-1 lg:w-auto flex flex-col overflow-hidden min-w-0 lg:z-0">
+      <div className="w-full lg:flex-1 lg:w-auto flex flex-col lg:overflow-hidden min-w-0 lg:z-0">
         <div
-          className="flex-1 overflow-y-auto relative w-full"
+          className="flex-1 lg:overflow-y-auto lg:flex-1 relative w-full"
           style={{ backgroundColor: 'var(--color-document-bg)' }}
         >
-          <div className="px-4 lg:px-6 sticky top-0 z-10 lg:z-auto">
+          <div className="px-4 lg:px-6 sticky top-0 z-10 bg-(--color-document-bg)">
             <Header
               title={pageTitle}
               user={userInfo}
@@ -141,7 +141,7 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
               onMenuClick={handleMobileMenuToggle}
             />
           </div>
-          <main className="px-4 lg:px-6 pb-4 w-full">{children}</main>
+          <main className="px-4 lg:px-6 pb-4 w-full relative z-0">{children}</main>
         </div>
       </div>
     </div>

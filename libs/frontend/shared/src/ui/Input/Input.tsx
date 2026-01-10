@@ -1,9 +1,13 @@
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { InputHTMLAttributes, forwardRef, useEffect } from 'react';
+
+export type InputVariant = 'default' | 'calendar' | 'year';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   fullWidth?: boolean;
+  /** Variante del input: 'default', 'calendar' (para fechas), 'year' (para años sin spinners) */
+  variant?: InputVariant;
 }
 
 /**
@@ -53,11 +57,58 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  *   value="Valor fijo"
  *   disabled
  * />
+ *
+ * // Input de tipo año (sin spinners)
+ * <Input
+ *   label="Año"
+ *   type="number"
+ *   variant="year"
+ *   placeholder="2024"
+ *   value={year}
+ *   onChange={(e) => setYear(e.target.value)}
+ *   min="1900"
+ *   max="2100"
+ * />
+ *
+ * // Input de tipo calendario/fecha
+ * <Input
+ *   label="Fecha"
+ *   variant="calendar"
+ *   value={date}
+ *   onChange={(e) => setDate(e.target.value)}
+ * />
  * ```
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, fullWidth = false, className = '', id, ...props }, ref) => {
+  ({ label, error, fullWidth = false, variant = 'default', className = '', id, type, style, ...props }, ref) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Determinar el tipo de input según la variante
+    let inputType = type;
+    if (variant === 'calendar' && !type) {
+      inputType = 'date';
+    } else if (variant === 'year' && !type) {
+      inputType = 'number';
+    }
+
+    // Inyectar estilos globales para ocultar spinners en inputs de año (solo una vez)
+    useEffect(() => {
+      if (variant === 'year') {
+        const styleId = 'input-year-no-spinners-style';
+        if (!document.getElementById(styleId)) {
+          const styleElement = document.createElement('style');
+          styleElement.id = styleId;
+          styleElement.textContent = `
+            input[type="number"].input-year-no-spinners::-webkit-inner-spin-button,
+            input[type="number"].input-year-no-spinners::-webkit-outer-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+            }
+          `;
+          document.head.appendChild(styleElement);
+        }
+      }
+    }, [variant]);
 
     // Clases del contenedor
     const containerClasses = ['flex flex-col gap-2', fullWidth && 'w-full']
@@ -89,10 +140,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       error && 'focus:border-[var(--color-error-typo)]',
       error &&
         'focus:ring-2 focus:ring-[var(--color-error-typo)] focus:ring-opacity-10',
+      variant === 'year' && 'input-year-no-spinners',
       className,
     ]
       .filter(Boolean)
       .join(' ');
+
+    // Estilos inline para variantes especiales
+    const inputStyle: React.CSSProperties = {
+      ...style,
+      ...(variant === 'year' && {
+        // Ocultar spinners en navegadores webkit
+        MozAppearance: 'textfield' as const,
+        appearance: 'textfield' as const,
+      }),
+    };
 
     // Clases del mensaje de error (soporta modo oscuro automáticamente)
     const errorClasses = 'text-sm text-[var(--color-error-typo)] -mt-1';
@@ -104,7 +166,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input ref={ref} id={inputId} className={inputBaseClasses} {...props} />
+        <input
+          ref={ref}
+          id={inputId}
+          type={inputType}
+          className={inputBaseClasses}
+          style={inputStyle}
+          {...props}
+        />
         {error && <span className={errorClasses}>{error}</span>}
       </div>
     );

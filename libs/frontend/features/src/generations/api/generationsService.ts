@@ -27,10 +27,8 @@ export const generationsService = {
       if (params?.limit) {
         searchParams.append('limit', params.limit.toString());
       }
-      if (params?.sortBy) {
+      if (params?.sortBy && params?.sortOrder) {
         searchParams.append('sortBy', params.sortBy);
-      }
-      if (params?.sortOrder) {
         searchParams.append('sortOrder', params.sortOrder);
       }
       if (params?.activeOnly) {
@@ -47,23 +45,11 @@ export const generationsService = {
 
       const response = await apiClient.get<ListGenerationsResponse>(url);
 
-      // Convertir strings ISO a Date objects
-      const generations = response.data.map((gen) => ({
-        ...gen,
-        startYear: new Date(gen.startYear),
-        endYear: new Date(gen.endYear),
-        createdAt: new Date(gen.createdAt),
-        updatedAt: new Date(gen.updatedAt),
-      }));
-
       logger.log('Lista de generaciones obtenida exitosamente', {
         total: response.pagination.total,
       });
 
-      return {
-        ...response,
-        data: generations,
-      };
+      return response;
     } catch (error) {
       logger.error('Error al obtener lista de generaciones:', error);
       throw error;
@@ -81,18 +67,9 @@ export const generationsService = {
         API_ENDPOINTS.GENERATIONS.DETAIL(id)
       );
 
-      // Convertir strings ISO a Date objects
-      const generation: Generation = {
-        ...response,
-        startYear: new Date(response.startYear),
-        endYear: new Date(response.endYear),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
-      };
-
       logger.log('Generación obtenida exitosamente', { id });
 
-      return generation;
+      return response;
     } catch (error) {
       logger.error('Error al obtener generación:', error);
       throw error;
@@ -124,18 +101,9 @@ export const generationsService = {
         payload
       );
 
-      // Convertir strings ISO a Date objects
-      const generation: Generation = {
-        ...response,
-        startYear: new Date(response.startYear),
-        endYear: new Date(response.endYear),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
-      };
+      logger.log('Generación creada exitosamente', { id: response.id });
 
-      logger.log('Generación creada exitosamente', { id: generation.id });
-
-      return generation;
+      return response;
     } catch (error) {
       logger.error('Error al crear generación:', error);
       throw error;
@@ -171,18 +139,9 @@ export const generationsService = {
         payload
       );
 
-      // Convertir strings ISO a Date objects
-      const generation: Generation = {
-        ...response,
-        startYear: new Date(response.startYear),
-        endYear: new Date(response.endYear),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
-      };
-
       logger.log('Generación actualizada exitosamente', { id });
 
-      return generation;
+      return response;
     } catch (error) {
       logger.error('Error al actualizar generación:', error);
       throw error;
@@ -221,18 +180,9 @@ export const generationsService = {
         payload
       );
 
-      // Convertir strings ISO a Date objects
-      const generation: Generation = {
-        ...response,
-        startYear: new Date(response.startYear),
-        endYear: new Date(response.endYear),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
-      };
-
       logger.log('Generación actualizada parcialmente exitosamente', { id });
 
-      return generation;
+      return response;
     } catch (error) {
       logger.error('Error al actualizar parcialmente generación:', error);
       throw error;
@@ -268,18 +218,9 @@ export const generationsService = {
         API_ENDPOINTS.GENERATIONS.ACTIVATE(id)
       );
 
-      // Convertir strings ISO a Date objects
-      const generation: Generation = {
-        ...response,
-        startYear: new Date(response.startYear),
-        endYear: new Date(response.endYear),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
-      };
-
       logger.log('Generación activada exitosamente', { id });
 
-      return generation;
+      return response;
     } catch (error) {
       logger.error('Error al activar generación:', error);
       throw error;
@@ -297,18 +238,9 @@ export const generationsService = {
         API_ENDPOINTS.GENERATIONS.DEACTIVATE(id)
       );
 
-      // Convertir strings ISO a Date objects
-      const generation: Generation = {
-        ...response,
-        startYear: new Date(response.startYear),
-        endYear: new Date(response.endYear),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
-      };
-
       logger.log('Generación desactivada exitosamente', { id });
 
-      return generation;
+      return response;
     } catch (error) {
       logger.error('Error al desactivar generación:', error);
       throw error;
