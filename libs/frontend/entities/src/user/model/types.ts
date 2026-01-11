@@ -5,7 +5,7 @@ export interface User {
   avatar: string | null;
   role: UserRole;
   isActive: boolean;
-  lastLogin: Date;
+  lastLogin: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

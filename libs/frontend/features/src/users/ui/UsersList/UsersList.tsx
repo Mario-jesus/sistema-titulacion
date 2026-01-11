@@ -12,9 +12,11 @@ import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { useUsers } from '../../lib/useUsers';
 import { UserForm } from '../UserForm/UserForm';
+import { ChangePasswordForm } from './ChangePasswordForm';
 import type { User } from '@entities/user';
 import type { TableColumn, DetailField } from '@shared/ui';
 import { UserRole } from '@entities/user';
+import type { ChangePasswordRequest } from '../../model/types';
 
 /**
  * Componente para listar y gestionar usuarios
@@ -33,6 +35,7 @@ export function UsersList() {
     deleteUser,
     activateUser,
     deactivateUser,
+    changePassword,
     clearListErrors,
   } = useUsers();
 
@@ -53,6 +56,8 @@ export function UsersList() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+    useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Obtener activeOnly y role de filters
@@ -243,6 +248,36 @@ export function UsersList() {
     setIsDetailModalOpen(true);
   }, []);
 
+  // Abrir modal de cambio de contraseña
+  const handleOpenChangePassword = useCallback((user: User) => {
+    setSelectedUser(user);
+    setIsChangePasswordModalOpen(true);
+  }, []);
+
+  // Manejar cambio de contraseña
+  const handleChangePassword = useCallback(
+    async (data: ChangePasswordRequest) => {
+      if (!selectedUser) return;
+      const result = await changePassword(selectedUser.id, data);
+      if (!result.success) {
+        showToast({
+          type: 'error',
+          title: 'Error al cambiar contraseña',
+          message: result.error || 'No se pudo cambiar la contraseña',
+        });
+        throw new Error(result.error || 'No se pudo cambiar la contraseña');
+      }
+      setIsChangePasswordModalOpen(false);
+      setSelectedUser(null);
+      showToast({
+        type: 'success',
+        title: 'Contraseña actualizada',
+        message: `La contraseña de "${selectedUser.username}" se ha actualizado exitosamente`,
+      });
+    },
+    [selectedUser, changePassword, showToast]
+  );
+
   // Columnas de la tabla
   const columns: TableColumn<User>[] = [
     {
@@ -293,7 +328,11 @@ export function UsersList() {
     {
       key: 'lastLogin',
       label: 'Último Acceso',
-      render: (value: Date | string) => {
+      render: (value: Date | string | null) => {
+        // Si es null, el usuario nunca se ha logueado
+        if (value === null || value === undefined) {
+          return 'Nunca';
+        }
         // Manejar tanto Date como string ISO
         const date = value instanceof Date ? value : new Date(value);
         if (isNaN(date.getTime())) return 'Nunca';
@@ -390,6 +429,7 @@ export function UsersList() {
   const getRowActions = useCallback(
     (user: User): DropdownMenuItem[] => {
       // Obtener acciones basadas en el estado usando createStatusActions
+      // No usar showSeparator porque vamos a insertar "Cambiar contraseña" manualmente
       const statusActions = createStatusActions(user, {
         currentStatus: user.isActive ? 'active' : 'inactive',
         getStatus: (row) => (row.isActive ? 'active' : 'inactive'),
@@ -410,7 +450,7 @@ export function UsersList() {
                 onClick: () => handleToggleActive(user),
               },
             ],
-            showSeparator: true,
+            showSeparator: false,
           },
           inactive: {
             additionalActions: [
@@ -428,10 +468,22 @@ export function UsersList() {
                 onClick: () => handleToggleActive(user),
               },
             ],
-            showSeparator: true,
+            showSeparator: false,
           },
         },
       });
+
+      // Separar las acciones: additionalActions vienen primero, luego actions
+      const additionalActionsCount = 2;
+      const actionsWithSeparatorAndPassword: DropdownMenuItem[] = [
+        ...statusActions.slice(0, additionalActionsCount),
+        { separator: true, label: 'separator', onClick: () => {} },
+        {
+          label: 'Cambiar contraseña',
+          onClick: () => handleOpenChangePassword(user),
+        },
+        ...statusActions.slice(additionalActionsCount),
+      ];
 
       // Agregar "Ver detalles" al inicio del menú, seguido de un separador
       return [
@@ -440,10 +492,16 @@ export function UsersList() {
           onClick: () => handleOpenDetail(user),
         },
         { separator: true, label: 'separator', onClick: () => {} },
-        ...statusActions,
+        ...actionsWithSeparatorAndPassword,
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleToggleActive, handleDelete]
+    [
+      handleOpenDetail,
+      handleOpenEdit,
+      handleToggleActive,
+      handleDelete,
+      handleOpenChangePassword,
+    ]
   );
 
   return (
@@ -581,6 +639,18 @@ export function UsersList() {
         data={selectedUser}
         fields={detailFields}
       />
+
+      {selectedUser && (
+        <ChangePasswordForm
+          isOpen={isChangePasswordModalOpen}
+          onClose={() => {
+            setIsChangePasswordModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onSubmit={handleChangePassword}
+          username={selectedUser.username}
+        />
+      )}
     </div>
   );
 }

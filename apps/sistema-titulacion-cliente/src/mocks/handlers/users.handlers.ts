@@ -39,7 +39,7 @@ interface UpdateMeRequest {
 }
 
 interface ChangePasswordRequest {
-  currentPassword: string;
+  currentPassword?: string; // Opcional para admin, requerido para usuario propio
   newPassword: string;
 }
 
@@ -95,6 +95,18 @@ function canManageUser(
 
   // Los usuarios pueden gestionar su propio usuario
   return authenticatedUser.id === targetUserId;
+}
+
+/**
+ * Valida que el username sea alfanumérico y sin espacios
+ * @param username - Nombre de usuario a validar
+ * @returns true si es válido, false en caso contrario
+ */
+function isValidUsernameFormat(username: string): boolean {
+  // Solo permite caracteres alfanuméricos (letras y números)
+  // Sin espacios
+  const alphanumericRegex = /^[a-zA-Z0-9]+$/;
+  return alphanumericRegex.test(username);
 }
 
 /**
@@ -245,7 +257,7 @@ export const usersHandlers = [
     const response: ListResponse = {
       data: paginatedData.map((user) => ({
         ...user,
-        lastLogin: user.lastLogin.toISOString(),
+        lastLogin: user.lastLogin?.toISOString() ?? null,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       })) as unknown as User[],
@@ -306,7 +318,7 @@ export const usersHandlers = [
 
     return HttpResponse.json({
       ...excludeAvatar(targetUser),
-      lastLogin: targetUser.lastLogin.toISOString(),
+      lastLogin: targetUser.lastLogin?.toISOString() ?? null,
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
     });
@@ -345,6 +357,18 @@ export const usersHandlers = [
       return HttpResponse.json(
         {
           error: 'El nombre de usuario es requerido',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato del username: alfanumérico y sin espacios
+    if (!isValidUsernameFormat(body.username.trim())) {
+      return HttpResponse.json(
+        {
+          error:
+            'El nombre de usuario debe contener solo letras y números, sin espacios',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -414,7 +438,7 @@ export const usersHandlers = [
       avatar: body.avatar || null,
       role: body.role || UserRole.STAFF,
       isActive: body.isActive ?? true,
-      lastLogin: new Date(),
+      lastLogin: null, // Se actualiza automáticamente cuando el usuario se loguea
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -426,7 +450,7 @@ export const usersHandlers = [
     return HttpResponse.json(
       {
         ...excludeAvatar(newUser),
-        lastLogin: newUser.lastLogin.toISOString(),
+        lastLogin: newUser.lastLogin?.toISOString() ?? null,
         createdAt: newUser.createdAt.toISOString(),
         updatedAt: newUser.updatedAt.toISOString(),
       },
@@ -486,6 +510,18 @@ export const usersHandlers = [
       );
     }
 
+    // Validar formato del username si se proporciona: alfanumérico y sin espacios
+    if (body.username && !isValidUsernameFormat(body.username.trim())) {
+      return HttpResponse.json(
+        {
+          error:
+            'El nombre de usuario debe contener solo letras y números, sin espacios',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
     if (body.email !== undefined && body.email.trim().length === 0) {
       return HttpResponse.json(
         {
@@ -549,7 +585,7 @@ export const usersHandlers = [
 
     return HttpResponse.json({
       ...excludeAvatar(targetUser),
-      lastLogin: targetUser.lastLogin.toISOString(),
+      lastLogin: targetUser.lastLogin?.toISOString() ?? null,
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
     });
@@ -607,6 +643,18 @@ export const usersHandlers = [
       );
     }
 
+    // Validar formato del username si se proporciona: alfanumérico y sin espacios
+    if (body.username && !isValidUsernameFormat(body.username.trim())) {
+      return HttpResponse.json(
+        {
+          error:
+            'El nombre de usuario debe contener solo letras y números, sin espacios',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
     if (body.email !== undefined && body.email.trim().length === 0) {
       return HttpResponse.json(
         {
@@ -670,7 +718,7 @@ export const usersHandlers = [
 
     return HttpResponse.json({
       ...excludeAvatar(targetUser),
-      lastLogin: targetUser.lastLogin.toISOString(),
+      lastLogin: targetUser.lastLogin?.toISOString() ?? null,
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
     });
@@ -698,6 +746,18 @@ export const usersHandlers = [
       return HttpResponse.json(
         {
           error: 'El nombre de usuario no puede estar vacío',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato del username si se proporciona: alfanumérico y sin espacios
+    if (body.username && !isValidUsernameFormat(body.username.trim())) {
+      return HttpResponse.json(
+        {
+          error:
+            'El nombre de usuario debe contener solo letras y números, sin espacios',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -766,7 +826,7 @@ export const usersHandlers = [
 
     return HttpResponse.json({
       ...authenticatedUser,
-      lastLogin: authenticatedUser.lastLogin.toISOString(),
+      lastLogin: authenticatedUser.lastLogin?.toISOString() ?? null,
       createdAt: authenticatedUser.createdAt.toISOString(),
       updatedAt: authenticatedUser.updatedAt.toISOString(),
     });
@@ -876,7 +936,7 @@ export const usersHandlers = [
 
     return HttpResponse.json({
       ...excludeAvatar(targetUser),
-      lastLogin: targetUser.lastLogin.toISOString(),
+      lastLogin: targetUser.lastLogin?.toISOString() ?? null,
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
     });
@@ -939,7 +999,7 @@ export const usersHandlers = [
 
       return HttpResponse.json({
         ...excludeAvatar(targetUser),
-        lastLogin: targetUser.lastLogin.toISOString(),
+        lastLogin: targetUser.lastLogin?.toISOString() ?? null,
         createdAt: targetUser.createdAt.toISOString(),
         updatedAt: targetUser.updatedAt.toISOString(),
       });
@@ -995,18 +1055,27 @@ export const usersHandlers = [
       const body = (await request.json()) as ChangePasswordRequest;
 
       // Validaciones
-      if (!body.currentPassword || !body.newPassword) {
+      if (!body.newPassword) {
         return HttpResponse.json(
           {
-            error: 'La contraseña actual y la nueva contraseña son requeridas',
+            error: 'La nueva contraseña es requerida',
             code: 'VALIDATION_ERROR',
           },
           { status: 400 }
         );
       }
 
-      // Si el usuario está cambiando su propia contraseña, validar la contraseña actual
+      // Si el usuario está cambiando su propia contraseña, requiere y valida la contraseña actual
       if (isOwnPassword) {
+        if (!body.currentPassword) {
+          return HttpResponse.json(
+            {
+              error: 'La contraseña actual es requerida',
+              code: 'VALIDATION_ERROR',
+            },
+            { status: 400 }
+          );
+        }
         if (!validateUserPassword(targetUserId, body.currentPassword)) {
           return HttpResponse.json(
             {

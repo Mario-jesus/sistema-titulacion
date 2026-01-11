@@ -100,6 +100,10 @@ export const authHandlers = [
     // Invalidar cualquier refresh token previo del usuario (logout previo)
     invalidateRefreshToken(user.id);
 
+    // Actualizar lastLogin cuando el usuario se loguea
+    user.lastLogin = new Date();
+    user.updatedAt = new Date();
+
     // Generar nuevos tokens
     const token = generateToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
