@@ -89,7 +89,6 @@ export const API_ENDPOINTS = {
   },
   // Campos Capturados
   CAPTURED_FIELDS: {
-    LIST: '/captured-fields',
     DETAIL: (id: string) => `/captured-fields/${id}`,
     CREATE: '/captured-fields',
     UPDATE: (id: string) => `/captured-fields/${id}`,
@@ -98,12 +97,13 @@ export const API_ENDPOINTS = {
   },
   // Titulaciones
   GRADUATIONS: {
-    LIST: '/graduations',
     DETAIL: (id: string) => `/graduations/${id}`,
     CREATE: '/graduations',
     UPDATE: (id: string) => `/graduations/${id}`,
     PATCH: (id: string) => `/graduations/${id}`,
     DELETE: (id: string) => `/graduations/${id}`,
+    GRADUATE: (idStudent: string) => `/graduations/${idStudent}/graduate`,
+    UNGRADUATE: (idStudent: string) => `/graduations/${idStudent}/ungraduate`,
   },
   // Ingreso y Egreso
   INGRESS_EGRESS: {

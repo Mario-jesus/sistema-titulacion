@@ -21,3 +21,9 @@ export * from './ingress-egress';
 
 // Students feature
 export * from './students';
+
+// Captured Fields feature
+export * from './captured-fields';
+
+// Graduations feature
+export * from './graduations';
