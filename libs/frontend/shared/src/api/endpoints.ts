@@ -89,19 +89,19 @@ export const API_ENDPOINTS = {
   },
   // Campos Capturados
   CAPTURED_FIELDS: {
-    DETAIL: (id: string) => `/captured-fields/${id}`,
+    DETAIL: (studentId: string) => `/captured-fields/student/${studentId}`,
     CREATE: '/captured-fields',
-    UPDATE: (id: string) => `/captured-fields/${id}`,
-    PATCH: (id: string) => `/captured-fields/${id}`,
-    DELETE: (id: string) => `/captured-fields/${id}`,
+    UPDATE: (studentId: string) => `/captured-fields/student/${studentId}`,
+    PATCH: (studentId: string) => `/captured-fields/student/${studentId}`,
+    DELETE: (studentId: string) => `/captured-fields/student/${studentId}`,
   },
   // Titulaciones
   GRADUATIONS: {
-    DETAIL: (id: string) => `/graduations/${id}`,
+    DETAIL: (studentId: string) => `/graduations/student/${studentId}`,
     CREATE: '/graduations',
-    UPDATE: (id: string) => `/graduations/${id}`,
-    PATCH: (id: string) => `/graduations/${id}`,
-    DELETE: (id: string) => `/graduations/${id}`,
+    UPDATE: (studentId: string) => `/graduations/student/${studentId}`,
+    PATCH: (studentId: string) => `/graduations/student/${studentId}`,
+    DELETE: (studentId: string) => `/graduations/student/${studentId}`,
     GRADUATE: (idStudent: string) => `/graduations/${idStudent}/graduate`,
     UNGRADUATE: (idStudent: string) => `/graduations/${idStudent}/ungraduate`,
   },

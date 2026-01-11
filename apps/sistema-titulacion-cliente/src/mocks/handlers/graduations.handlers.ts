@@ -6,7 +6,6 @@ import { findStudentById } from '../data/students';
 import { findGraduationOptionById } from '../data/graduation-options';
 import {
   mockGraduations,
-  findGraduationById,
   findGraduationByStudentId,
   generateGraduationId,
 } from '../data';
@@ -40,12 +39,12 @@ interface UpdateGraduationRequest {
 }
 
 export const graduationsHandlers = [
-  // GET /graduations/:id (Detail)
-  http.get(buildApiUrl('/graduations/:id'), async ({ params }) => {
+  // GET /graduations/student/:id (Detail by studentId)
+  http.get(buildApiUrl('/graduations/student/:id'), async ({ params }) => {
     await delay(200);
 
     const { id } = params;
-    const graduation = findGraduationById(id as string);
+    const graduation = findGraduationByStudentId(id as string);
 
     if (!graduation) {
       return HttpResponse.json(
@@ -251,12 +250,434 @@ export const graduationsHandlers = [
     );
   }),
 
-  // PUT /graduations/:id (Update)
-  http.put(buildApiUrl('/graduations/:id'), async ({ params, request }) => {
-    await delay(400);
+  // PUT /graduations/student/:id (Update by studentId)
+  http.put(
+    buildApiUrl('/graduations/student/:id'),
+    async ({ params, request }) => {
+      await delay(400);
+
+      const { id } = params;
+      const graduation = findGraduationByStudentId(id as string);
+
+      if (!graduation) {
+        return HttpResponse.json(
+          {
+            error: 'Titulación no encontrada',
+            code: 'GRADUATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      const body = (await request.json()) as UpdateGraduationRequest;
+
+      // Validaciones
+      if (
+        body.president !== undefined &&
+        (!body.president || body.president.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El presidente del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.secretary !== undefined &&
+        (!body.secretary || body.secretary.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El secretario del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.vocal !== undefined &&
+        (!body.vocal || body.vocal.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El vocal del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.substituteVocal !== undefined &&
+        (!body.substituteVocal || body.substituteVocal.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El vocal suplente del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Obtener el estudiante actual o el nuevo si se cambia
+      const currentStudentId = body.studentId ?? graduation.studentId;
+      const currentStudent = findStudentById(currentStudentId);
+      if (!currentStudent) {
+        return HttpResponse.json(
+          {
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      if (body.studentId !== undefined) {
+        // Verificar duplicados si se cambia el estudiante
+        if (body.studentId !== graduation.studentId) {
+          const existingGraduation = findGraduationByStudentId(body.studentId);
+          if (existingGraduation) {
+            return HttpResponse.json(
+              {
+                error: 'Ya existe una titulación para este estudiante',
+                code: 'DUPLICATE_ERROR',
+              },
+              { status: 409 }
+            );
+          }
+        }
+      }
+
+      // Validar que solo estudiantes egresados pueden estar titulados
+      const newIsGraduated = body.isGraduated ?? graduation.isGraduated;
+      if (newIsGraduated === true && !currentStudent.isEgressed) {
+        return HttpResponse.json(
+          {
+            error: 'Solo los estudiantes egresados pueden estar titulados',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que estudiantes pausados o cancelados no pueden estar graduados
+      if (
+        newIsGraduated === true &&
+        (currentStudent.status === StudentStatus.PAUSADO ||
+          currentStudent.status === StudentStatus.CANCELADO)
+      ) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
+            code: 'INVALID_STUDENT_STATUS',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
+      if (newIsGraduated === true) {
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        const graduationDateToCheck =
+          body.graduationDate !== undefined
+            ? body.graduationDate instanceof Date
+              ? body.graduationDate
+              : new Date(body.graduationDate)
+            : graduation.graduationDate;
+        const normalizedGraduationDate = new Date(graduationDateToCheck);
+        normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+        if (normalizedGraduationDate > currentDate) {
+          return HttpResponse.json(
+            {
+              error:
+                'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
+              code: 'INVALID_GRADUATION_DATE',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Verificar que la opción de titulación existe (si se proporciona)
+      if (body.graduationOptionId !== undefined && body.graduationOptionId) {
+        const graduationOption = findGraduationOptionById(
+          body.graduationOptionId
+        );
+        if (!graduationOption) {
+          return HttpResponse.json(
+            {
+              error: 'Opcion de titulacion no encontrada',
+              code: 'GRADUATION_OPTION_NOT_FOUND',
+            },
+            { status: 404 }
+          );
+        }
+      }
+
+      // Actualizar
+      graduation.studentId = body.studentId ?? graduation.studentId;
+      graduation.graduationOptionId =
+        body.graduationOptionId !== undefined
+          ? body.graduationOptionId
+          : graduation.graduationOptionId;
+      if (body.graduationDate !== undefined) {
+        graduation.graduationDate =
+          body.graduationDate instanceof Date
+            ? body.graduationDate
+            : new Date(body.graduationDate);
+      }
+      graduation.isGraduated = body.isGraduated ?? graduation.isGraduated;
+      graduation.president = body.president?.trim() ?? graduation.president;
+      graduation.secretary = body.secretary?.trim() ?? graduation.secretary;
+      graduation.vocal = body.vocal?.trim() ?? graduation.vocal;
+      graduation.substituteVocal =
+        body.substituteVocal?.trim() ?? graduation.substituteVocal;
+      graduation.notes =
+        body.notes !== undefined
+          ? body.notes?.trim() || null
+          : graduation.notes;
+      graduation.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...graduation,
+        graduationDate: graduation.graduationDate.toISOString(),
+        createdAt: graduation.createdAt.toISOString(),
+        updatedAt: graduation.updatedAt.toISOString(),
+      });
+    }
+  ),
+
+  // PATCH /graduations/student/:id (Partial Update by studentId)
+  http.patch(
+    buildApiUrl('/graduations/student/:id'),
+    async ({ params, request }) => {
+      await delay(300);
+
+      const { id } = params;
+      const graduation = findGraduationByStudentId(id as string);
+
+      if (!graduation) {
+        return HttpResponse.json(
+          {
+            error: 'Titulación no encontrada',
+            code: 'GRADUATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      const body = (await request.json()) as Partial<UpdateGraduationRequest>;
+
+      // Validaciones
+      if (
+        body.president !== undefined &&
+        (!body.president || body.president.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El presidente del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.secretary !== undefined &&
+        (!body.secretary || body.secretary.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El secretario del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.vocal !== undefined &&
+        (!body.vocal || body.vocal.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El vocal del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (
+        body.substituteVocal !== undefined &&
+        (!body.substituteVocal || body.substituteVocal.trim().length === 0)
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El vocal suplente del comité no puede estar vacío',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Obtener el estudiante actual o el nuevo si se cambia
+      const currentStudentId = body.studentId ?? graduation.studentId;
+      const currentStudent = findStudentById(currentStudentId);
+      if (!currentStudent) {
+        return HttpResponse.json(
+          {
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      if (body.studentId !== undefined) {
+        // Verificar duplicados si se cambia el estudiante
+        if (body.studentId !== graduation.studentId) {
+          const existingGraduation = findGraduationByStudentId(body.studentId);
+          if (existingGraduation) {
+            return HttpResponse.json(
+              {
+                error: 'Ya existe una titulación para este estudiante',
+                code: 'DUPLICATE_ERROR',
+              },
+              { status: 409 }
+            );
+          }
+        }
+      }
+
+      // Validar que solo estudiantes egresados pueden estar titulados
+      const newIsGraduated =
+        body.isGraduated !== undefined
+          ? body.isGraduated
+          : graduation.isGraduated;
+      if (newIsGraduated === true && !currentStudent.isEgressed) {
+        return HttpResponse.json(
+          {
+            error: 'Solo los estudiantes egresados pueden estar titulados',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que estudiantes pausados o cancelados no pueden estar graduados
+      if (
+        newIsGraduated === true &&
+        (currentStudent.status === StudentStatus.PAUSADO ||
+          currentStudent.status === StudentStatus.CANCELADO)
+      ) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
+            code: 'INVALID_STUDENT_STATUS',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
+      if (newIsGraduated === true) {
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        const graduationDateToCheck =
+          body.graduationDate !== undefined
+            ? body.graduationDate instanceof Date
+              ? body.graduationDate
+              : new Date(body.graduationDate)
+            : graduation.graduationDate;
+        const normalizedGraduationDate = new Date(graduationDateToCheck);
+        normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+        if (normalizedGraduationDate > currentDate) {
+          return HttpResponse.json(
+            {
+              error:
+                'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
+              code: 'INVALID_GRADUATION_DATE',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Verificar que la opción de titulación existe (si se proporciona)
+      if (body.graduationOptionId !== undefined && body.graduationOptionId) {
+        const graduationOption = findGraduationOptionById(
+          body.graduationOptionId
+        );
+        if (!graduationOption) {
+          return HttpResponse.json(
+            {
+              error: 'Opcion de titulacion no encontrada',
+              code: 'GRADUATION_OPTION_NOT_FOUND',
+            },
+            { status: 404 }
+          );
+        }
+      }
+
+      // Actualizar solo campos proporcionados
+      if (body.studentId !== undefined) {
+        graduation.studentId = body.studentId;
+      }
+      if (body.graduationOptionId !== undefined) {
+        graduation.graduationOptionId = body.graduationOptionId;
+      }
+      if (body.graduationDate !== undefined) {
+        graduation.graduationDate =
+          body.graduationDate instanceof Date
+            ? body.graduationDate
+            : new Date(body.graduationDate);
+      }
+      if (body.isGraduated !== undefined) {
+        graduation.isGraduated = body.isGraduated;
+      }
+      if (body.president !== undefined) {
+        graduation.president = body.president.trim();
+      }
+      if (body.secretary !== undefined) {
+        graduation.secretary = body.secretary.trim();
+      }
+      if (body.vocal !== undefined) {
+        graduation.vocal = body.vocal.trim();
+      }
+      if (body.substituteVocal !== undefined) {
+        graduation.substituteVocal = body.substituteVocal.trim();
+      }
+      if (body.notes !== undefined) {
+        graduation.notes = body.notes?.trim() || null;
+      }
+      graduation.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...graduation,
+        graduationDate: graduation.graduationDate.toISOString(),
+        createdAt: graduation.createdAt.toISOString(),
+        updatedAt: graduation.updatedAt.toISOString(),
+      });
+    }
+  ),
+
+  // DELETE /graduations/student/:id (Delete by studentId)
+  http.delete(buildApiUrl('/graduations/student/:id'), async ({ params }) => {
+    await delay(300);
 
     const { id } = params;
-    const graduation = findGraduationById(id as string);
+    const graduation = findGraduationByStudentId(id as string);
 
     if (!graduation) {
       return HttpResponse.json(
@@ -268,421 +689,9 @@ export const graduationsHandlers = [
       );
     }
 
-    const body = (await request.json()) as UpdateGraduationRequest;
-
-    // Validaciones
-    if (
-      body.president !== undefined &&
-      (!body.president || body.president.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El presidente del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      body.secretary !== undefined &&
-      (!body.secretary || body.secretary.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El secretario del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      body.vocal !== undefined &&
-      (!body.vocal || body.vocal.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El vocal del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      body.substituteVocal !== undefined &&
-      (!body.substituteVocal || body.substituteVocal.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El vocal suplente del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Obtener el estudiante actual o el nuevo si se cambia
-    const currentStudentId = body.studentId ?? graduation.studentId;
-    const currentStudent = findStudentById(currentStudentId);
-    if (!currentStudent) {
-      return HttpResponse.json(
-        {
-          error: 'Estudiante no encontrado',
-          code: 'STUDENT_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    if (body.studentId !== undefined) {
-      // Verificar duplicados si se cambia el estudiante
-      if (body.studentId !== graduation.studentId) {
-        const existingGraduation = findGraduationByStudentId(body.studentId);
-        if (existingGraduation) {
-          return HttpResponse.json(
-            {
-              error: 'Ya existe una titulación para este estudiante',
-              code: 'DUPLICATE_ERROR',
-            },
-            { status: 409 }
-          );
-        }
-      }
-    }
-
-    // Validar que solo estudiantes egresados pueden estar titulados
-    const newIsGraduated = body.isGraduated ?? graduation.isGraduated;
-    if (newIsGraduated === true && !currentStudent.isEgressed) {
-      return HttpResponse.json(
-        {
-          error: 'Solo los estudiantes egresados pueden estar titulados',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar que estudiantes pausados o cancelados no pueden estar graduados
-    if (
-      newIsGraduated === true &&
-      (currentStudent.status === StudentStatus.PAUSADO ||
-        currentStudent.status === StudentStatus.CANCELADO)
-    ) {
-      return HttpResponse.json(
-        {
-          error:
-            'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
-          code: 'INVALID_STUDENT_STATUS',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
-    if (newIsGraduated === true) {
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-      const graduationDateToCheck =
-        body.graduationDate !== undefined
-          ? body.graduationDate instanceof Date
-            ? body.graduationDate
-            : new Date(body.graduationDate)
-          : graduation.graduationDate;
-      const normalizedGraduationDate = new Date(graduationDateToCheck);
-      normalizedGraduationDate.setHours(0, 0, 0, 0);
-
-      if (normalizedGraduationDate > currentDate) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
-            code: 'INVALID_GRADUATION_DATE',
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Verificar que la opción de titulación existe (si se proporciona)
-    if (body.graduationOptionId !== undefined && body.graduationOptionId) {
-      const graduationOption = findGraduationOptionById(
-        body.graduationOptionId
-      );
-      if (!graduationOption) {
-        return HttpResponse.json(
-          {
-            error: 'Opcion de titulacion no encontrada',
-            code: 'GRADUATION_OPTION_NOT_FOUND',
-          },
-          { status: 404 }
-        );
-      }
-    }
-
-    // Actualizar
-    graduation.studentId = body.studentId ?? graduation.studentId;
-    graduation.graduationOptionId =
-      body.graduationOptionId !== undefined
-        ? body.graduationOptionId
-        : graduation.graduationOptionId;
-    if (body.graduationDate !== undefined) {
-      graduation.graduationDate =
-        body.graduationDate instanceof Date
-          ? body.graduationDate
-          : new Date(body.graduationDate);
-    }
-    graduation.isGraduated = body.isGraduated ?? graduation.isGraduated;
-    graduation.president = body.president?.trim() ?? graduation.president;
-    graduation.secretary = body.secretary?.trim() ?? graduation.secretary;
-    graduation.vocal = body.vocal?.trim() ?? graduation.vocal;
-    graduation.substituteVocal =
-      body.substituteVocal?.trim() ?? graduation.substituteVocal;
-    graduation.notes =
-      body.notes !== undefined ? body.notes?.trim() || null : graduation.notes;
-    graduation.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...graduation,
-      graduationDate: graduation.graduationDate.toISOString(),
-      createdAt: graduation.createdAt.toISOString(),
-      updatedAt: graduation.updatedAt.toISOString(),
-    });
-  }),
-
-  // PATCH /graduations/:id (Partial Update)
-  http.patch(buildApiUrl('/graduations/:id'), async ({ params, request }) => {
-    await delay(300);
-
-    const { id } = params;
-    const graduation = findGraduationById(id as string);
-
-    if (!graduation) {
-      return HttpResponse.json(
-        {
-          error: 'Titulación no encontrada',
-          code: 'GRADUATION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    const body = (await request.json()) as Partial<UpdateGraduationRequest>;
-
-    // Validaciones
-    if (
-      body.president !== undefined &&
-      (!body.president || body.president.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El presidente del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      body.secretary !== undefined &&
-      (!body.secretary || body.secretary.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El secretario del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      body.vocal !== undefined &&
-      (!body.vocal || body.vocal.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El vocal del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      body.substituteVocal !== undefined &&
-      (!body.substituteVocal || body.substituteVocal.trim().length === 0)
-    ) {
-      return HttpResponse.json(
-        {
-          error: 'El vocal suplente del comité no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Obtener el estudiante actual o el nuevo si se cambia
-    const currentStudentId = body.studentId ?? graduation.studentId;
-    const currentStudent = findStudentById(currentStudentId);
-    if (!currentStudent) {
-      return HttpResponse.json(
-        {
-          error: 'Estudiante no encontrado',
-          code: 'STUDENT_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
-    if (body.studentId !== undefined) {
-      // Verificar duplicados si se cambia el estudiante
-      if (body.studentId !== graduation.studentId) {
-        const existingGraduation = findGraduationByStudentId(body.studentId);
-        if (existingGraduation) {
-          return HttpResponse.json(
-            {
-              error: 'Ya existe una titulación para este estudiante',
-              code: 'DUPLICATE_ERROR',
-            },
-            { status: 409 }
-          );
-        }
-      }
-    }
-
-    // Validar que solo estudiantes egresados pueden estar titulados
-    const newIsGraduated =
-      body.isGraduated !== undefined
-        ? body.isGraduated
-        : graduation.isGraduated;
-    if (newIsGraduated === true && !currentStudent.isEgressed) {
-      return HttpResponse.json(
-        {
-          error: 'Solo los estudiantes egresados pueden estar titulados',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar que estudiantes pausados o cancelados no pueden estar graduados
-    if (
-      newIsGraduated === true &&
-      (currentStudent.status === StudentStatus.PAUSADO ||
-        currentStudent.status === StudentStatus.CANCELADO)
-    ) {
-      return HttpResponse.json(
-        {
-          error:
-            'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
-          code: 'INVALID_STUDENT_STATUS',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
-    if (newIsGraduated === true) {
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-      const graduationDateToCheck =
-        body.graduationDate !== undefined
-          ? body.graduationDate instanceof Date
-            ? body.graduationDate
-            : new Date(body.graduationDate)
-          : graduation.graduationDate;
-      const normalizedGraduationDate = new Date(graduationDateToCheck);
-      normalizedGraduationDate.setHours(0, 0, 0, 0);
-
-      if (normalizedGraduationDate > currentDate) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
-            code: 'INVALID_GRADUATION_DATE',
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Verificar que la opción de titulación existe (si se proporciona)
-    if (body.graduationOptionId !== undefined && body.graduationOptionId) {
-      const graduationOption = findGraduationOptionById(
-        body.graduationOptionId
-      );
-      if (!graduationOption) {
-        return HttpResponse.json(
-          {
-            error: 'Opcion de titulacion no encontrada',
-            code: 'GRADUATION_OPTION_NOT_FOUND',
-          },
-          { status: 404 }
-        );
-      }
-    }
-
-    // Actualizar solo campos proporcionados
-    if (body.studentId !== undefined) {
-      graduation.studentId = body.studentId;
-    }
-    if (body.graduationOptionId !== undefined) {
-      graduation.graduationOptionId = body.graduationOptionId;
-    }
-    if (body.graduationDate !== undefined) {
-      graduation.graduationDate =
-        body.graduationDate instanceof Date
-          ? body.graduationDate
-          : new Date(body.graduationDate);
-    }
-    if (body.isGraduated !== undefined) {
-      graduation.isGraduated = body.isGraduated;
-    }
-    if (body.president !== undefined) {
-      graduation.president = body.president.trim();
-    }
-    if (body.secretary !== undefined) {
-      graduation.secretary = body.secretary.trim();
-    }
-    if (body.vocal !== undefined) {
-      graduation.vocal = body.vocal.trim();
-    }
-    if (body.substituteVocal !== undefined) {
-      graduation.substituteVocal = body.substituteVocal.trim();
-    }
-    if (body.notes !== undefined) {
-      graduation.notes = body.notes?.trim() || null;
-    }
-    graduation.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...graduation,
-      graduationDate: graduation.graduationDate.toISOString(),
-      createdAt: graduation.createdAt.toISOString(),
-      updatedAt: graduation.updatedAt.toISOString(),
-    });
-  }),
-
-  // DELETE /graduations/:id
-  http.delete(buildApiUrl('/graduations/:id'), async ({ params }) => {
-    await delay(300);
-
-    const { id } = params;
     const index = mockGraduations.findIndex(
-      (graduation: Graduation) => graduation.id === id
+      (grad: Graduation) => grad.id === graduation.id
     );
-
-    if (index === -1) {
-      return HttpResponse.json(
-        {
-          error: 'Titulación no encontrada',
-          code: 'GRADUATION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
 
     mockGraduations.splice(index, 1);
 

@@ -10,6 +10,8 @@ export interface DetailField<T = any> {
   render?: (value: any, row: T) => ReactNode;
   /** Si el campo debe mostrarse en una línea separada (por defecto false) */
   fullWidth?: boolean;
+  /** Si es true, este campo actúa como un separador visual */
+  isSeparator?: boolean;
 }
 
 export interface DetailModalProps<T = any> {
