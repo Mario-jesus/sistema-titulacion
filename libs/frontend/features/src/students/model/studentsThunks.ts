@@ -5,6 +5,12 @@ import { studentsService } from '../api/studentsService';
 import type {
   ListStudentsParams,
   ListStudentsResponse,
+  ListInProgressStudentsParams,
+  ListInProgressStudentsResponse,
+  ListScheduledStudentsParams,
+  ListScheduledStudentsResponse,
+  ListGraduatedStudentsParams,
+  ListGraduatedStudentsResponse,
   CreateStudentRequest,
   UpdateStudentRequest,
 } from './types';
@@ -142,6 +148,63 @@ export const changeStudentStatusThunk = createAsyncThunk<
         ? error.message
         : 'Error desconocido al cambiar estado del estudiante';
     logger.error('Error en changeStudentStatusThunk:', error);
+    return rejectWithValue(message);
+  }
+});
+
+// ========== LIST IN PROGRESS ==========
+export const listInProgressStudentsThunk = createAsyncThunk<
+  ListInProgressStudentsResponse,
+  ListInProgressStudentsParams | undefined,
+  { rejectValue: string }
+>('students/listInProgress', async (params, { rejectWithValue }) => {
+  try {
+    const response = await studentsService.listInProgress(params);
+    return response;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al obtener lista de estudiantes en proceso';
+    logger.error('Error en listInProgressStudentsThunk:', error);
+    return rejectWithValue(message);
+  }
+});
+
+// ========== LIST SCHEDULED ==========
+export const listScheduledStudentsThunk = createAsyncThunk<
+  ListScheduledStudentsResponse,
+  ListScheduledStudentsParams | undefined,
+  { rejectValue: string }
+>('students/listScheduled', async (params, { rejectWithValue }) => {
+  try {
+    const response = await studentsService.listScheduled(params);
+    return response;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al obtener lista de estudiantes programados';
+    logger.error('Error en listScheduledStudentsThunk:', error);
+    return rejectWithValue(message);
+  }
+});
+
+// ========== LIST GRADUATED ==========
+export const listGraduatedStudentsThunk = createAsyncThunk<
+  ListGraduatedStudentsResponse,
+  ListGraduatedStudentsParams | undefined,
+  { rejectValue: string }
+>('students/listGraduated', async (params, { rejectWithValue }) => {
+  try {
+    const response = await studentsService.listGraduated(params);
+    return response;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al obtener lista de estudiantes titulados';
+    logger.error('Error en listGraduatedStudentsThunk:', error);
     return rejectWithValue(message);
   }
 });

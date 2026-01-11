@@ -145,8 +145,8 @@ export function useGraduations() {
   );
 
   const graduateStudent = useCallback(
-    async (idStudent: string) => {
-      const result = await dispatch(graduateStudentThunk(idStudent));
+    async (studentId: string) => {
+      const result = await dispatch(graduateStudentThunk(studentId));
 
       if (graduateStudentThunk.rejected.match(result)) {
         throw new Error(
@@ -160,8 +160,8 @@ export function useGraduations() {
   );
 
   const ungraduateStudent = useCallback(
-    async (idStudent: string) => {
-      const result = await dispatch(ungraduateStudentThunk(idStudent));
+    async (studentId: string) => {
+      const result = await dispatch(ungraduateStudentThunk(studentId));
 
       if (ungraduateStudentThunk.rejected.match(result)) {
         throw new Error(

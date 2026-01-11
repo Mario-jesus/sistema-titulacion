@@ -65,12 +65,15 @@ export function LoginForm() {
     hasAttemptedLoginRef.current = true;
     lastErrorRef.current = null; // Resetear el último error para permitir mostrar nuevos errores
 
-    try {
-      await login({ email, password });
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Error en login:', err);
+    const result = await login({ email, password });
+
+    if (!result.success) {
+      console.error('Error en login:', result.error);
+      // El error ya se maneja en el useEffect que observa el estado de error de Redux
+      return;
     }
+
+    navigate('/dashboard');
   };
 
   return (

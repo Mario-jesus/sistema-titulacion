@@ -1,11 +1,13 @@
 import { http, HttpResponse } from 'msw';
 import type { CapturedFields } from '@entities/captured-fields';
+import { StudentStatus } from '@entities/student';
 import { buildApiUrl, delay } from '../utils';
 import { findStudentById } from '../data/students';
 import {
   mockCapturedFields,
   findCapturedFieldsByStudentId,
   generateCapturedFieldsId,
+  findGraduationByStudentId,
 } from '../data';
 
 /**
@@ -114,6 +116,44 @@ export const capturedFieldsHandlers = [
       );
     }
 
+    // Validar que el estudiante esté activo
+    if (student.status !== StudentStatus.ACTIVO) {
+      return HttpResponse.json(
+        {
+          error:
+            'Solo se pueden capturar campos para estudiantes activos (no pausados ni cancelados)',
+          code: 'INVALID_STUDENT_STATUS',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que el estudiante no esté titulado
+    const graduation = findGraduationByStudentId(body.studentId);
+    if (graduation && graduation.isGraduated === true) {
+      return HttpResponse.json(
+        {
+          error:
+            'No se pueden capturar campos para estudiantes que ya están titulados',
+          code: 'STUDENT_ALREADY_GRADUATED',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que no exista ya un registro de captured fields para este estudiante
+    const existingFields = findCapturedFieldsByStudentId(body.studentId);
+    if (existingFields && existingFields.length > 0) {
+      return HttpResponse.json(
+        {
+          error:
+            'Ya existe un registro de campos capturados para este estudiante',
+          code: 'DUPLICATE_ERROR',
+        },
+        { status: 409 }
+      );
+    }
+
     const newCapturedFields: CapturedFields = {
       id: generateCapturedFieldsId(),
       studentId: body.studentId,
@@ -188,15 +228,55 @@ export const capturedFieldsHandlers = [
         );
       }
 
-      if (body.studentId !== undefined) {
-        const student = findStudentById(body.studentId);
-        if (!student) {
+      // Obtener el estudiante actual o el nuevo si se cambia
+      const currentStudentId = body.studentId ?? fields.studentId;
+      const currentStudent = findStudentById(currentStudentId);
+      if (!currentStudent) {
+        return HttpResponse.json(
+          {
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Validar que el estudiante esté activo
+      if (currentStudent.status !== StudentStatus.ACTIVO) {
+        return HttpResponse.json(
+          {
+            error:
+              'Solo se pueden modificar campos capturados para estudiantes activos (no pausados ni cancelados)',
+            code: 'INVALID_STUDENT_STATUS',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que el estudiante no esté titulado
+      const graduation = findGraduationByStudentId(currentStudentId);
+      if (graduation && graduation.isGraduated === true) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se pueden modificar campos capturados para estudiantes que ya están titulados',
+            code: 'STUDENT_ALREADY_GRADUATED',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Si se cambia el estudiante, validar que no exista ya un registro para el nuevo estudiante
+      if (body.studentId !== undefined && body.studentId !== fields.studentId) {
+        const existingFields = findCapturedFieldsByStudentId(body.studentId);
+        if (existingFields && existingFields.length > 0) {
           return HttpResponse.json(
             {
-              error: 'Estudiante no encontrado',
-              code: 'STUDENT_NOT_FOUND',
+              error:
+                'Ya existe un registro de campos capturados para este estudiante',
+              code: 'DUPLICATE_ERROR',
             },
-            { status: 404 }
+            { status: 409 }
           );
         }
       }
@@ -271,15 +351,55 @@ export const capturedFieldsHandlers = [
         );
       }
 
-      if (body.studentId !== undefined) {
-        const student = findStudentById(body.studentId);
-        if (!student) {
+      // Obtener el estudiante actual o el nuevo si se cambia
+      const currentStudentId = body.studentId ?? fields.studentId;
+      const currentStudent = findStudentById(currentStudentId);
+      if (!currentStudent) {
+        return HttpResponse.json(
+          {
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Validar que el estudiante esté activo
+      if (currentStudent.status !== StudentStatus.ACTIVO) {
+        return HttpResponse.json(
+          {
+            error:
+              'Solo se pueden modificar campos capturados para estudiantes activos (no pausados ni cancelados)',
+            code: 'INVALID_STUDENT_STATUS',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que el estudiante no esté titulado
+      const graduation = findGraduationByStudentId(currentStudentId);
+      if (graduation && graduation.isGraduated === true) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se pueden modificar campos capturados para estudiantes que ya están titulados',
+            code: 'STUDENT_ALREADY_GRADUATED',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Si se cambia el estudiante, validar que no exista ya un registro para el nuevo estudiante
+      if (body.studentId !== undefined && body.studentId !== fields.studentId) {
+        const existingFields = findCapturedFieldsByStudentId(body.studentId);
+        if (existingFields && existingFields.length > 0) {
           return HttpResponse.json(
             {
-              error: 'Estudiante no encontrado',
-              code: 'STUDENT_NOT_FOUND',
+              error:
+                'Ya existe un registro de campos capturados para este estudiante',
+              code: 'DUPLICATE_ERROR',
             },
-            { status: 404 }
+            { status: 409 }
           );
         }
       }

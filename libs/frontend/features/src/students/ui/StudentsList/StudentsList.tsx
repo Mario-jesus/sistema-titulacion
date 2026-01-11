@@ -277,27 +277,25 @@ export function StudentsList({
   // Manejar crear
   const handleCreate = useCallback(
     async (data: any) => {
-      try {
-        const student = await createStudent(data);
-        showToast({
-          type: 'success',
-          title: 'Estudiante creado',
-          message: 'El estudiante se ha creado exitosamente',
-        });
-        loadStudents();
-        return student;
-      } catch (error) {
-        console.error('Error al crear estudiante:', error);
+      const result = await createStudent(data);
+
+      if (!result.success) {
+        console.error('Error al crear estudiante:', result.error);
         showToast({
           type: 'error',
           title: 'Error al crear estudiante',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'No se pudo crear el estudiante',
+          message: result.error,
         });
-        throw error;
+        return;
       }
+
+      showToast({
+        type: 'success',
+        title: 'Estudiante creado',
+        message: 'El estudiante se ha creado exitosamente',
+      });
+      loadStudents();
+      return result.data;
     },
     [createStudent, loadStudents, showToast]
   );
@@ -306,27 +304,26 @@ export function StudentsList({
   const handleEdit = useCallback(
     async (data: any) => {
       if (!selectedStudent) return;
-      try {
-        const student = await updateStudent(selectedStudent.id, data);
-        showToast({
-          type: 'success',
-          title: 'Estudiante actualizado',
-          message: 'El estudiante se ha actualizado exitosamente',
-        });
-        loadStudents();
-        return student;
-      } catch (error) {
-        console.error('Error al actualizar estudiante:', error);
+
+      const result = await updateStudent(selectedStudent.id, data);
+
+      if (!result.success) {
+        console.error('Error al actualizar estudiante:', result.error);
         showToast({
           type: 'error',
           title: 'Error al actualizar estudiante',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'No se pudo actualizar el estudiante',
+          message: result.error,
         });
-        throw error;
+        return;
       }
+
+      showToast({
+        type: 'success',
+        title: 'Estudiante actualizado',
+        message: 'El estudiante se ha actualizado exitosamente',
+      });
+      loadStudents();
+      return result.data;
     },
     [selectedStudent, updateStudent, loadStudents, showToast]
   );
@@ -343,25 +340,24 @@ export function StudentsList({
       ) {
         return;
       }
-      try {
-        await deleteStudent(student.id);
-        showToast({
-          type: 'success',
-          title: 'Estudiante eliminado',
-          message: `El estudiante "${fullName}" se ha eliminado exitosamente`,
-        });
-        loadStudents();
-      } catch (error) {
-        console.error('Error al eliminar estudiante:', error);
+      const result = await deleteStudent(student.id);
+
+      if (!result.success) {
+        console.error('Error al eliminar estudiante:', result.error);
         showToast({
           type: 'error',
           title: 'Error al eliminar estudiante',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'No se pudo eliminar el estudiante',
+          message: result.error,
         });
+        return;
       }
+
+      showToast({
+        type: 'success',
+        title: 'Estudiante eliminado',
+        message: `El estudiante "${fullName}" se ha eliminado exitosamente`,
+      });
+      loadStudents();
     },
     [deleteStudent, loadStudents, showToast]
   );
@@ -369,25 +365,24 @@ export function StudentsList({
   // Manejar cambio de status
   const handleStatusChange = useCallback(
     async (student: Student, newStatus: StudentStatus) => {
-      try {
-        await changeStudentStatus(student.id, newStatus);
-        showToast({
-          type: 'success',
-          title: 'Estado actualizado',
-          message: `El estado del estudiante se ha actualizado a ${newStatus}`,
-        });
-        loadStudents();
-      } catch (error) {
-        console.error('Error al cambiar estado:', error);
+      const result = await changeStudentStatus(student.id, newStatus);
+
+      if (!result.success) {
+        console.error('Error al cambiar estado:', result.error);
         showToast({
           type: 'error',
           title: 'Error al cambiar estado',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'No se pudo cambiar el estado del estudiante',
+          message: result.error,
         });
+        return;
       }
+
+      showToast({
+        type: 'success',
+        title: 'Estado actualizado',
+        message: `El estado del estudiante se ha actualizado a ${newStatus}`,
+      });
+      loadStudents();
     },
     [changeStudentStatus, loadStudents, showToast]
   );

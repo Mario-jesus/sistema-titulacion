@@ -1,6 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { Student } from '@entities/student';
 import type { PaginationData } from '@shared/lib/model';
+import type {
+  InProgressStudent,
+  ScheduledStudent,
+  GraduatedStudent,
+} from './types';
 import {
   listStudentsThunk,
   getStudentByIdThunk,
@@ -9,6 +14,9 @@ import {
   patchStudentThunk,
   deleteStudentThunk,
   changeStudentStatusThunk,
+  listInProgressStudentsThunk,
+  listScheduledStudentsThunk,
+  listGraduatedStudentsThunk,
 } from './studentsThunks';
 
 export interface StudentsState {
@@ -17,6 +25,24 @@ export interface StudentsState {
   pagination: PaginationData | null;
   isLoadingList: boolean;
   listError: string | null;
+
+  // Lista de estudiantes en proceso
+  inProgressStudents: InProgressStudent[];
+  inProgressPagination: PaginationData | null;
+  isLoadingInProgress: boolean;
+  inProgressError: string | null;
+
+  // Lista de estudiantes programados
+  scheduledStudents: ScheduledStudent[];
+  scheduledPagination: PaginationData | null;
+  isLoadingScheduled: boolean;
+  scheduledError: string | null;
+
+  // Lista de estudiantes titulados
+  graduatedStudents: GraduatedStudent[];
+  graduatedPagination: PaginationData | null;
+  isLoadingGraduated: boolean;
+  graduatedError: string | null;
 
   // Estudiante actual (detalle)
   currentStudent: Student | null;
@@ -42,6 +68,21 @@ const initialState: StudentsState = {
   pagination: null,
   isLoadingList: false,
   listError: null,
+
+  inProgressStudents: [],
+  inProgressPagination: null,
+  isLoadingInProgress: false,
+  inProgressError: null,
+
+  scheduledStudents: [],
+  scheduledPagination: null,
+  isLoadingScheduled: false,
+  scheduledError: null,
+
+  graduatedStudents: [],
+  graduatedPagination: null,
+  isLoadingGraduated: false,
+  graduatedError: null,
 
   currentStudent: null,
   isLoadingDetail: false,
@@ -82,6 +123,15 @@ const studentsSlice = createSlice({
     clearChangeStatusError: (state) => {
       state.changeStatusError = null;
     },
+    clearInProgressError: (state) => {
+      state.inProgressError = null;
+    },
+    clearScheduledError: (state) => {
+      state.scheduledError = null;
+    },
+    clearGraduatedError: (state) => {
+      state.graduatedError = null;
+    },
     clearCurrentStudent: (state) => {
       state.currentStudent = null;
       state.detailError = null;
@@ -93,6 +143,9 @@ const studentsSlice = createSlice({
       state.updateError = null;
       state.deleteError = null;
       state.changeStatusError = null;
+      state.inProgressError = null;
+      state.scheduledError = null;
+      state.graduatedError = null;
     },
   },
   extraReducers: (builder) => {
@@ -258,6 +311,57 @@ const studentsSlice = createSlice({
       state.changeStatusError =
         action.payload || 'Error al cambiar estado del estudiante';
     });
+
+    // ========== LIST IN PROGRESS ==========
+    builder.addCase(listInProgressStudentsThunk.pending, (state) => {
+      state.isLoadingInProgress = true;
+      state.inProgressError = null;
+    });
+    builder.addCase(listInProgressStudentsThunk.fulfilled, (state, action) => {
+      state.isLoadingInProgress = false;
+      state.inProgressStudents = action.payload.data;
+      state.inProgressPagination = action.payload.pagination;
+      state.inProgressError = null;
+    });
+    builder.addCase(listInProgressStudentsThunk.rejected, (state, action) => {
+      state.isLoadingInProgress = false;
+      state.inProgressError =
+        action.payload || 'Error al obtener lista de estudiantes en proceso';
+    });
+
+    // ========== LIST SCHEDULED ==========
+    builder.addCase(listScheduledStudentsThunk.pending, (state) => {
+      state.isLoadingScheduled = true;
+      state.scheduledError = null;
+    });
+    builder.addCase(listScheduledStudentsThunk.fulfilled, (state, action) => {
+      state.isLoadingScheduled = false;
+      state.scheduledStudents = action.payload.data;
+      state.scheduledPagination = action.payload.pagination;
+      state.scheduledError = null;
+    });
+    builder.addCase(listScheduledStudentsThunk.rejected, (state, action) => {
+      state.isLoadingScheduled = false;
+      state.scheduledError =
+        action.payload || 'Error al obtener lista de estudiantes programados';
+    });
+
+    // ========== LIST GRADUATED ==========
+    builder.addCase(listGraduatedStudentsThunk.pending, (state) => {
+      state.isLoadingGraduated = true;
+      state.graduatedError = null;
+    });
+    builder.addCase(listGraduatedStudentsThunk.fulfilled, (state, action) => {
+      state.isLoadingGraduated = false;
+      state.graduatedStudents = action.payload.data;
+      state.graduatedPagination = action.payload.pagination;
+      state.graduatedError = null;
+    });
+    builder.addCase(listGraduatedStudentsThunk.rejected, (state, action) => {
+      state.isLoadingGraduated = false;
+      state.graduatedError =
+        action.payload || 'Error al obtener lista de estudiantes titulados';
+    });
   },
 });
 
@@ -268,6 +372,9 @@ export const {
   clearUpdateError,
   clearDeleteError,
   clearChangeStatusError,
+  clearInProgressError,
+  clearScheduledError,
+  clearGraduatedError,
   clearCurrentStudent,
   clearAllErrors,
 } = studentsSlice.actions;

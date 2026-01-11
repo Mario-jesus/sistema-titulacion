@@ -700,14 +700,14 @@ export const graduationsHandlers = [
     });
   }),
 
-  // POST /graduations/:idStudent/graduate (Marcar como titulado)
+  // POST /graduations/:studentId/graduate (Marcar como titulado)
   http.post(
-    buildApiUrl('/graduations/:idStudent/graduate'),
+    buildApiUrl('/graduations/:studentId/graduate'),
     async ({ params }) => {
       await delay(300);
 
-      const { idStudent } = params;
-      const graduation = findGraduationByStudentId(idStudent as string);
+      const { studentId } = params;
+      const graduation = findGraduationByStudentId(studentId as string);
 
       if (!graduation) {
         return HttpResponse.json(
@@ -785,14 +785,14 @@ export const graduationsHandlers = [
     }
   ),
 
-  // POST /graduations/:idStudent/ungraduate (Desmarcar como titulado)
+  // POST /graduations/:studentId/ungraduate (Desmarcar como titulado)
   http.post(
-    buildApiUrl('/graduations/:idStudent/ungraduate'),
+    buildApiUrl('/graduations/:studentId/ungraduate'),
     async ({ params }) => {
       await delay(300);
 
-      const { idStudent } = params;
-      const graduation = findGraduationByStudentId(idStudent as string);
+      const { studentId } = params;
+      const graduation = findGraduationByStudentId(studentId as string);
 
       if (!graduation) {
         return HttpResponse.json(

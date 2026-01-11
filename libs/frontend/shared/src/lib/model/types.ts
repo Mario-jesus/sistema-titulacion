@@ -111,3 +111,53 @@ export interface SearchParams extends PaginationParams {
   /** Si solo se deben retornar elementos activos */
   activeOnly?: boolean;
 }
+
+/**
+ * Tipo de resultado para operaciones que pueden fallar
+ *
+ * Patrón de retorno explícito que evita el uso de excepciones,
+ * haciendo el manejo de errores más predecible y type-safe.
+ *
+ * @template T - Tipo de dato retornado en caso de éxito
+ *
+ * @example
+ * ```typescript
+ * const result = await createStudent(data);
+ * if (result.success) {
+ *   console.log(result.data); // TypeScript sabe que data existe
+ * } else {
+ *   console.error(result.error, result.code); // Manejar error
+ * }
+ * ```
+ */
+export type Result<T> =
+  | { success: true; data: T }
+  | { success: false; error: string; code?: string };
+
+/**
+ * Helper para extraer el código de error del payload de un thunk rechazado
+ *
+ * Útil cuando los errores pueden venir en diferentes formatos:
+ * - String simple: "Error message"
+ * - Objeto con código: { message: "Error", code: "ERROR_CODE" }
+ *
+ * @param payload - Payload del thunk rechazado (puede ser string u objeto)
+ * @returns Código de error si está disponible, undefined en caso contrario
+ *
+ * @example
+ * ```typescript
+ * const code = extractErrorCode(result.payload);
+ * if (code === 'VALIDATION_ERROR') {
+ *   // Manejar error de validación
+ * }
+ * ```
+ */
+export function extractErrorCode(payload: unknown): string | undefined {
+  if (typeof payload === 'string') {
+    return undefined;
+  }
+  if (payload && typeof payload === 'object' && 'code' in payload) {
+    return typeof payload.code === 'string' ? payload.code : undefined;
+  }
+  return undefined;
+}

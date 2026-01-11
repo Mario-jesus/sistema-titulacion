@@ -80,6 +80,9 @@ export const API_ENDPOINTS = {
   // Estudiantes
   STUDENTS: {
     LIST: '/students',
+    IN_PROGRESS: '/students/in-progress',
+    SCHEDULED: '/students/scheduled',
+    GRADUATED: '/students/graduated',
     DETAIL: (id: string) => `/students/${id}`,
     CREATE: '/students',
     UPDATE: (id: string) => `/students/${id}`,
@@ -102,8 +105,8 @@ export const API_ENDPOINTS = {
     UPDATE: (studentId: string) => `/graduations/student/${studentId}`,
     PATCH: (studentId: string) => `/graduations/student/${studentId}`,
     DELETE: (studentId: string) => `/graduations/student/${studentId}`,
-    GRADUATE: (idStudent: string) => `/graduations/${idStudent}/graduate`,
-    UNGRADUATE: (idStudent: string) => `/graduations/${idStudent}/ungraduate`,
+    GRADUATE: (studentId: string) => `/graduations/${studentId}/graduate`,
+    UNGRADUATE: (studentId: string) => `/graduations/${studentId}/ungraduate`,
   },
   // Ingreso y Egreso
   INGRESS_EGRESS: {

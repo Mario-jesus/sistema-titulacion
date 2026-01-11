@@ -8,4 +8,7 @@ export {
   patchStudentThunk,
   deleteStudentThunk,
   changeStudentStatusThunk,
+  listInProgressStudentsThunk,
+  listScheduledStudentsThunk,
+  listGraduatedStudentsThunk,
 } from './studentsThunks';

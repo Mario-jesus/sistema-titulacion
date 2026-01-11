@@ -170,16 +170,16 @@ export const graduationsService = {
   /**
    * Marca un estudiante como titulado
    */
-  async graduate(idStudent: string): Promise<Graduation> {
+  async graduate(studentId: string): Promise<Graduation> {
     try {
-      logger.log('Marcando estudiante como titulado...', { idStudent });
+      logger.log('Marcando estudiante como titulado...', { studentId });
 
       const response = await apiClient.post<Graduation>(
-        API_ENDPOINTS.GRADUATIONS.GRADUATE(idStudent)
+        API_ENDPOINTS.GRADUATIONS.GRADUATE(studentId)
       );
 
       logger.log('Estudiante marcado como titulado exitosamente', {
-        idStudent,
+        studentId,
       });
 
       // Convertir graduationDate de string a Date
@@ -198,16 +198,16 @@ export const graduationsService = {
   /**
    * Desmarca un estudiante como titulado
    */
-  async ungraduate(idStudent: string): Promise<Graduation> {
+  async ungraduate(studentId: string): Promise<Graduation> {
     try {
-      logger.log('Desmarcando estudiante como titulado...', { idStudent });
+      logger.log('Desmarcando estudiante como titulado...', { studentId });
 
       const response = await apiClient.post<Graduation>(
-        API_ENDPOINTS.GRADUATIONS.UNGRADUATE(idStudent)
+        API_ENDPOINTS.GRADUATIONS.UNGRADUATE(studentId)
       );
 
       logger.log('Estudiante desmarcado como titulado exitosamente', {
-        idStudent,
+        studentId,
       });
 
       // Convertir graduationDate de string a Date

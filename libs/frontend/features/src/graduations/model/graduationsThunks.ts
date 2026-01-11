@@ -108,9 +108,9 @@ export const graduateStudentThunk = createAsyncThunk<
   Graduation,
   string,
   { rejectValue: string }
->('graduations/graduate', async (idStudent, { rejectWithValue }) => {
+>('graduations/graduate', async (studentId, { rejectWithValue }) => {
   try {
-    const graduation = await graduationsService.graduate(idStudent);
+    const graduation = await graduationsService.graduate(studentId);
     return graduation;
   } catch (error) {
     const message =
@@ -127,9 +127,9 @@ export const ungraduateStudentThunk = createAsyncThunk<
   Graduation,
   string,
   { rejectValue: string }
->('graduations/ungraduate', async (idStudent, { rejectWithValue }) => {
+>('graduations/ungraduate', async (studentId, { rejectWithValue }) => {
   try {
-    const graduation = await graduationsService.ungraduate(idStudent);
+    const graduation = await graduationsService.ungraduate(studentId);
     return graduation;
   } catch (error) {
     const message =

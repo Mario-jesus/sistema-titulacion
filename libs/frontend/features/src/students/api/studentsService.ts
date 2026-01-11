@@ -4,6 +4,12 @@ import { logger } from '@shared/lib';
 import type {
   ListStudentsParams,
   ListStudentsResponse,
+  ListInProgressStudentsParams,
+  ListInProgressStudentsResponse,
+  ListScheduledStudentsParams,
+  ListScheduledStudentsResponse,
+  ListGraduatedStudentsParams,
+  ListGraduatedStudentsResponse,
   CreateStudentRequest,
   UpdateStudentRequest,
 } from '../model/types';
@@ -186,6 +192,162 @@ export const studentsService = {
       return response;
     } catch (error) {
       logger.error('Error al cambiar estado de estudiante:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene la lista de estudiantes en proceso con paginación y filtros
+   */
+  async listInProgress(
+    params?: ListInProgressStudentsParams
+  ): Promise<ListInProgressStudentsResponse> {
+    try {
+      logger.log('Obteniendo lista de estudiantes en proceso...', params);
+
+      const searchParams = new URLSearchParams();
+
+      if (params?.page) {
+        searchParams.append('page', params.page.toString());
+      }
+      if (params?.limit) {
+        searchParams.append('limit', params.limit.toString());
+      }
+      if (params?.sortBy && params?.sortOrder) {
+        searchParams.append('sortBy', params.sortBy);
+        searchParams.append('sortOrder', params.sortOrder);
+      }
+      if (params?.search) {
+        searchParams.append('search', params.search);
+      }
+      if (params?.careerId) {
+        searchParams.append('careerId', params.careerId);
+      }
+      if (params?.generationId) {
+        searchParams.append('generationId', params.generationId);
+      }
+      if (params?.sex) {
+        searchParams.append('sex', params.sex);
+      }
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `${API_ENDPOINTS.STUDENTS.IN_PROGRESS}?${queryString}`
+        : API_ENDPOINTS.STUDENTS.IN_PROGRESS;
+
+      const response = await apiClient.get<ListInProgressStudentsResponse>(url);
+
+      logger.log('Lista de estudiantes en proceso obtenida exitosamente', {
+        total: response.pagination.total,
+      });
+
+      return response;
+    } catch (error) {
+      logger.error('Error al obtener lista de estudiantes en proceso:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene la lista de estudiantes programados con paginación y filtros
+   */
+  async listScheduled(
+    params?: ListScheduledStudentsParams
+  ): Promise<ListScheduledStudentsResponse> {
+    try {
+      logger.log('Obteniendo lista de estudiantes programados...', params);
+
+      const searchParams = new URLSearchParams();
+
+      if (params?.page) {
+        searchParams.append('page', params.page.toString());
+      }
+      if (params?.limit) {
+        searchParams.append('limit', params.limit.toString());
+      }
+      if (params?.sortBy && params?.sortOrder) {
+        searchParams.append('sortBy', params.sortBy);
+        searchParams.append('sortOrder', params.sortOrder);
+      }
+      if (params?.search) {
+        searchParams.append('search', params.search);
+      }
+      if (params?.careerId) {
+        searchParams.append('careerId', params.careerId);
+      }
+      if (params?.generationId) {
+        searchParams.append('generationId', params.generationId);
+      }
+      if (params?.sex) {
+        searchParams.append('sex', params.sex);
+      }
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `${API_ENDPOINTS.STUDENTS.SCHEDULED}?${queryString}`
+        : API_ENDPOINTS.STUDENTS.SCHEDULED;
+
+      const response = await apiClient.get<ListScheduledStudentsResponse>(url);
+
+      logger.log('Lista de estudiantes programados obtenida exitosamente', {
+        total: response.pagination.total,
+      });
+
+      return response;
+    } catch (error) {
+      logger.error('Error al obtener lista de estudiantes programados:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene la lista de estudiantes titulados con paginación y filtros
+   */
+  async listGraduated(
+    params?: ListGraduatedStudentsParams
+  ): Promise<ListGraduatedStudentsResponse> {
+    try {
+      logger.log('Obteniendo lista de estudiantes titulados...', params);
+
+      const searchParams = new URLSearchParams();
+
+      if (params?.page) {
+        searchParams.append('page', params.page.toString());
+      }
+      if (params?.limit) {
+        searchParams.append('limit', params.limit.toString());
+      }
+      if (params?.sortBy && params?.sortOrder) {
+        searchParams.append('sortBy', params.sortBy);
+        searchParams.append('sortOrder', params.sortOrder);
+      }
+      if (params?.search) {
+        searchParams.append('search', params.search);
+      }
+      if (params?.careerId) {
+        searchParams.append('careerId', params.careerId);
+      }
+      if (params?.generationId) {
+        searchParams.append('generationId', params.generationId);
+      }
+      if (params?.sex) {
+        searchParams.append('sex', params.sex);
+      }
+
+      const queryString = searchParams.toString();
+      const url = queryString
+        ? `${API_ENDPOINTS.STUDENTS.GRADUATED}?${queryString}`
+        : API_ENDPOINTS.STUDENTS.GRADUATED;
+
+      const response = await apiClient.get<ListGraduatedStudentsResponse>(url);
+
+      logger.log('Lista de estudiantes titulados obtenida exitosamente', {
+        total: response.pagination.total,
+      });
+
+      return response;
+    } catch (error) {
+      logger.error('Error al obtener lista de estudiantes titulados:', error);
       throw error;
     }
   },

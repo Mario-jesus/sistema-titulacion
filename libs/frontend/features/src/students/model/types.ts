@@ -10,6 +10,62 @@ export interface ListStudentsParams extends SearchParams {
 
 export type ListStudentsResponse = ListResponse<Student>;
 
+// Tipos para estudiantes en proceso
+export interface InProgressStudent {
+  controlNumber: string;
+  fullName: string;
+  sex: string;
+  careerId: string;
+  graduationOptionId: string | null;
+  projectName: string | null;
+}
+
+export interface ListInProgressStudentsParams extends SearchParams {
+  careerId?: string;
+  generationId?: string;
+  sex?: string;
+}
+
+export type ListInProgressStudentsResponse = ListResponse<InProgressStudent>;
+
+// Tipos para estudiantes programados
+export interface ScheduledStudent {
+  controlNumber: string;
+  fullName: string;
+  sex: string;
+  careerId: string;
+  graduationOptionId: string | null;
+  graduationDate: string | null;
+  isGraduated: boolean;
+}
+
+export interface ListScheduledStudentsParams extends SearchParams {
+  careerId?: string;
+  generationId?: string;
+  sex?: string;
+}
+
+export type ListScheduledStudentsResponse = ListResponse<ScheduledStudent>;
+
+// Tipos para estudiantes titulados
+export interface GraduatedStudent {
+  controlNumber: string;
+  fullName: string;
+  sex: string;
+  careerId: string;
+  generationId: string;
+  graduationOptionId: string;
+  graduationDate: string;
+}
+
+export interface ListGraduatedStudentsParams extends SearchParams {
+  careerId?: string;
+  generationId?: string;
+  sex?: string;
+}
+
+export type ListGraduatedStudentsResponse = ListResponse<GraduatedStudent>;
+
 export interface CreateStudentRequest {
   careerId: string;
   generationId: string;
