@@ -27,3 +27,6 @@ export * from './captured-fields';
 
 // Graduations feature
 export * from './graduations';
+
+// Users feature
+export * from './users';

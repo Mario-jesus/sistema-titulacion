@@ -7,6 +7,7 @@ import { PageLoader } from './components';
 import {
   LoginPage,
   ComingSoonPage,
+  AccessesPage,
   GenerationsPage,
   GraduationOptionsPage,
   CareersPage,
@@ -206,10 +207,7 @@ export function AppRouter() {
             <AdminRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Accesos"
-                    description="Esta sección está en desarrollo. Aquí podrás gestionar los accesos y permisos del sistema."
-                  />
+                  <AccessesPage />
                 </Suspense>
               </LayoutWithSidebar>
             </AdminRoute>

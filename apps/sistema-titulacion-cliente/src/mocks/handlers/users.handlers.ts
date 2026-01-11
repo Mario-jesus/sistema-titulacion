@@ -97,6 +97,15 @@ function canManageUser(
   return authenticatedUser.id === targetUserId;
 }
 
+/**
+ * Excluye el campo avatar de un objeto User
+ * El avatar solo debe ser visible/actualizable por el usuario propietario en PATCH /users/me
+ */
+function excludeAvatar(user: User): Omit<User, 'avatar'> & { avatar?: never } {
+  const { avatar, ...userWithoutAvatar } = user;
+  return userWithoutAvatar;
+}
+
 export const usersHandlers = [
   // GET /users (List)
   http.get(buildApiUrl('/users'), async ({ request }) => {
@@ -130,6 +139,11 @@ export const usersHandlers = [
     const offset = (page - 1) * limit;
 
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
+    const roleParam = url.searchParams.get('role');
+    const role =
+      roleParam === UserRole.ADMIN || roleParam === UserRole.STAFF
+        ? roleParam
+        : undefined;
     const search =
       url.searchParams.get('search') || url.searchParams.get('q') || '';
 
@@ -153,6 +167,11 @@ export const usersHandlers = [
     let filteredData = activeOnly
       ? mockUsers.filter((user: User) => user.isActive)
       : [...mockUsers];
+
+    // Filtrar por rol si se proporciona
+    if (role) {
+      filteredData = filteredData.filter((user: User) => user.role === role);
+    }
 
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
@@ -286,7 +305,7 @@ export const usersHandlers = [
     }
 
     return HttpResponse.json({
-      ...targetUser,
+      ...excludeAvatar(targetUser),
       lastLogin: targetUser.lastLogin.toISOString(),
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
@@ -406,7 +425,7 @@ export const usersHandlers = [
 
     return HttpResponse.json(
       {
-        ...newUser,
+        ...excludeAvatar(newUser),
         lastLogin: newUser.lastLogin.toISOString(),
         createdAt: newUser.createdAt.toISOString(),
         updatedAt: newUser.updatedAt.toISOString(),
@@ -529,7 +548,7 @@ export const usersHandlers = [
     });
 
     return HttpResponse.json({
-      ...targetUser,
+      ...excludeAvatar(targetUser),
       lastLogin: targetUser.lastLogin.toISOString(),
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
@@ -650,7 +669,7 @@ export const usersHandlers = [
     });
 
     return HttpResponse.json({
-      ...targetUser,
+      ...excludeAvatar(targetUser),
       lastLogin: targetUser.lastLogin.toISOString(),
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
@@ -856,7 +875,7 @@ export const usersHandlers = [
     targetUser.updatedAt = new Date();
 
     return HttpResponse.json({
-      ...targetUser,
+      ...excludeAvatar(targetUser),
       lastLogin: targetUser.lastLogin.toISOString(),
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
@@ -919,7 +938,7 @@ export const usersHandlers = [
       targetUser.updatedAt = new Date();
 
       return HttpResponse.json({
-        ...targetUser,
+        ...excludeAvatar(targetUser),
         lastLogin: targetUser.lastLogin.toISOString(),
         createdAt: targetUser.createdAt.toISOString(),
         updatedAt: targetUser.updatedAt.toISOString(),

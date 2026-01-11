@@ -26,6 +26,12 @@ export const ComingSoonPage = lazy(() =>
   }))
 );
 
+export const AccessesPage = lazy(() =>
+  import('@pages/AccessesPage').then((module) => ({
+    default: module.AccessesPage,
+  }))
+);
+
 export const GenerationsPage = lazy(() =>
   import('@pages/GenerationsPage').then((module) => ({
     default: module.GenerationsPage,

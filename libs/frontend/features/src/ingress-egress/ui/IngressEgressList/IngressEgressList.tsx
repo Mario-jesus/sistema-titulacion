@@ -146,14 +146,6 @@ export function IngressEgressList() {
     [getIngressEgressByGenerationAndCareer, showToast]
   );
 
-  // Calcular diferencia entre ingreso y egreso
-  const calculateDifference = useCallback(
-    (admission: number, egress: number) => {
-      return admission - egress;
-    },
-    []
-  );
-
   // Columnas de la tabla
   const columns: TableColumn<IngressEgress>[] = [
     {
@@ -201,29 +193,6 @@ export function IngressEgressList() {
       key: 'egressNumber',
       label: 'Número de Egreso',
       render: (value: number) => value.toLocaleString(),
-    },
-    {
-      key: 'admissionNumber', // Usar una key existente, pero renderizar la diferencia
-      label: 'Diferencia (Ingreso - Egreso)',
-      render: (value: number, row: IngressEgress) => {
-        const difference = calculateDifference(
-          row.admissionNumber,
-          row.egressNumber
-        );
-        const formatted = difference.toLocaleString();
-        return (
-          <span
-            className={
-              difference >= 0
-                ? 'text-(--color-green) font-medium'
-                : 'text-(--color-salmon) font-medium'
-            }
-          >
-            {difference >= 0 ? '+' : ''}
-            {formatted}
-          </span>
-        );
-      },
     },
   ];
 

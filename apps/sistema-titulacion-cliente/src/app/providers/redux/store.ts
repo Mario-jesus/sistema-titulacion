@@ -6,6 +6,7 @@ import {
   logoutThunk,
   checkAuthThunk,
 } from '@features/auth';
+import { usersReducer } from '@features/users';
 import { generationsReducer } from '@features/generations';
 import { graduationOptionsReducer } from '@features/graduation-options';
 import { careersReducer } from '@features/careers';
@@ -22,6 +23,7 @@ export const store = configureStore({
     user: userReducer,
     login: loginReducer,
     auth: authReducer,
+    users: usersReducer,
     generations: generationsReducer,
     graduationOptions: graduationOptionsReducer,
     careers: careersReducer,
