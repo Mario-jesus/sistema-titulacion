@@ -1,8 +1,22 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { PageHeader } from '@widgets/PageHeader';
-import { Table, useToast, FilterDropdown, Pagination } from '@shared/ui';
-import type { FilterConfig, TableColumn } from '@shared/ui';
+import {
+  Table,
+  useToast,
+  FilterDropdown,
+  Pagination,
+  DetailModal,
+} from '@shared/ui';
+import type {
+  FilterConfig,
+  TableColumn,
+  DropdownMenuItem,
+  DetailField,
+} from '@shared/ui';
 import { useStudents } from '../../lib/useStudents';
+import { useGraduations } from '@features/graduations';
+import { StudentForm } from '../StudentForm/StudentForm';
+import { studentsService } from '../../api/studentsService';
 import type {
   GraduatedStudent,
   ListGraduatedStudentsParams,
@@ -13,6 +27,7 @@ import { loadGraduationOptions } from '@features/graduations/api/graduationOptio
 import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import type { GraduationOption } from '@entities/graduation-option';
+import type { Student } from '@entities/student';
 
 /**
  * Componente para listar estudiantes titulados
@@ -26,7 +41,11 @@ export function StudentsGraduatedList() {
     graduatedError,
     listGraduatedStudents,
     clearGraduatedErrors,
+    getStudentById,
+    updateStudent,
+    deleteStudent,
   } = useStudents();
+  const { ungraduateStudent } = useGraduations();
 
   // Estados para relaciones
   const [generations, setGenerations] = useState<Generation[]>([]);
@@ -47,6 +66,13 @@ export function StudentsGraduatedList() {
   >({});
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Estados para modales
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedGraduatedStudent, setSelectedGraduatedStudent] =
+    useState<GraduatedStudent | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Cargar generaciones y carreras al montar
   useEffect(() => {
@@ -142,6 +168,227 @@ export function StudentsGraduatedList() {
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
+
+  // Obtener estudiante completo por controlNumber
+  const fetchStudentByControlNumber = useCallback(
+    async (controlNumber: string): Promise<Student | null> => {
+      try {
+        // Buscar estudiante por controlNumber usando el endpoint de búsqueda
+        const response = await studentsService.list({
+          search: controlNumber,
+          limit: 1,
+        });
+
+        // Buscar el estudiante que coincida exactamente con el controlNumber
+        const student = response.data.find(
+          (s) => s.controlNumber === controlNumber
+        );
+
+        if (student) {
+          // Obtener el estudiante completo por ID para asegurar que tenemos todos los datos
+          const fullStudent = await getStudentById(student.id);
+          return fullStudent.success ? fullStudent.data : null;
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Error al buscar estudiante por controlNumber:', error);
+        return null;
+      }
+    },
+    [getStudentById]
+  );
+
+  // Abrir modal de detalles
+  const handleOpenDetail = useCallback(
+    async (graduatedStudent: GraduatedStudent) => {
+      setSelectedGraduatedStudent(graduatedStudent);
+      setIsDetailModalOpen(true);
+
+      try {
+        const student = await fetchStudentByControlNumber(
+          graduatedStudent.controlNumber
+        );
+        setSelectedStudent(student);
+      } catch (error) {
+        console.error('Error al cargar estudiante:', error);
+        setSelectedStudent(null);
+      }
+    },
+    [fetchStudentByControlNumber]
+  );
+
+  // Abrir modal de edición
+  const handleOpenEdit = useCallback(
+    async (graduatedStudent: GraduatedStudent) => {
+      try {
+        const student = await fetchStudentByControlNumber(
+          graduatedStudent.controlNumber
+        );
+
+        if (!student) {
+          showToast({
+            type: 'error',
+            title: 'Error',
+            message: 'No se pudo encontrar el estudiante',
+          });
+          return;
+        }
+
+        setSelectedStudent(student);
+        setIsEditModalOpen(true);
+      } catch (error) {
+        console.error('Error al cargar estudiante para edición:', error);
+        showToast({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudo cargar el estudiante para edición',
+        });
+      }
+    },
+    [fetchStudentByControlNumber, showToast]
+  );
+
+  // Manejar edición
+  const handleEdit = useCallback(
+    async (data: any) => {
+      if (!selectedStudent) return;
+
+      const result = await updateStudent(selectedStudent.id, data);
+
+      if (!result.success) {
+        showToast({
+          type: 'error',
+          title: 'Error al actualizar estudiante',
+          message: result.error,
+        });
+        return;
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Estudiante actualizado',
+        message: 'El estudiante se ha actualizado exitosamente',
+      });
+
+      setIsEditModalOpen(false);
+      setSelectedStudent(null);
+      loadStudents();
+    },
+    [selectedStudent, updateStudent, showToast, loadStudents]
+  );
+
+  // Manejar eliminación
+  const handleDelete = useCallback(
+    async (graduatedStudent: GraduatedStudent) => {
+      const fullName = graduatedStudent.fullName;
+      if (
+        !window.confirm(
+          `¿Estás seguro de eliminar al estudiante "${fullName}" (${graduatedStudent.controlNumber})?`
+        )
+      ) {
+        return;
+      }
+
+      try {
+        const student = await fetchStudentByControlNumber(
+          graduatedStudent.controlNumber
+        );
+
+        if (!student) {
+          showToast({
+            type: 'error',
+            title: 'Error',
+            message: 'No se pudo encontrar el estudiante',
+          });
+          return;
+        }
+
+        const result = await deleteStudent(student.id);
+
+        if (!result.success) {
+          showToast({
+            type: 'error',
+            title: 'Error al eliminar estudiante',
+            message: result.error,
+          });
+          return;
+        }
+
+        showToast({
+          type: 'success',
+          title: 'Estudiante eliminado',
+          message: `El estudiante "${fullName}" ha sido eliminado exitosamente`,
+        });
+
+        loadStudents();
+      } catch (error) {
+        console.error('Error al eliminar estudiante:', error);
+        showToast({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudo eliminar el estudiante',
+        });
+      }
+    },
+    [fetchStudentByControlNumber, deleteStudent, showToast, loadStudents]
+  );
+
+  // Manejar desmarcar como titulado
+  const handleUngraduate = useCallback(
+    async (graduatedStudent: GraduatedStudent) => {
+      const fullName = graduatedStudent.fullName;
+      if (
+        !window.confirm(
+          `¿Estás seguro de desmarcar como titulado al estudiante "${fullName}" (${graduatedStudent.controlNumber})?`
+        )
+      ) {
+        return;
+      }
+
+      try {
+        const student = await fetchStudentByControlNumber(
+          graduatedStudent.controlNumber
+        );
+
+        if (!student) {
+          showToast({
+            type: 'error',
+            title: 'Error',
+            message: 'No se pudo encontrar el estudiante',
+          });
+          return;
+        }
+
+        const result = await ungraduateStudent(student.id);
+
+        if (!result.success) {
+          showToast({
+            type: 'error',
+            title: 'Error al desmarcar como titulado',
+            message: result.error,
+          });
+          return;
+        }
+
+        showToast({
+          type: 'success',
+          title: 'Estudiante desmarcado',
+          message: `El estudiante "${fullName}" ha sido desmarcado como titulado exitosamente`,
+        });
+
+        loadStudents();
+      } catch (error) {
+        console.error('Error al desmarcar como titulado:', error);
+        showToast({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudo desmarcar el estudiante como titulado',
+        });
+      }
+    },
+    [fetchStudentByControlNumber, ungraduateStudent, showToast, loadStudents]
+  );
 
   // Mostrar errores
   useEffect(() => {
@@ -313,6 +560,80 @@ export function StudentsGraduatedList() {
     ]
   );
 
+  // Acciones de fila
+  const getRowActions = useCallback(
+    (graduatedStudent: GraduatedStudent): DropdownMenuItem[] => {
+      return [
+        {
+          label: 'Ver detalles',
+          onClick: () => handleOpenDetail(graduatedStudent),
+        },
+        { separator: true, label: 'separator', onClick: () => {} },
+        {
+          label: 'Editar',
+          onClick: () => handleOpenEdit(graduatedStudent),
+        },
+        {
+          label: 'Eliminar',
+          onClick: () => handleDelete(graduatedStudent),
+          variant: 'danger' as const,
+        },
+        { separator: true, label: 'separator2', onClick: () => {} },
+        {
+          label: 'Desmarcar como titulado',
+          onClick: () => handleUngraduate(graduatedStudent),
+        },
+      ];
+    },
+    [handleOpenDetail, handleOpenEdit, handleDelete, handleUngraduate]
+  );
+
+  // Campos para el modal de detalles
+  const detailFields: DetailField<GraduatedStudent>[] = useMemo(
+    () => [
+      {
+        key: 'controlNumber',
+        label: 'Número de Control',
+      },
+      {
+        key: 'fullName',
+        label: 'Nombre Completo',
+      },
+      {
+        key: 'sex',
+        label: 'Sexo',
+        render: (value: string) =>
+          value === 'MASCULINO' ? 'Masculino' : 'Femenino',
+      },
+      {
+        key: 'careerId',
+        label: 'Carrera',
+        render: (value: string) => getCareerName(value),
+      },
+      {
+        key: 'generationId',
+        label: 'Generación',
+        render: (value: string) => getGenerationName(value),
+      },
+      {
+        key: 'graduationOptionId',
+        label: 'Opción de Titulación',
+        render: (value: string) => getGraduationOptionName(value),
+      },
+      {
+        key: 'graduationDate',
+        label: 'Fecha de Titulación',
+        render: (value: string) => formatGraduationDate(value),
+      },
+    ],
+    [
+      getCareerName,
+      getGenerationName,
+      getGraduationOptionName,
+      formatGraduationDate,
+    ]
+  );
+
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Contenedor para PageHeader */}
@@ -356,6 +677,8 @@ export function StudentsGraduatedList() {
             controlledSortColumn={sortBy}
             controlledSortDirection={sortOrder}
             onSort={handleSort}
+            onRowClick={handleOpenDetail}
+            rowActions={getRowActions}
             className="border-0 bg-transparent"
           />
         )}
@@ -373,6 +696,34 @@ export function StudentsGraduatedList() {
           />
         )}
       </div>
+
+      {/* Modal de detalles */}
+      <DetailModal
+        title="Detalles del Estudiante Titulado"
+        data={selectedGraduatedStudent}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedGraduatedStudent(null);
+          setSelectedStudent(null);
+        }}
+        fields={detailFields}
+        maxWidth="lg"
+      />
+
+      {/* Modal de edición */}
+      {selectedStudent && (
+        <StudentForm
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedStudent(null);
+          }}
+          onSubmit={handleEdit}
+          mode="edit"
+          initialData={selectedStudent}
+        />
+      )}
     </div>
   );
 }

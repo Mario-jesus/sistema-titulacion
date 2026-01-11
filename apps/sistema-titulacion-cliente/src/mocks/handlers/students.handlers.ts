@@ -121,6 +121,11 @@ export const studentsHandlers = [
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
     const status = url.searchParams.get('status');
+    const isEgressedParam = url.searchParams.get('isEgressed');
+    const isEgressed =
+      isEgressedParam !== null
+        ? isEgressedParam === 'true' || isEgressedParam === '1'
+        : null;
     const search =
       url.searchParams.get('search') || url.searchParams.get('q') || '';
 
@@ -165,6 +170,13 @@ export const studentsHandlers = [
     if (status) {
       filteredData = filteredData.filter(
         (student: Student) => student.status === status
+      );
+    }
+
+    // Filtrar por isEgressed si se especifica
+    if (isEgressed !== null) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.isEgressed === isEgressed
       );
     }
 
@@ -1607,4 +1619,103 @@ export const studentsHandlers = [
       });
     }
   ),
+
+  // POST /students/:id/egress (Marcar como egresado)
+  http.post(buildApiUrl('/students/:id/egress'), async ({ params }) => {
+    await delay(300);
+
+    const { id } = params;
+    const student = findStudentById(id as string);
+
+    if (!student) {
+      return HttpResponse.json(
+        {
+          error: 'Estudiante no encontrado',
+          code: 'STUDENT_NOT_FOUND',
+        },
+        { status: 404 }
+      );
+    }
+
+    // Validar que el estudiante no esté ya egresado
+    if (student.isEgressed === true) {
+      return HttpResponse.json(
+        {
+          error: 'El estudiante ya está marcado como egresado',
+          code: 'ALREADY_EGRESSED',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Marcar como egresado
+    student.isEgressed = true;
+    student.updatedAt = new Date();
+
+    return HttpResponse.json({
+      ...student,
+      birthDate: student.birthDate.toISOString().split('T')[0],
+      createdAt: student.createdAt.toISOString(),
+      updatedAt: student.updatedAt.toISOString(),
+    });
+  }),
+
+  // POST /students/:id/unegress (Marcar como no egresado)
+  http.post(buildApiUrl('/students/:id/unegress'), async ({ params }) => {
+    await delay(300);
+
+    const { id } = params;
+    const student = findStudentById(id as string);
+
+    if (!student) {
+      return HttpResponse.json(
+        {
+          error: 'Estudiante no encontrado',
+          code: 'STUDENT_NOT_FOUND',
+        },
+        { status: 404 }
+      );
+    }
+
+    // Validar que el estudiante esté egresado
+    if (student.isEgressed === false) {
+      return HttpResponse.json(
+        {
+          error: 'El estudiante no está marcado como egresado',
+          code: 'NOT_EGRESSED',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que el estudiante no esté en proceso, programado o titulado
+    const capturedFields = findCapturedFieldsByStudentId(student.id);
+    const graduation = findGraduationByStudentId(student.id);
+
+    const hasCapturedFields = capturedFields && capturedFields.length > 0;
+    const hasGraduation = graduation !== undefined;
+
+    // Si tiene CapturedFields O Graduation, no se puede cambiar a no egresado
+    if (hasCapturedFields || hasGraduation) {
+      return HttpResponse.json(
+        {
+          error:
+            'No se puede cambiar a no egresado: el estudiante está en proceso, programado o ya está titulado',
+          code: 'CANNOT_UNEGRESS',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Marcar como no egresado
+    student.isEgressed = false;
+    student.updatedAt = new Date();
+
+    return HttpResponse.json({
+      ...student,
+      birthDate: student.birthDate.toISOString().split('T')[0],
+      createdAt: student.createdAt.toISOString(),
+      updatedAt: student.updatedAt.toISOString(),
+    });
+  }),
 ];

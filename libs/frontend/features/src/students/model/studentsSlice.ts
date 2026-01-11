@@ -17,6 +17,8 @@ import {
   listInProgressStudentsThunk,
   listScheduledStudentsThunk,
   listGraduatedStudentsThunk,
+  egressStudentThunk,
+  unegressStudentThunk,
 } from './studentsThunks';
 
 export interface StudentsState {
@@ -61,6 +63,12 @@ export interface StudentsState {
 
   isChangingStatus: boolean;
   changeStatusError: string | null;
+
+  isEgressing: boolean;
+  egressError: string | null;
+
+  isUnegressing: boolean;
+  unegressError: string | null;
 }
 
 const initialState: StudentsState = {
@@ -99,6 +107,12 @@ const initialState: StudentsState = {
 
   isChangingStatus: false,
   changeStatusError: null,
+
+  isEgressing: false,
+  egressError: null,
+
+  isUnegressing: false,
+  unegressError: null,
 };
 
 const studentsSlice = createSlice({
@@ -122,6 +136,12 @@ const studentsSlice = createSlice({
     },
     clearChangeStatusError: (state) => {
       state.changeStatusError = null;
+    },
+    clearEgressError: (state) => {
+      state.egressError = null;
+    },
+    clearUnegressError: (state) => {
+      state.unegressError = null;
     },
     clearInProgressError: (state) => {
       state.inProgressError = null;
@@ -362,6 +382,54 @@ const studentsSlice = createSlice({
       state.graduatedError =
         action.payload || 'Error al obtener lista de estudiantes titulados';
     });
+
+    // ========== EGRESS ==========
+    builder.addCase(egressStudentThunk.pending, (state) => {
+      state.isEgressing = true;
+      state.egressError = null;
+    });
+    builder.addCase(egressStudentThunk.fulfilled, (state, action) => {
+      state.isEgressing = false;
+      // Actualizar el estudiante en la lista si existe
+      const index = state.students.findIndex((s) => s.id === action.payload.id);
+      if (index !== -1) {
+        state.students[index] = action.payload;
+      }
+      // Actualizar el estudiante actual si es el mismo
+      if (state.currentStudent?.id === action.payload.id) {
+        state.currentStudent = action.payload;
+      }
+      state.egressError = null;
+    });
+    builder.addCase(egressStudentThunk.rejected, (state, action) => {
+      state.isEgressing = false;
+      state.egressError =
+        action.payload || 'Error al marcar estudiante como egresado';
+    });
+
+    // ========== UNEGRESS ==========
+    builder.addCase(unegressStudentThunk.pending, (state) => {
+      state.isUnegressing = true;
+      state.unegressError = null;
+    });
+    builder.addCase(unegressStudentThunk.fulfilled, (state, action) => {
+      state.isUnegressing = false;
+      // Actualizar el estudiante en la lista si existe
+      const index = state.students.findIndex((s) => s.id === action.payload.id);
+      if (index !== -1) {
+        state.students[index] = action.payload;
+      }
+      // Actualizar el estudiante actual si es el mismo
+      if (state.currentStudent?.id === action.payload.id) {
+        state.currentStudent = action.payload;
+      }
+      state.unegressError = null;
+    });
+    builder.addCase(unegressStudentThunk.rejected, (state, action) => {
+      state.isUnegressing = false;
+      state.unegressError =
+        action.payload || 'Error al marcar estudiante como no egresado';
+    });
   },
 });
 
@@ -375,6 +443,8 @@ export const {
   clearInProgressError,
   clearScheduledError,
   clearGraduatedError,
+  clearEgressError,
+  clearUnegressError,
   clearCurrentStudent,
   clearAllErrors,
 } = studentsSlice.actions;

@@ -89,6 +89,8 @@ export const API_ENDPOINTS = {
     PATCH: (id: string) => `/students/${id}`,
     DELETE: (id: string) => `/students/${id}`,
     CHANGE_STATUS: (id: string) => `/students/${id}/status`,
+    EGRESS: (id: string) => `/students/${id}/egress`,
+    UNEGRESS: (id: string) => `/students/${id}/unegress`,
   },
   // Campos Capturados
   CAPTURED_FIELDS: {

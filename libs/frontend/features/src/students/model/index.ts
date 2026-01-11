@@ -11,4 +11,6 @@ export {
   listInProgressStudentsThunk,
   listScheduledStudentsThunk,
   listGraduatedStudentsThunk,
+  egressStudentThunk,
+  unegressStudentThunk,
 } from './studentsThunks';

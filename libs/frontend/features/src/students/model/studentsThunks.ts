@@ -208,3 +208,41 @@ export const listGraduatedStudentsThunk = createAsyncThunk<
     return rejectWithValue(message);
   }
 });
+
+// ========== EGRESS ==========
+export const egressStudentThunk = createAsyncThunk<
+  Student,
+  string,
+  { rejectValue: string }
+>('students/egress', async (studentId, { rejectWithValue }) => {
+  try {
+    const student = await studentsService.egress(studentId);
+    return student;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al marcar estudiante como egresado';
+    logger.error('Error en egressStudentThunk:', error);
+    return rejectWithValue(message);
+  }
+});
+
+// ========== UNEGRESS ==========
+export const unegressStudentThunk = createAsyncThunk<
+  Student,
+  string,
+  { rejectValue: string }
+>('students/unegress', async (studentId, { rejectWithValue }) => {
+  try {
+    const student = await studentsService.unegress(studentId);
+    return student;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al marcar estudiante como no egresado';
+    logger.error('Error en unegressStudentThunk:', error);
+    return rejectWithValue(message);
+  }
+});

@@ -29,6 +29,8 @@ import {
   listInProgressStudentsThunk,
   listScheduledStudentsThunk,
   listGraduatedStudentsThunk,
+  egressStudentThunk,
+  unegressStudentThunk,
 } from '../model/studentsThunks';
 import {
   clearListError,
@@ -40,6 +42,8 @@ import {
   clearInProgressError,
   clearScheduledError,
   clearGraduatedError,
+  clearEgressError,
+  clearUnegressError,
   clearCurrentStudent,
   clearAllErrors,
   type StudentsState,
@@ -135,6 +139,22 @@ export function useStudents() {
   );
   const changeStatusError = useSelector(
     (state: AppState) => state.students.changeStatusError
+  );
+
+  const isEgressing = useSelector(
+    (state: AppState) => state.students.isEgressing
+  );
+
+  const egressError = useSelector(
+    (state: AppState) => state.students.egressError
+  );
+
+  const isUnegressing = useSelector(
+    (state: AppState) => state.students.isUnegressing
+  );
+
+  const unegressError = useSelector(
+    (state: AppState) => state.students.unegressError
   );
 
   // ========== ACTIONS ==========
@@ -286,6 +306,49 @@ export function useStudents() {
     [dispatch]
   );
 
+  // ========== EGRESS ==========
+  const egressStudent = useCallback(
+    async (studentId: string): Promise<Result<Student>> => {
+      const result = await dispatch(egressStudentThunk(studentId));
+
+      if (egressStudentThunk.rejected.match(result)) {
+        return {
+          success: false,
+          error: result.payload || 'Error al marcar estudiante como egresado',
+          code: extractErrorCode(result.payload),
+        };
+      }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
+    },
+    [dispatch]
+  );
+
+  // ========== UNEGRESS ==========
+  const unegressStudent = useCallback(
+    async (studentId: string): Promise<Result<Student>> => {
+      const result = await dispatch(unegressStudentThunk(studentId));
+
+      if (unegressStudentThunk.rejected.match(result)) {
+        return {
+          success: false,
+          error:
+            result.payload || 'Error al marcar estudiante como no egresado',
+          code: extractErrorCode(result.payload),
+        };
+      }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
+    },
+    [dispatch]
+  );
+
   // ========== LIST IN PROGRESS ==========
   const listInProgressStudents = useCallback(
     async (
@@ -401,6 +464,14 @@ export function useStudents() {
     dispatch(clearGraduatedError());
   }, [dispatch]);
 
+  const clearEgressErrors = useCallback(() => {
+    dispatch(clearEgressError());
+  }, [dispatch]);
+
+  const clearUnegressErrors = useCallback(() => {
+    dispatch(clearUnegressError());
+  }, [dispatch]);
+
   const clearCurrent = useCallback(() => {
     dispatch(clearCurrentStudent());
   }, [dispatch]);
@@ -427,6 +498,8 @@ export function useStudents() {
     isUpdating,
     isDeleting,
     isChangingStatus,
+    isEgressing,
+    isUnegressing,
 
     // ========== ERRORS ==========
     listError,
@@ -438,6 +511,8 @@ export function useStudents() {
     updateError,
     deleteError,
     changeStatusError,
+    egressError,
+    unegressError,
 
     // ========== ACTIONS ==========
     listStudents,
@@ -447,6 +522,8 @@ export function useStudents() {
     patchStudent,
     deleteStudent,
     changeStudentStatus,
+    egressStudent,
+    unegressStudent,
     listInProgressStudents,
     listScheduledStudents,
     listGraduatedStudents,
@@ -462,6 +539,8 @@ export function useStudents() {
     clearUpdateErrors,
     clearDeleteErrors,
     clearChangeStatusErrors,
+    clearEgressErrors,
+    clearUnegressErrors,
     clearCurrent,
   };
 }

@@ -56,6 +56,8 @@ export function StudentsList({
     updateStudent,
     deleteStudent,
     changeStudentStatus,
+    egressStudent,
+    unegressStudent,
     clearListErrors,
   } = useStudents();
 
@@ -173,6 +175,10 @@ export function StudentsList({
         ...(graduatedOnly || filters.isEgressed === true
           ? { isEgressed: true }
           : filters.isEgressed === false
+          ? { isEgressed: false }
+          : filters.isEgressed === 'true'
+          ? { isEgressed: true }
+          : filters.isEgressed === 'false'
           ? { isEgressed: false }
           : {}),
       };
@@ -385,6 +391,56 @@ export function StudentsList({
       loadStudents();
     },
     [changeStudentStatus, loadStudents, showToast]
+  );
+
+  // Manejar cambio de egresado
+  const handleEgress = useCallback(
+    async (student: Student) => {
+      const result = await egressStudent(student.id);
+
+      if (!result.success) {
+        console.error('Error al marcar como egresado:', result.error);
+        showToast({
+          type: 'error',
+          title: 'Error al marcar como egresado',
+          message: result.error,
+        });
+        return;
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Estudiante egresado',
+        message: 'El estudiante se ha marcado como egresado exitosamente',
+      });
+      loadStudents();
+    },
+    [egressStudent, loadStudents, showToast]
+  );
+
+  // Manejar cambio de no egresado
+  const handleUnegress = useCallback(
+    async (student: Student) => {
+      const result = await unegressStudent(student.id);
+
+      if (!result.success) {
+        console.error('Error al marcar como no egresado:', result.error);
+        showToast({
+          type: 'error',
+          title: 'Error al marcar como no egresado',
+          message: result.error,
+        });
+        return;
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Estudiante no egresado',
+        message: 'El estudiante se ha marcado como no egresado exitosamente',
+      });
+      loadStudents();
+    },
+    [unegressStudent, loadStudents, showToast]
   );
 
   // Abrir modal de edición
@@ -745,7 +801,12 @@ export function StudentsList({
     {
       columnKey: 'isEgressed',
       label: 'Egresado',
-      type: 'toggle',
+      type: 'select',
+      options: [
+        { value: 'all', label: 'Todos' },
+        { value: 'true', label: 'Egresados' },
+        { value: 'false', label: 'No egresados' },
+      ],
     },
     {
       columnKey: 'generationId',
@@ -780,6 +841,11 @@ export function StudentsList({
           delete updated[columnKey];
         }
 
+        // Manejar el filtro de isEgressed: si es 'all', eliminar el filtro
+        if (columnKey === 'isEgressed' && value === 'all') {
+          delete updated[columnKey];
+        }
+
         // Si se cambia un filtro de status, eliminar el filtro especial de in-progress
         if (columnKey === 'status' && updated.statusInProgress) {
           delete updated.statusInProgress;
@@ -799,7 +865,9 @@ export function StudentsList({
   }, []);
 
   // Verificar si hay filtros activos
-  const hasActiveFilters = Object.values(filters).some((value) => {
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+    // Ignorar valores 'all' para isEgressed
+    if (key === 'isEgressed' && value === 'all') return false;
     if (typeof value === 'boolean') return value === true;
     if (typeof value === 'string') return value !== '';
     if (Array.isArray(value)) return value.length > 0;
@@ -887,6 +955,20 @@ export function StudentsList({
         transitions,
       });
 
+      // Agregar acciones de egresado/no egresado
+      const egressActions: DropdownMenuItem[] = [];
+      if (student.isEgressed === false) {
+        egressActions.push({
+          label: 'Marcar como egresado',
+          onClick: () => handleEgress(student),
+        });
+      } else {
+        egressActions.push({
+          label: 'Marcar como no egresado',
+          onClick: () => handleUnegress(student),
+        });
+      }
+
       // Agregar "Ver detalles" al inicio del menú
       return [
         {
@@ -895,6 +977,12 @@ export function StudentsList({
         },
         { separator: true, label: 'separator', onClick: () => {} },
         ...statusActions,
+        ...(egressActions.length > 0
+          ? [
+              { separator: true, label: 'separator2', onClick: () => {} },
+              ...egressActions,
+            ]
+          : []),
       ];
     },
     [
@@ -902,6 +990,8 @@ export function StudentsList({
       handleOpenEdit,
       handleDelete,
       handleStatusChange,
+      handleEgress,
+      handleUnegress,
       getStatusKey,
     ]
   );

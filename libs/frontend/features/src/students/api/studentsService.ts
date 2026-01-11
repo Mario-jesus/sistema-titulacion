@@ -351,4 +351,60 @@ export const studentsService = {
       throw error;
     }
   },
+
+  /**
+   * Marca un estudiante como egresado
+   */
+  async egress(studentId: string): Promise<Student> {
+    try {
+      logger.log('Marcando estudiante como egresado...', { studentId });
+
+      const response = await apiClient.post<Student>(
+        API_ENDPOINTS.STUDENTS.EGRESS(studentId)
+      );
+
+      logger.log('Estudiante marcado como egresado exitosamente', {
+        studentId,
+      });
+
+      // Convertir fechas de string a Date
+      return {
+        ...response,
+        birthDate: new Date(response.birthDate),
+        createdAt: new Date(response.createdAt),
+        updatedAt: new Date(response.updatedAt),
+      };
+    } catch (error) {
+      logger.error('Error al marcar estudiante como egresado:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Marca un estudiante como no egresado
+   */
+  async unegress(studentId: string): Promise<Student> {
+    try {
+      logger.log('Marcando estudiante como no egresado...', { studentId });
+
+      const response = await apiClient.post<Student>(
+        API_ENDPOINTS.STUDENTS.UNEGRESS(studentId)
+      );
+
+      logger.log('Estudiante marcado como no egresado exitosamente', {
+        studentId,
+      });
+
+      // Convertir fechas de string a Date
+      return {
+        ...response,
+        birthDate: new Date(response.birthDate),
+        createdAt: new Date(response.createdAt),
+        updatedAt: new Date(response.updatedAt),
+      };
+    } catch (error) {
+      logger.error('Error al marcar estudiante como no egresado:', error);
+      throw error;
+    }
+  },
 };
