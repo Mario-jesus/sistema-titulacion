@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { Graduation } from '@entities/graduation';
 import type {
   CreateGraduationRequest,
   UpdateGraduationRequest,
@@ -80,96 +83,148 @@ export function useGraduations() {
 
   // ========== ACTIONS ==========
   const getGraduationById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Graduation>> => {
       const result = await dispatch(getGraduationByIdThunk(id));
 
       if (getGraduationByIdThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener titulación');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createGraduation = useCallback(
-    async (data: CreateGraduationRequest) => {
+    async (data: CreateGraduationRequest): Promise<Result<Graduation>> => {
       const result = await dispatch(createGraduationThunk(data));
 
       if (createGraduationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al crear titulación');
+        return {
+          success: false,
+          error: result.payload || 'Error al crear titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateGraduation = useCallback(
-    async (id: string, data: UpdateGraduationRequest) => {
+    async (
+      id: string,
+      data: UpdateGraduationRequest
+    ): Promise<Result<Graduation>> => {
       const result = await dispatch(updateGraduationThunk({ id, data }));
 
       if (updateGraduationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar titulación');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchGraduation = useCallback(
-    async (id: string, data: Partial<UpdateGraduationRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateGraduationRequest>
+    ): Promise<Result<Graduation>> => {
       const result = await dispatch(patchGraduationThunk({ id, data }));
 
       if (patchGraduationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar titulación');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteGraduation = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteGraduationThunk(id));
 
       if (deleteGraduationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al eliminar titulación');
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const graduateStudent = useCallback(
-    async (studentId: string) => {
+    async (studentId: string): Promise<Result<Graduation>> => {
       const result = await dispatch(graduateStudentThunk(studentId));
 
       if (graduateStudentThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al marcar estudiante como titulado'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al marcar estudiante como titulado',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const ungraduateStudent = useCallback(
-    async (studentId: string) => {
+    async (studentId: string): Promise<Result<Graduation>> => {
       const result = await dispatch(ungraduateStudentThunk(studentId));
 
       if (ungraduateStudentThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al desmarcar estudiante como titulado'
-        );
+        return {
+          success: false,
+          error:
+            result.payload || 'Error al desmarcar estudiante como titulado',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

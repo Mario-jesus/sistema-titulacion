@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/types';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
 import type { User } from '@entities/user';
 import type { LoginCredentials } from '../model/types';
 import { loginThunk, logoutThunk, checkAuthThunk } from '../model/authThunks';
@@ -36,33 +38,57 @@ export function useAuth() {
   );
 
   const login = useCallback(
-    async (credentials: LoginCredentials) => {
+    async (credentials: LoginCredentials): Promise<Result<User>> => {
       const result = await dispatch(loginThunk(credentials));
 
       if (loginThunk.fulfilled.match(result)) {
-        return result.payload;
+        return {
+          success: true,
+          data: result.payload,
+        };
       } else {
-        throw new Error(result.payload || 'Error al iniciar sesión');
+        return {
+          success: false,
+          error: result.payload || 'Error al iniciar sesión',
+          code: extractErrorCode(result.payload),
+        };
       }
     },
     [dispatch]
   );
 
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (): Promise<Result<void>> => {
     const result = await dispatch(logoutThunk());
 
     if (logoutThunk.rejected.match(result)) {
       console.warn('Error al notificar logout al servidor:', result.payload);
+      return {
+        success: false,
+        error: result.payload || 'Error al cerrar sesión',
+        code: extractErrorCode(result.payload),
+      };
     }
+
+    return {
+      success: true,
+      data: undefined,
+    };
   }, [dispatch]);
 
-  const checkAuth = useCallback(async () => {
+  const checkAuth = useCallback(async (): Promise<Result<User>> => {
     const result = await dispatch(checkAuthThunk());
 
     if (checkAuthThunk.fulfilled.match(result)) {
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     } else {
-      throw new Error(result.payload || 'No hay sesión activa');
+      return {
+        success: false,
+        error: result.payload || 'No hay sesión activa',
+        code: extractErrorCode(result.payload),
+      };
     }
   }, [dispatch]);
 

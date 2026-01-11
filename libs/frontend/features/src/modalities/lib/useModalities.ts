@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { Modality } from '@entities/modality';
 import type {
   ListModalitiesParams,
+  ListModalitiesResponse,
   CreateModalityRequest,
   UpdateModalityRequest,
 } from '../model/types';
@@ -93,105 +97,169 @@ export function useModalities() {
 
   // ========== ACTIONS ==========
   const listModalities = useCallback(
-    async (params?: ListModalitiesParams) => {
+    async (
+      params?: ListModalitiesParams
+    ): Promise<Result<ListModalitiesResponse>> => {
       const result = await dispatch(listModalitiesThunk(params));
 
       if (listModalitiesThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al obtener lista de modalidades'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener lista de modalidades',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const getModalityById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Modality>> => {
       const result = await dispatch(getModalityByIdThunk(id));
 
       if (getModalityByIdThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createModality = useCallback(
-    async (data: CreateModalityRequest) => {
+    async (data: CreateModalityRequest): Promise<Result<Modality>> => {
       const result = await dispatch(createModalityThunk(data));
 
       if (createModalityThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al crear modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al crear modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateModality = useCallback(
-    async (id: string, data: UpdateModalityRequest) => {
+    async (
+      id: string,
+      data: UpdateModalityRequest
+    ): Promise<Result<Modality>> => {
       const result = await dispatch(updateModalityThunk({ id, data }));
 
       if (updateModalityThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchModality = useCallback(
-    async (id: string, data: Partial<UpdateModalityRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateModalityRequest>
+    ): Promise<Result<Modality>> => {
       const result = await dispatch(patchModalityThunk({ id, data }));
 
       if (patchModalityThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteModality = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteModalityThunk(id));
 
       if (deleteModalityThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al eliminar modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const activateModality = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Modality>> => {
       const result = await dispatch(activateModalityThunk(id));
 
       if (activateModalityThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al activar modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al activar modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deactivateModality = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Modality>> => {
       const result = await dispatch(deactivateModalityThunk(id));
 
       if (deactivateModalityThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al desactivar modalidad');
+        return {
+          success: false,
+          error: result.payload || 'Error al desactivar modalidad',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

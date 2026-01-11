@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { Career } from '@entities/career';
 import type {
   ListCareersParams,
+  ListCareersResponse,
   CreateCareerRequest,
   UpdateCareerRequest,
 } from '../model/types';
@@ -81,103 +85,166 @@ export function useCareers() {
 
   // ========== ACTIONS ==========
   const listCareers = useCallback(
-    async (params?: ListCareersParams) => {
+    async (
+      params?: ListCareersParams
+    ): Promise<Result<ListCareersResponse>> => {
       const result = await dispatch(listCareersThunk(params));
 
       if (listCareersThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener lista de carreras');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener lista de carreras',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const getCareerById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Career>> => {
       const result = await dispatch(getCareerByIdThunk(id));
 
       if (getCareerByIdThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createCareer = useCallback(
-    async (data: CreateCareerRequest) => {
+    async (data: CreateCareerRequest): Promise<Result<Career>> => {
       const result = await dispatch(createCareerThunk(data));
 
       if (createCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al crear carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al crear carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateCareer = useCallback(
-    async (id: string, data: UpdateCareerRequest) => {
+    async (id: string, data: UpdateCareerRequest): Promise<Result<Career>> => {
       const result = await dispatch(updateCareerThunk({ id, data }));
 
       if (updateCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchCareer = useCallback(
-    async (id: string, data: Partial<UpdateCareerRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateCareerRequest>
+    ): Promise<Result<Career>> => {
       const result = await dispatch(patchCareerThunk({ id, data }));
 
       if (patchCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteCareer = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteCareerThunk(id));
 
       if (deleteCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al eliminar carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const activateCareer = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Career>> => {
       const result = await dispatch(activateCareerThunk(id));
 
       if (activateCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al activar carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al activar carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deactivateCareer = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Career>> => {
       const result = await dispatch(deactivateCareerThunk(id));
 
       if (deactivateCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al desactivar carrera');
+        return {
+          success: false,
+          error: result.payload || 'Error al desactivar carrera',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

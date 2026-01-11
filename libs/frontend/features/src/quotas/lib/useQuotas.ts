@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { Quota } from '@entities/quota';
 import type {
   ListQuotasParams,
+  ListQuotasResponse,
   CreateQuotaRequest,
   UpdateQuotaRequest,
 } from '../model/types';
@@ -81,103 +85,164 @@ export function useQuotas() {
 
   // ========== ACTIONS ==========
   const listQuotas = useCallback(
-    async (params?: ListQuotasParams) => {
+    async (params?: ListQuotasParams): Promise<Result<ListQuotasResponse>> => {
       const result = await dispatch(listQuotasThunk(params));
 
       if (listQuotasThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener lista de cupos');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener lista de cupos',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const getQuotaById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Quota>> => {
       const result = await dispatch(getQuotaByIdThunk(id));
 
       if (getQuotaByIdThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createQuota = useCallback(
-    async (data: CreateQuotaRequest) => {
+    async (data: CreateQuotaRequest): Promise<Result<Quota>> => {
       const result = await dispatch(createQuotaThunk(data));
 
       if (createQuotaThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al crear cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al crear cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateQuota = useCallback(
-    async (id: string, data: UpdateQuotaRequest) => {
+    async (id: string, data: UpdateQuotaRequest): Promise<Result<Quota>> => {
       const result = await dispatch(updateQuotaThunk({ id, data }));
 
       if (updateQuotaThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchQuota = useCallback(
-    async (id: string, data: Partial<UpdateQuotaRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateQuotaRequest>
+    ): Promise<Result<Quota>> => {
       const result = await dispatch(patchQuotaThunk({ id, data }));
 
       if (patchQuotaThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteQuota = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteQuotaThunk(id));
 
       if (deleteQuotaThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al eliminar cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const activateQuota = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Quota>> => {
       const result = await dispatch(activateQuotaThunk(id));
 
       if (activateQuotaThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al activar cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al activar cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deactivateQuota = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Quota>> => {
       const result = await dispatch(deactivateQuotaThunk(id));
 
       if (deactivateQuotaThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al desactivar cupo');
+        return {
+          success: false,
+          error: result.payload || 'Error al desactivar cupo',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

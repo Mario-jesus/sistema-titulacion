@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { Generation } from '@entities/generation';
 import type {
   ListGenerationsParams,
+  ListGenerationsResponse,
   CreateGenerationRequest,
   UpdateGenerationRequest,
 } from '../model/types';
@@ -93,105 +97,169 @@ export function useGenerations() {
 
   // ========== ACTIONS ==========
   const listGenerations = useCallback(
-    async (params?: ListGenerationsParams) => {
+    async (
+      params?: ListGenerationsParams
+    ): Promise<Result<ListGenerationsResponse>> => {
       const result = await dispatch(listGenerationsThunk(params));
 
       if (listGenerationsThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al obtener lista de generaciones'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener lista de generaciones',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const getGenerationById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Generation>> => {
       const result = await dispatch(getGenerationByIdThunk(id));
 
       if (getGenerationByIdThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener generación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createGeneration = useCallback(
-    async (data: CreateGenerationRequest) => {
+    async (data: CreateGenerationRequest): Promise<Result<Generation>> => {
       const result = await dispatch(createGenerationThunk(data));
 
       if (createGenerationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al crear generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al crear generación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateGeneration = useCallback(
-    async (id: string, data: UpdateGenerationRequest) => {
+    async (
+      id: string,
+      data: UpdateGenerationRequest
+    ): Promise<Result<Generation>> => {
       const result = await dispatch(updateGenerationThunk({ id, data }));
 
       if (updateGenerationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar generación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchGeneration = useCallback(
-    async (id: string, data: Partial<UpdateGenerationRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateGenerationRequest>
+    ): Promise<Result<Generation>> => {
       const result = await dispatch(patchGenerationThunk({ id, data }));
 
       if (patchGenerationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al actualizar generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar generación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteGeneration = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteGenerationThunk(id));
 
       if (deleteGenerationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al eliminar generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar generación',
+          code: extractErrorCode(result.payload),
+        };
       }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const activateGeneration = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Generation>> => {
       const result = await dispatch(activateGenerationThunk(id));
 
       if (activateGenerationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al activar generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al activar generación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deactivateGeneration = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<Generation>> => {
       const result = await dispatch(deactivateGenerationThunk(id));
 
       if (deactivateGenerationThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al desactivar generación');
+        return {
+          success: false,
+          error: result.payload || 'Error al desactivar generación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

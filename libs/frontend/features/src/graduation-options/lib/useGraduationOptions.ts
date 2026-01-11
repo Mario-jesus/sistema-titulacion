@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { GraduationOption } from '@entities/graduation-option';
 import type {
   ListGraduationOptionsParams,
+  ListGraduationOptionsResponse,
   CreateGraduationOptionRequest,
   UpdateGraduationOptionRequest,
 } from '../model/types';
@@ -93,121 +97,173 @@ export function useGraduationOptions() {
 
   // ========== ACTIONS ==========
   const listGraduationOptions = useCallback(
-    async (params?: ListGraduationOptionsParams) => {
+    async (
+      params?: ListGraduationOptionsParams
+    ): Promise<Result<ListGraduationOptionsResponse>> => {
       const result = await dispatch(listGraduationOptionsThunk(params));
 
       if (listGraduationOptionsThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al obtener lista de opciones de titulación'
-        );
+        return {
+          success: false,
+          error:
+            result.payload ||
+            'Error al obtener lista de opciones de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const getGraduationOptionById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<GraduationOption>> => {
       const result = await dispatch(getGraduationOptionByIdThunk(id));
 
       if (getGraduationOptionByIdThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al obtener opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createGraduationOption = useCallback(
-    async (data: CreateGraduationOptionRequest) => {
+    async (
+      data: CreateGraduationOptionRequest
+    ): Promise<Result<GraduationOption>> => {
       const result = await dispatch(createGraduationOptionThunk(data));
 
       if (createGraduationOptionThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al crear opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al crear opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateGraduationOption = useCallback(
-    async (id: string, data: UpdateGraduationOptionRequest) => {
-      const result = await dispatch(
-        updateGraduationOptionThunk({ id, data })
-      );
+    async (
+      id: string,
+      data: UpdateGraduationOptionRequest
+    ): Promise<Result<GraduationOption>> => {
+      const result = await dispatch(updateGraduationOptionThunk({ id, data }));
 
       if (updateGraduationOptionThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al actualizar opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchGraduationOption = useCallback(
-    async (id: string, data: Partial<UpdateGraduationOptionRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateGraduationOptionRequest>
+    ): Promise<Result<GraduationOption>> => {
       const result = await dispatch(patchGraduationOptionThunk({ id, data }));
 
       if (patchGraduationOptionThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al actualizar opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteGraduationOption = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteGraduationOptionThunk(id));
 
       if (deleteGraduationOptionThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al eliminar opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const activateGraduationOption = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<GraduationOption>> => {
       const result = await dispatch(activateGraduationOptionThunk(id));
 
       if (activateGraduationOptionThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al activar opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al activar opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deactivateGraduationOption = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<GraduationOption>> => {
       const result = await dispatch(deactivateGraduationOptionThunk(id));
 
       if (deactivateGraduationOptionThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al desactivar opción de titulación'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al desactivar opción de titulación',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

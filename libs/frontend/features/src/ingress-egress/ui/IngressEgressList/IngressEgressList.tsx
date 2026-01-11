@@ -115,11 +115,22 @@ export function IngressEgressList() {
       setIsDetailModalOpen(true);
 
       try {
-        const detail = await getIngressEgressByGenerationAndCareer(
+        const result = await getIngressEgressByGenerationAndCareer(
           ingressEgress.generationId,
           ingressEgress.careerId
         );
-        setSelectedIngressEgress(detail);
+
+        if (!result.success) {
+          console.error('Error al cargar detalles:', result.error);
+          showToast({
+            type: 'error',
+            title: 'Error al cargar detalles',
+            message: result.error,
+          });
+          return;
+        }
+
+        setSelectedIngressEgress(result.data);
       } catch (error) {
         console.error('Error al cargar detalles:', error);
         showToast({

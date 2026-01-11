@@ -320,42 +320,48 @@ export function StudentForm({
   const handleCapturedFieldsSubmit = async (data: any): Promise<void> => {
     if (!savedStudentId) return;
 
-    try {
-      if (capturedFieldsData) {
-        await updateCapturedFields(savedStudentId, data);
-        // Recargar datos usando helper
-        const updated = await findCapturedFieldsByStudentId(savedStudentId);
-        setCapturedFieldsData(updated);
-      } else {
-        await createCapturedFields(data);
-        // Recargar datos usando helper (cuando se refactoricen los mocks)
-        const created = await findCapturedFieldsByStudentId(savedStudentId);
-        setCapturedFieldsData(created);
+    if (capturedFieldsData) {
+      const result = await updateCapturedFields(savedStudentId, data);
+      if (!result.success) {
+        console.error('Error al actualizar campos capturados:', result.error);
+        throw new Error(result.error);
       }
-    } catch (error) {
-      console.error('Error al guardar campos capturados:', error);
-      throw error;
+      // Recargar datos usando helper
+      const updated = await findCapturedFieldsByStudentId(savedStudentId);
+      setCapturedFieldsData(updated);
+    } else {
+      const result = await createCapturedFields(data);
+      if (!result.success) {
+        console.error('Error al crear campos capturados:', result.error);
+        throw new Error(result.error);
+      }
+      // Recargar datos usando helper (cuando se refactoricen los mocks)
+      const created = await findCapturedFieldsByStudentId(savedStudentId);
+      setCapturedFieldsData(created);
     }
   };
 
   const handleGraduationSubmit = async (data: any): Promise<void> => {
     if (!savedStudentId) return;
 
-    try {
-      if (graduationData) {
-        await updateGraduation(savedStudentId, data);
-        // Recargar datos usando helper
-        const updated = await findGraduationByStudentId(savedStudentId);
-        setGraduationData(updated);
-      } else {
-        await createGraduation(data);
-        // Recargar datos usando helper (cuando se refactoricen los mocks)
-        const created = await findGraduationByStudentId(savedStudentId);
-        setGraduationData(created);
+    if (graduationData) {
+      const result = await updateGraduation(savedStudentId, data);
+      if (!result.success) {
+        console.error('Error al actualizar titulación:', result.error);
+        throw new Error(result.error);
       }
-    } catch (error) {
-      console.error('Error al guardar titulación:', error);
-      throw error;
+      // Recargar datos usando helper
+      const updated = await findGraduationByStudentId(savedStudentId);
+      setGraduationData(updated);
+    } else {
+      const result = await createGraduation(data);
+      if (!result.success) {
+        console.error('Error al crear titulación:', result.error);
+        throw new Error(result.error);
+      }
+      // Recargar datos usando helper (cuando se refactoricen los mocks)
+      const created = await findGraduationByStudentId(savedStudentId);
+      setGraduationData(created);
     }
   };
 

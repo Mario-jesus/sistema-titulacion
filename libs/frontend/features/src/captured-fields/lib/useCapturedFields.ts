@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { CapturedFields } from '@entities/captured-fields';
 import type {
   CreateCapturedFieldsRequest,
   UpdateCapturedFieldsRequest,
@@ -64,72 +67,109 @@ export function useCapturedFields() {
 
   // ========== ACTIONS ==========
   const getCapturedFieldsById = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<CapturedFields>> => {
       const result = await dispatch(getCapturedFieldsByIdThunk(id));
 
       if (getCapturedFieldsByIdThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener campos capturados');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener campos capturados',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const createCapturedFields = useCallback(
-    async (data: CreateCapturedFieldsRequest) => {
+    async (
+      data: CreateCapturedFieldsRequest
+    ): Promise<Result<CapturedFields>> => {
       const result = await dispatch(createCapturedFieldsThunk(data));
 
       if (createCapturedFieldsThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al crear campos capturados');
+        return {
+          success: false,
+          error: result.payload || 'Error al crear campos capturados',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const updateCapturedFields = useCallback(
-    async (id: string, data: UpdateCapturedFieldsRequest) => {
+    async (
+      id: string,
+      data: UpdateCapturedFieldsRequest
+    ): Promise<Result<CapturedFields>> => {
       const result = await dispatch(updateCapturedFieldsThunk({ id, data }));
 
       if (updateCapturedFieldsThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al actualizar campos capturados'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar campos capturados',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const patchCapturedFields = useCallback(
-    async (id: string, data: Partial<UpdateCapturedFieldsRequest>) => {
+    async (
+      id: string,
+      data: Partial<UpdateCapturedFieldsRequest>
+    ): Promise<Result<CapturedFields>> => {
       const result = await dispatch(patchCapturedFieldsThunk({ id, data }));
 
       if (patchCapturedFieldsThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al actualizar campos capturados'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar campos capturados',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const deleteCapturedFields = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<Result<string>> => {
       const result = await dispatch(deleteCapturedFieldsThunk(id));
 
       if (deleteCapturedFieldsThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al eliminar campos capturados'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al eliminar campos capturados',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

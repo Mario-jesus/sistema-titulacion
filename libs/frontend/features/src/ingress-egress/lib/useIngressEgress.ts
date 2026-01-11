@@ -1,7 +1,13 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, BaseAppState } from '@shared/lib/redux/';
-import type { ListIngressEgressParams } from '../model/types';
+import type { Result } from '@shared/lib/model';
+import { extractErrorCode } from '@shared/lib/model';
+import type { IngressEgress } from '@entities/ingress-egress';
+import type {
+  ListIngressEgressParams,
+  ListIngressEgressResponse,
+} from '../model/types';
 import {
   listIngressEgressThunk,
   getIngressEgressByGenerationAndCareerThunk,
@@ -50,31 +56,48 @@ export function useIngressEgress() {
 
   // ========== ACTIONS ==========
   const listIngressEgress = useCallback(
-    async (params?: ListIngressEgressParams) => {
+    async (
+      params?: ListIngressEgressParams
+    ): Promise<Result<ListIngressEgressResponse>> => {
       const result = await dispatch(listIngressEgressThunk(params));
 
       if (listIngressEgressThunk.rejected.match(result)) {
-        throw new Error(
-          result.payload || 'Error al obtener lista de ingreso y egreso'
-        );
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener lista de ingreso y egreso',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );
 
   const getIngressEgressByGenerationAndCareer = useCallback(
-    async (generationId: string, careerId: string) => {
+    async (
+      generationId: string,
+      careerId: string
+    ): Promise<Result<IngressEgress>> => {
       const result = await dispatch(
         getIngressEgressByGenerationAndCareerThunk({ generationId, careerId })
       );
 
       if (getIngressEgressByGenerationAndCareerThunk.rejected.match(result)) {
-        throw new Error(result.payload || 'Error al obtener ingreso y egreso');
+        return {
+          success: false,
+          error: result.payload || 'Error al obtener ingreso y egreso',
+          code: extractErrorCode(result.payload),
+        };
       }
 
-      return result.payload;
+      return {
+        success: true,
+        data: result.payload,
+      };
     },
     [dispatch]
   );

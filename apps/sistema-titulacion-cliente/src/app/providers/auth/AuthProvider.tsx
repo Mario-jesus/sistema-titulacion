@@ -12,14 +12,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const initAuth = async () => {
-      try {
-        await checkAuth();
+      const result = await checkAuth();
+
+      if (result.success) {
         logger.info('Sesión restaurada exitosamente');
-      } catch {
+      } else {
         logger.info('No hay sesión activa');
-      } finally {
-        setIsInitialized(true);
       }
+
+      setIsInitialized(true);
     };
 
     initAuth();
