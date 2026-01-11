@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { Graduation } from '@entities/graduation';
+import { StudentStatus } from '@entities/student';
 import { buildApiUrl, delay } from '../utils';
 import { findStudentById } from '../data/students';
 import { findGraduationOptionById } from '../data/graduation-options';
@@ -17,7 +18,7 @@ import {
 interface CreateGraduationRequest {
   studentId: string;
   graduationOptionId: string | null;
-  date: Date;
+  graduationDate: Date | string;
   isGraduated: boolean;
   president: string;
   secretary: string;
@@ -29,7 +30,7 @@ interface CreateGraduationRequest {
 interface UpdateGraduationRequest {
   studentId?: string;
   graduationOptionId?: string | null;
-  date?: Date;
+  graduationDate?: Date | string;
   isGraduated?: boolean;
   president?: string;
   secretary?: string;
@@ -38,161 +39,7 @@ interface UpdateGraduationRequest {
   notes?: string | null;
 }
 
-interface PaginationData {
-  total: number;
-  limit: number;
-  totalPages: number;
-  page: number;
-  pagingCounter: number;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
-  prevPage: number | null;
-  nextPage: number | null;
-}
-
-interface ListResponse {
-  data: Graduation[];
-  pagination: PaginationData;
-}
-
 export const graduationsHandlers = [
-  // GET /graduations (List)
-  http.get(buildApiUrl('/graduations'), async ({ request }) => {
-    await delay(300);
-
-    const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
-    const offset = (page - 1) * limit;
-
-    const studentId = url.searchParams.get('studentId');
-    const isGraduated = url.searchParams.get('isGraduated');
-    const graduationOptionId = url.searchParams.get('graduationOptionId');
-    const search =
-      url.searchParams.get('search') || url.searchParams.get('q') || '';
-
-    // Validar y normalizar parámetros de ordenamiento
-    const validSortFields = ['date', 'createdAt', 'isGraduated'];
-    const requestedSortBy = url.searchParams.get('sortBy') || 'date';
-    const sortBy = validSortFields.includes(requestedSortBy)
-      ? requestedSortBy
-      : 'date';
-
-    const requestedSortOrder = url.searchParams.get('sortOrder') || 'desc';
-    const sortOrder =
-      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
-
-    let filteredData = [...mockGraduations];
-
-    // Filtrar por estudiante si se especifica
-    if (studentId) {
-      filteredData = filteredData.filter(
-        (graduation: Graduation) => graduation.studentId === studentId
-      );
-    }
-
-    // Filtrar por estado de titulación si se especifica
-    if (isGraduated !== null && isGraduated !== '') {
-      const graduated = isGraduated === 'true';
-      filteredData = filteredData.filter(
-        (graduation: Graduation) => graduation.isGraduated === graduated
-      );
-    }
-
-    // Filtrar por opción de titulación si se especifica
-    if (graduationOptionId) {
-      filteredData = filteredData.filter(
-        (graduation: Graduation) =>
-          graduation.graduationOptionId === graduationOptionId
-      );
-    }
-
-    // Búsqueda por texto (busca en notas, presidente, secretario, vocal)
-    if (search.trim()) {
-      const searchLower = search.toLowerCase().trim();
-      filteredData = filteredData.filter((graduation: Graduation) => {
-        const notesMatch =
-          graduation.notes?.toLowerCase().includes(searchLower) ?? false;
-        const presidentMatch =
-          graduation.president?.toLowerCase().includes(searchLower) ?? false;
-        const secretaryMatch =
-          graduation.secretary?.toLowerCase().includes(searchLower) ?? false;
-        const vocalMatch =
-          graduation.vocal?.toLowerCase().includes(searchLower) ?? false;
-        return notesMatch || presidentMatch || secretaryMatch || vocalMatch;
-      });
-    }
-
-    // Ordenamiento
-    filteredData.sort((a, b) => {
-      let aValue: string | number | boolean | Date | null;
-      let bValue: string | number | boolean | Date | null;
-
-      switch (sortBy) {
-        case 'date':
-          aValue = a.date;
-          bValue = b.date;
-          break;
-        case 'createdAt':
-          aValue = a.createdAt;
-          bValue = b.createdAt;
-          break;
-        case 'isGraduated':
-          aValue = a.isGraduated ? 1 : 0;
-          bValue = b.isGraduated ? 1 : 0;
-          break;
-        default:
-          aValue = a.date;
-          bValue = b.date;
-      }
-
-      if (aValue === null || aValue === undefined) aValue = '';
-      if (bValue === null || bValue === undefined) bValue = '';
-
-      let comparison = 0;
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
-      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
-      } else if (aValue instanceof Date && bValue instanceof Date) {
-        comparison = aValue.getTime() - bValue.getTime();
-      }
-
-      return sortOrder === 'desc' ? -comparison : comparison;
-    });
-
-    const total = filteredData.length;
-    const totalPages = Math.ceil(total / limit) || 1;
-    const paginatedData = filteredData.slice(offset, offset + limit);
-
-    const pagingCounter = total > 0 ? offset + 1 : 0;
-    const currentPage = Math.min(page, totalPages);
-    const hasPrevPage = currentPage > 1;
-    const hasNextPage = currentPage < totalPages;
-
-    const response: ListResponse = {
-      data: paginatedData.map((graduation) => ({
-        ...graduation,
-        date: graduation.date.toISOString().split('T')[0],
-        createdAt: graduation.createdAt.toISOString(),
-        updatedAt: graduation.updatedAt.toISOString(),
-      })) as unknown as Graduation[],
-      pagination: {
-        total,
-        limit,
-        totalPages,
-        page: currentPage,
-        pagingCounter,
-        hasPrevPage,
-        hasNextPage,
-        prevPage: hasPrevPage ? currentPage - 1 : null,
-        nextPage: hasNextPage ? currentPage + 1 : null,
-      },
-    };
-
-    return HttpResponse.json(response);
-  }),
-
   // GET /graduations/:id (Detail)
   http.get(buildApiUrl('/graduations/:id'), async ({ params }) => {
     await delay(200);
@@ -212,7 +59,7 @@ export const graduationsHandlers = [
 
     return HttpResponse.json({
       ...graduation,
-      date: graduation.date.toISOString().split('T')[0],
+      graduationDate: graduation.graduationDate.toISOString(),
       createdAt: graduation.createdAt.toISOString(),
       updatedAt: graduation.updatedAt.toISOString(),
     });
@@ -235,7 +82,7 @@ export const graduationsHandlers = [
       );
     }
 
-    if (!body.date) {
+    if (!body.graduationDate) {
       return HttpResponse.json(
         {
           error: 'La fecha de titulación es requerida',
@@ -324,6 +171,46 @@ export const graduationsHandlers = [
       );
     }
 
+    // Validar que estudiantes pausados o cancelados no pueden estar graduados
+    if (
+      body.isGraduated === true &&
+      (student.status === StudentStatus.PAUSADO ||
+        student.status === StudentStatus.CANCELADO)
+    ) {
+      return HttpResponse.json(
+        {
+          error:
+            'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
+          code: 'INVALID_STUDENT_STATUS',
+        },
+        { status: 400 }
+      );
+    }
+
+    const graduationDate =
+      body.graduationDate instanceof Date
+        ? body.graduationDate
+        : new Date(body.graduationDate);
+
+    // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
+    if (body.isGraduated === true) {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      const normalizedGraduationDate = new Date(graduationDate);
+      normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+      if (normalizedGraduationDate > currentDate) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
+            code: 'INVALID_GRADUATION_DATE',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Verificar que no exista ya una titulación para este estudiante
     const existingGraduation = findGraduationByStudentId(body.studentId);
     if (existingGraduation) {
@@ -340,7 +227,7 @@ export const graduationsHandlers = [
       id: generateGraduationId(),
       studentId: body.studentId,
       graduationOptionId: body.graduationOptionId,
-      date: new Date(body.date),
+      graduationDate,
       isGraduated: body.isGraduated ?? false,
       president: body.president.trim(),
       secretary: body.secretary.trim(),
@@ -356,7 +243,7 @@ export const graduationsHandlers = [
     return HttpResponse.json(
       {
         ...newGraduation,
-        date: newGraduation.date.toISOString().split('T')[0],
+        graduationDate: newGraduation.graduationDate.toISOString(),
         createdAt: newGraduation.createdAt.toISOString(),
         updatedAt: newGraduation.updatedAt.toISOString(),
       },
@@ -477,6 +364,47 @@ export const graduationsHandlers = [
       );
     }
 
+    // Validar que estudiantes pausados o cancelados no pueden estar graduados
+    if (
+      newIsGraduated === true &&
+      (currentStudent.status === StudentStatus.PAUSADO ||
+        currentStudent.status === StudentStatus.CANCELADO)
+    ) {
+      return HttpResponse.json(
+        {
+          error:
+            'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
+          code: 'INVALID_STUDENT_STATUS',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
+    if (newIsGraduated === true) {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      const graduationDateToCheck =
+        body.graduationDate !== undefined
+          ? body.graduationDate instanceof Date
+            ? body.graduationDate
+            : new Date(body.graduationDate)
+          : graduation.graduationDate;
+      const normalizedGraduationDate = new Date(graduationDateToCheck);
+      normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+      if (normalizedGraduationDate > currentDate) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
+            code: 'INVALID_GRADUATION_DATE',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Verificar que la opción de titulación existe (si se proporciona)
     if (body.graduationOptionId !== undefined && body.graduationOptionId) {
       const graduationOption = findGraduationOptionById(
@@ -499,7 +427,12 @@ export const graduationsHandlers = [
       body.graduationOptionId !== undefined
         ? body.graduationOptionId
         : graduation.graduationOptionId;
-    graduation.date = body.date ? new Date(body.date) : graduation.date;
+    if (body.graduationDate !== undefined) {
+      graduation.graduationDate =
+        body.graduationDate instanceof Date
+          ? body.graduationDate
+          : new Date(body.graduationDate);
+    }
     graduation.isGraduated = body.isGraduated ?? graduation.isGraduated;
     graduation.president = body.president?.trim() ?? graduation.president;
     graduation.secretary = body.secretary?.trim() ?? graduation.secretary;
@@ -512,7 +445,7 @@ export const graduationsHandlers = [
 
     return HttpResponse.json({
       ...graduation,
-      date: graduation.date.toISOString().split('T')[0],
+      graduationDate: graduation.graduationDate.toISOString(),
       createdAt: graduation.createdAt.toISOString(),
       updatedAt: graduation.updatedAt.toISOString(),
     });
@@ -634,6 +567,47 @@ export const graduationsHandlers = [
       );
     }
 
+    // Validar que estudiantes pausados o cancelados no pueden estar graduados
+    if (
+      newIsGraduated === true &&
+      (currentStudent.status === StudentStatus.PAUSADO ||
+        currentStudent.status === StudentStatus.CANCELADO)
+    ) {
+      return HttpResponse.json(
+        {
+          error:
+            'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
+          code: 'INVALID_STUDENT_STATUS',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
+    if (newIsGraduated === true) {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      const graduationDateToCheck =
+        body.graduationDate !== undefined
+          ? body.graduationDate instanceof Date
+            ? body.graduationDate
+            : new Date(body.graduationDate)
+          : graduation.graduationDate;
+      const normalizedGraduationDate = new Date(graduationDateToCheck);
+      normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+      if (normalizedGraduationDate > currentDate) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
+            code: 'INVALID_GRADUATION_DATE',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Verificar que la opción de titulación existe (si se proporciona)
     if (body.graduationOptionId !== undefined && body.graduationOptionId) {
       const graduationOption = findGraduationOptionById(
@@ -657,8 +631,11 @@ export const graduationsHandlers = [
     if (body.graduationOptionId !== undefined) {
       graduation.graduationOptionId = body.graduationOptionId;
     }
-    if (body.date !== undefined) {
-      graduation.date = new Date(body.date);
+    if (body.graduationDate !== undefined) {
+      graduation.graduationDate =
+        body.graduationDate instanceof Date
+          ? body.graduationDate
+          : new Date(body.graduationDate);
     }
     if (body.isGraduated !== undefined) {
       graduation.isGraduated = body.isGraduated;
@@ -682,7 +659,7 @@ export const graduationsHandlers = [
 
     return HttpResponse.json({
       ...graduation,
-      date: graduation.date.toISOString().split('T')[0],
+      graduationDate: graduation.graduationDate.toISOString(),
       createdAt: graduation.createdAt.toISOString(),
       updatedAt: graduation.updatedAt.toISOString(),
     });
@@ -713,4 +690,120 @@ export const graduationsHandlers = [
       message: 'Titulación eliminada exitosamente',
     });
   }),
+
+  // POST /graduations/:idStudent/graduate (Marcar como titulado)
+  http.post(
+    buildApiUrl('/graduations/:idStudent/graduate'),
+    async ({ params }) => {
+      await delay(300);
+
+      const { idStudent } = params;
+      const graduation = findGraduationByStudentId(idStudent as string);
+
+      if (!graduation) {
+        return HttpResponse.json(
+          {
+            error: 'Titulación no encontrada para este estudiante',
+            code: 'GRADUATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      // Validar que graduationDate sea menor o igual que la fecha actual
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Normalizar a inicio del día para comparación
+      const graduationDate = new Date(graduation.graduationDate);
+      graduationDate.setHours(0, 0, 0, 0); // Normalizar a inicio del día para comparación
+
+      if (graduationDate > currentDate) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
+            code: 'INVALID_GRADUATION_DATE',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Verificar que el estudiante existe y está egresado
+      const student = findStudentById(graduation.studentId);
+      if (!student) {
+        return HttpResponse.json(
+          {
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      if (!student.isEgressed) {
+        return HttpResponse.json(
+          {
+            error: 'Solo los estudiantes egresados pueden estar titulados',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que estudiantes pausados o cancelados no pueden estar graduados
+      if (
+        student.status === StudentStatus.PAUSADO ||
+        student.status === StudentStatus.CANCELADO
+      ) {
+        return HttpResponse.json(
+          {
+            error:
+              'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
+            code: 'INVALID_STUDENT_STATUS',
+          },
+          { status: 400 }
+        );
+      }
+
+      graduation.isGraduated = true;
+      graduation.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...graduation,
+        graduationDate: graduation.graduationDate.toISOString(),
+        createdAt: graduation.createdAt.toISOString(),
+        updatedAt: graduation.updatedAt.toISOString(),
+      });
+    }
+  ),
+
+  // POST /graduations/:idStudent/ungraduate (Desmarcar como titulado)
+  http.post(
+    buildApiUrl('/graduations/:idStudent/ungraduate'),
+    async ({ params }) => {
+      await delay(300);
+
+      const { idStudent } = params;
+      const graduation = findGraduationByStudentId(idStudent as string);
+
+      if (!graduation) {
+        return HttpResponse.json(
+          {
+            error: 'Titulación no encontrada para este estudiante',
+            code: 'GRADUATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      graduation.isGraduated = false;
+      graduation.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...graduation,
+        graduationDate: graduation.graduationDate.toISOString(),
+        createdAt: graduation.createdAt.toISOString(),
+        updatedAt: graduation.updatedAt.toISOString(),
+      });
+    }
+  ),
 ];

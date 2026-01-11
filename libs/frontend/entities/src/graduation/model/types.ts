@@ -2,7 +2,7 @@ export interface Graduation {
   id: string;
   studentId: string;
   graduationOptionId: string | null;
-  date: Date;
+  graduationDate: Date;
   isGraduated: boolean;
   president: string;
   secretary: string;

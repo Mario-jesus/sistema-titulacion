@@ -9,6 +9,8 @@ import {
   findStudentById,
   findStudentByControlNumber,
   generateStudentId,
+  findGraduationByStudentId,
+  findCapturedFieldsByStudentId,
 } from '../data';
 
 /**
@@ -59,6 +61,50 @@ interface PaginationData {
 
 interface ListResponse {
   data: Student[];
+  pagination: PaginationData;
+}
+
+interface InProgressStudent {
+  controlNumber: string;
+  fullName: string;
+  sex: string;
+  careerId: string;
+  graduationOptionId: string | null;
+  projectName: string | null;
+}
+
+interface InProgressListResponse {
+  data: InProgressStudent[];
+  pagination: PaginationData;
+}
+
+interface ScheduledStudent {
+  controlNumber: string;
+  fullName: string;
+  sex: string;
+  careerId: string;
+  graduationOptionId: string | null;
+  graduationDate: string | null;
+  isGraduated: boolean;
+}
+
+interface ScheduledListResponse {
+  data: ScheduledStudent[];
+  pagination: PaginationData;
+}
+
+interface GraduatedStudent {
+  controlNumber: string;
+  fullName: string;
+  sex: string;
+  careerId: string;
+  generationId: string;
+  graduationOptionId: string;
+  graduationDate: string;
+}
+
+interface GraduatedListResponse {
+  data: GraduatedStudent[];
   pagination: PaginationData;
 }
 
@@ -217,6 +263,606 @@ export const studentsHandlers = [
         createdAt: student.createdAt.toISOString(),
         updatedAt: student.updatedAt.toISOString(),
       })) as unknown as Student[],
+      pagination: {
+        total,
+        limit,
+        totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
+      },
+    };
+
+    return HttpResponse.json(response);
+  }),
+
+  // GET /students/in-progress (List Students In Progress)
+  http.get(buildApiUrl('/students/in-progress'), async ({ request }) => {
+    await delay(300);
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
+    const careerId = url.searchParams.get('careerId');
+    const generationId = url.searchParams.get('generationId');
+    const sex = url.searchParams.get('sex');
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = [
+      'fullName',
+      'controlNumber',
+      'sex',
+      'careerId',
+      'graduationOptionId',
+    ];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'fullName';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'fullName';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+
+    // Filtrar estudiantes en proceso
+    // Un estudiante está en proceso si:
+    // 1. Tiene status ACTIVO
+    // 2. No está titulado (no tiene Graduation o isGraduated=false)
+    // 3. No tiene datos en CapturedFields O no tiene datos en Graduation
+    //    (solo se considera en proceso si falta capturar datos en alguna de las dos tablas)
+    // 4. Si tiene datos en ambas tablas, aunque no esté titulado, NO es un estudiante en proceso
+    let filteredData = mockStudents.filter((student: Student) => {
+      // Debe tener status ACTIVO
+      if (student.status !== StudentStatus.ACTIVO) {
+        return false;
+      }
+
+      // Verificar si está titulado
+      const graduation = findGraduationByStudentId(student.id);
+      if (graduation && graduation.isGraduated === true) {
+        return false;
+      }
+
+      // Verificar si tiene datos en CapturedFields y Graduation
+      const capturedFields = findCapturedFieldsByStudentId(student.id);
+      const hasCapturedFields = capturedFields && capturedFields.length > 0;
+      const hasGraduation = graduation !== undefined;
+
+      // Si tiene datos en ambas tablas, NO está en proceso
+      // Solo está en proceso si falta capturar datos en al menos una tabla
+      if (hasCapturedFields && hasGraduation) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Filtrar por carrera si se especifica
+    if (careerId) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.careerId === careerId
+      );
+    }
+
+    // Filtrar por generación si se especifica
+    if (generationId) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.generationId === generationId
+      );
+    }
+
+    // Filtrar por sexo si se especifica
+    if (sex) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.sex === sex
+      );
+    }
+
+    // Búsqueda por texto (busca en nombre completo y número de control)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((student: Student) => {
+        const fullName =
+          `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.toLowerCase();
+        const controlMatch =
+          student.controlNumber?.toLowerCase().includes(searchLower) ?? false;
+        const nameMatch = fullName.includes(searchLower);
+        return controlMatch || nameMatch;
+      });
+    }
+
+    // Mapear a InProgressStudent y aplicar ordenamiento
+    let mappedData: InProgressStudent[] = filteredData.map(
+      (student: Student) => {
+        const graduation = findGraduationByStudentId(student.id);
+        const capturedFields = findCapturedFieldsByStudentId(student.id);
+        const fullName = `${student.firstName} ${student.paternalLastName} ${
+          student.maternalLastName || ''
+        }`.trim();
+
+        // Obtener projectName del primer registro de CapturedFields (si existe)
+        const projectName =
+          capturedFields && capturedFields.length > 0
+            ? capturedFields[0].projectName || null
+            : null;
+
+        return {
+          controlNumber: student.controlNumber || '',
+          fullName,
+          sex: student.sex || '',
+          careerId: student.careerId,
+          graduationOptionId: graduation?.graduationOptionId || null,
+          projectName,
+        };
+      }
+    );
+
+    // Ordenamiento
+    mappedData.sort((a, b) => {
+      let aValue: string | null;
+      let bValue: string | null;
+
+      switch (sortBy) {
+        case 'fullName':
+          aValue = a.fullName?.toLowerCase() ?? '';
+          bValue = b.fullName?.toLowerCase() ?? '';
+          break;
+        case 'controlNumber':
+          aValue = a.controlNumber?.toLowerCase() ?? '';
+          bValue = b.controlNumber?.toLowerCase() ?? '';
+          break;
+        case 'sex':
+          aValue = a.sex?.toLowerCase() ?? '';
+          bValue = b.sex?.toLowerCase() ?? '';
+          break;
+        case 'careerId':
+          aValue = a.careerId?.toLowerCase() ?? '';
+          bValue = b.careerId?.toLowerCase() ?? '';
+          break;
+        case 'graduationOptionId':
+          aValue = a.graduationOptionId?.toLowerCase() ?? '';
+          bValue = b.graduationOptionId?.toLowerCase() ?? '';
+          break;
+        default:
+          aValue = a.fullName?.toLowerCase() ?? '';
+          bValue = b.fullName?.toLowerCase() ?? '';
+      }
+
+      // Manejar valores null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Comparación (solo strings en este caso)
+      const comparison = aValue.localeCompare(bValue);
+
+      // Aplicar orden (asc o desc)
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    const total = mappedData.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const paginatedData = mappedData.slice(offset, offset + limit);
+
+    // Calcular pagingCounter (número del primer item de esta página)
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+
+    // Asegurar que page no exceda totalPages
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
+
+    const response: InProgressListResponse = {
+      data: paginatedData,
+      pagination: {
+        total,
+        limit,
+        totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
+      },
+    };
+
+    return HttpResponse.json(response);
+  }),
+
+  // GET /students/scheduled (List Scheduled Students)
+  http.get(buildApiUrl('/students/scheduled'), async ({ request }) => {
+    await delay(300);
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
+    const careerId = url.searchParams.get('careerId');
+    const generationId = url.searchParams.get('generationId');
+    const sex = url.searchParams.get('sex');
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = [
+      'fullName',
+      'controlNumber',
+      'sex',
+      'careerId',
+      'graduationOptionId',
+      'graduationDate',
+      'isGraduated',
+    ];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'fullName';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'fullName';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+
+    // Filtrar estudiantes programados
+    // Un estudiante está programado si:
+    // 1. Tiene status ACTIVO
+    // 2. No está titulado (isGraduated=false)
+    // 3. Ya tiene datos en AMBAS tablas: Graduation Y CapturedFields
+    let filteredData = mockStudents.filter((student: Student) => {
+      // Debe tener status ACTIVO
+      if (student.status !== StudentStatus.ACTIVO) {
+        return false;
+      }
+
+      // Verificar si está titulado
+      const graduation = findGraduationByStudentId(student.id);
+      if (graduation && graduation.isGraduated === true) {
+        return false;
+      }
+
+      // Verificar si tiene datos en CapturedFields y Graduation
+      const capturedFields = findCapturedFieldsByStudentId(student.id);
+      const hasCapturedFields = capturedFields && capturedFields.length > 0;
+      const hasGraduation = graduation !== undefined;
+
+      // Debe tener datos en AMBAS tablas
+      if (!hasCapturedFields || !hasGraduation) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Filtrar por carrera si se especifica
+    if (careerId) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.careerId === careerId
+      );
+    }
+
+    // Filtrar por generación si se especifica
+    if (generationId) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.generationId === generationId
+      );
+    }
+
+    // Filtrar por sexo si se especifica
+    if (sex) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.sex === sex
+      );
+    }
+
+    // Búsqueda por texto (busca en nombre completo y número de control)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((student: Student) => {
+        const fullName =
+          `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.toLowerCase();
+        const controlMatch =
+          student.controlNumber?.toLowerCase().includes(searchLower) ?? false;
+        const nameMatch = fullName.includes(searchLower);
+        return controlMatch || nameMatch;
+      });
+    }
+
+    // Mapear a ScheduledStudent y aplicar ordenamiento
+    let mappedData: ScheduledStudent[] = filteredData.map(
+      (student: Student) => {
+        const graduation = findGraduationByStudentId(student.id);
+        const fullName = `${student.firstName} ${student.paternalLastName} ${
+          student.maternalLastName || ''
+        }`.trim();
+
+        // Obtener datos de Graduation si existe
+        const graduationOptionId = graduation?.graduationOptionId || null;
+        const graduationDate = graduation?.graduationDate
+          ? graduation.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+          : null;
+        const isGraduated = graduation?.isGraduated || false;
+
+        return {
+          controlNumber: student.controlNumber || '',
+          fullName,
+          sex: student.sex || '',
+          careerId: student.careerId,
+          graduationOptionId,
+          graduationDate,
+          isGraduated,
+        };
+      }
+    );
+
+    // Ordenamiento
+    mappedData.sort((a, b) => {
+      let aValue: string | number | boolean | null;
+      let bValue: string | number | boolean | null;
+
+      switch (sortBy) {
+        case 'fullName':
+          aValue = a.fullName?.toLowerCase() ?? '';
+          bValue = b.fullName?.toLowerCase() ?? '';
+          break;
+        case 'controlNumber':
+          aValue = a.controlNumber?.toLowerCase() ?? '';
+          bValue = b.controlNumber?.toLowerCase() ?? '';
+          break;
+        case 'sex':
+          aValue = a.sex?.toLowerCase() ?? '';
+          bValue = b.sex?.toLowerCase() ?? '';
+          break;
+        case 'careerId':
+          aValue = a.careerId?.toLowerCase() ?? '';
+          bValue = b.careerId?.toLowerCase() ?? '';
+          break;
+        case 'graduationOptionId':
+          aValue = a.graduationOptionId?.toLowerCase() ?? '';
+          bValue = b.graduationOptionId?.toLowerCase() ?? '';
+          break;
+        case 'graduationDate':
+          aValue = a.graduationDate ?? '';
+          bValue = b.graduationDate ?? '';
+          break;
+        case 'isGraduated':
+          aValue = a.isGraduated ? 1 : 0;
+          bValue = b.isGraduated ? 1 : 0;
+          break;
+        default:
+          aValue = a.fullName?.toLowerCase() ?? '';
+          bValue = b.fullName?.toLowerCase() ?? '';
+      }
+
+      // Manejar valores null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Comparación
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      }
+
+      // Aplicar orden (asc o desc)
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    const total = mappedData.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const paginatedData = mappedData.slice(offset, offset + limit);
+
+    // Calcular pagingCounter (número del primer item de esta página)
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+
+    // Asegurar que page no exceda totalPages
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
+
+    const response: ScheduledListResponse = {
+      data: paginatedData,
+      pagination: {
+        total,
+        limit,
+        totalPages,
+        page: currentPage,
+        pagingCounter,
+        hasPrevPage,
+        hasNextPage,
+        prevPage: hasPrevPage ? currentPage - 1 : null,
+        nextPage: hasNextPage ? currentPage + 1 : null,
+      },
+    };
+
+    return HttpResponse.json(response);
+  }),
+
+  // GET /students/graduated (List Graduated Students)
+  http.get(buildApiUrl('/students/graduated'), async ({ request }) => {
+    await delay(300);
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+    const offset = (page - 1) * limit;
+
+    const careerId = url.searchParams.get('careerId');
+    const generationId = url.searchParams.get('generationId');
+    const sex = url.searchParams.get('sex');
+    const search =
+      url.searchParams.get('search') || url.searchParams.get('q') || '';
+
+    // Validar y normalizar parámetros de ordenamiento
+    const validSortFields = [
+      'fullName',
+      'controlNumber',
+      'sex',
+      'careerId',
+      'generationId',
+      'graduationOptionId',
+      'graduationDate',
+    ];
+    const requestedSortBy = url.searchParams.get('sortBy') || 'fullName';
+    const sortBy = validSortFields.includes(requestedSortBy)
+      ? requestedSortBy
+      : 'fullName';
+
+    const requestedSortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const sortOrder =
+      requestedSortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+
+    // Filtrar estudiantes titulados
+    // Un estudiante está titulado si:
+    // 1. Tiene status ACTIVO
+    // 2. Está titulado (tiene Graduation con isGraduated=true)
+    let filteredData = mockStudents.filter((student: Student) => {
+      // Debe tener status ACTIVO
+      if (student.status !== StudentStatus.ACTIVO) {
+        return false;
+      }
+
+      // Verificar si está titulado
+      const graduation = findGraduationByStudentId(student.id);
+      if (!graduation || graduation.isGraduated !== true) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Filtrar por carrera si se especifica
+    if (careerId) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.careerId === careerId
+      );
+    }
+
+    // Filtrar por generación si se especifica
+    if (generationId) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.generationId === generationId
+      );
+    }
+
+    // Filtrar por sexo si se especifica
+    if (sex) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.sex === sex
+      );
+    }
+
+    // Búsqueda por texto (busca en nombre completo y número de control)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filteredData = filteredData.filter((student: Student) => {
+        const fullName =
+          `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.toLowerCase();
+        const controlMatch =
+          student.controlNumber?.toLowerCase().includes(searchLower) ?? false;
+        const nameMatch = fullName.includes(searchLower);
+        return controlMatch || nameMatch;
+      });
+    }
+
+    // Mapear a GraduatedStudent y aplicar ordenamiento
+    let mappedData: GraduatedStudent[] = filteredData.map(
+      (student: Student) => {
+        const graduation = findGraduationByStudentId(student.id);
+        const fullName = `${student.firstName} ${student.paternalLastName} ${
+          student.maternalLastName || ''
+        }`.trim();
+
+        // Obtener datos de Graduation (siempre existe porque ya filtramos por isGraduated=true)
+        const graduationOptionId = graduation!.graduationOptionId || '';
+        const graduationDate = graduation!.graduationDate
+          ? graduation!.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+          : '';
+
+        return {
+          controlNumber: student.controlNumber || '',
+          fullName,
+          sex: student.sex || '',
+          careerId: student.careerId,
+          generationId: student.generationId,
+          graduationOptionId,
+          graduationDate,
+        };
+      }
+    );
+
+    // Ordenamiento
+    mappedData.sort((a, b) => {
+      let aValue: string | null;
+      let bValue: string | null;
+
+      switch (sortBy) {
+        case 'fullName':
+          aValue = a.fullName?.toLowerCase() ?? '';
+          bValue = b.fullName?.toLowerCase() ?? '';
+          break;
+        case 'controlNumber':
+          aValue = a.controlNumber?.toLowerCase() ?? '';
+          bValue = b.controlNumber?.toLowerCase() ?? '';
+          break;
+        case 'sex':
+          aValue = a.sex?.toLowerCase() ?? '';
+          bValue = b.sex?.toLowerCase() ?? '';
+          break;
+        case 'careerId':
+          aValue = a.careerId?.toLowerCase() ?? '';
+          bValue = b.careerId?.toLowerCase() ?? '';
+          break;
+        case 'generationId':
+          aValue = a.generationId?.toLowerCase() ?? '';
+          bValue = b.generationId?.toLowerCase() ?? '';
+          break;
+        case 'graduationOptionId':
+          aValue = a.graduationOptionId?.toLowerCase() ?? '';
+          bValue = b.graduationOptionId?.toLowerCase() ?? '';
+          break;
+        case 'graduationDate':
+          aValue = a.graduationDate ?? '';
+          bValue = b.graduationDate ?? '';
+          break;
+        default:
+          aValue = a.fullName?.toLowerCase() ?? '';
+          bValue = b.fullName?.toLowerCase() ?? '';
+      }
+
+      // Manejar valores null/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Comparación (solo strings en este caso)
+      const comparison = aValue.localeCompare(bValue);
+
+      // Aplicar orden (asc o desc)
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    const total = mappedData.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const paginatedData = mappedData.slice(offset, offset + limit);
+
+    // Calcular pagingCounter (número del primer item de esta página)
+    const pagingCounter = total > 0 ? offset + 1 : 0;
+
+    // Asegurar que page no exceda totalPages
+    const currentPage = Math.min(page, totalPages);
+    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
+
+    const response: GraduatedListResponse = {
+      data: paginatedData,
       pagination: {
         total,
         limit,
@@ -877,6 +1523,10 @@ export const studentsHandlers = [
         );
       }
 
+      // Verificar si el estudiante está graduado
+      const graduation = findGraduationByStudentId(student.id);
+      const isGraduated = graduation?.isGraduated === true;
+
       // Validar transición de status
       // Cancelado no puede cambiar de status
       if (student.status === StudentStatus.CANCELADO) {
@@ -889,7 +1539,34 @@ export const studentsHandlers = [
         );
       }
 
-      // Activo solo puede pasar a Pausado o Cancelado
+      // Si el estudiante está graduado, no puede ser pausado ni cancelado
+      if (isGraduated) {
+        if (
+          body.status === StudentStatus.PAUSADO ||
+          body.status === StudentStatus.CANCELADO
+        ) {
+          return HttpResponse.json(
+            {
+              error: 'Un estudiante graduado no puede ser pausado ni cancelado',
+              code: 'INVALID_STATUS_TRANSITION',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Si el estudiante está egresado, no puede ser cancelado
+      if (student.isEgressed && body.status === StudentStatus.CANCELADO) {
+        return HttpResponse.json(
+          {
+            error: 'Un estudiante egresado no puede ser cancelado',
+            code: 'INVALID_STATUS_TRANSITION',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Activo solo puede pasar a Pausado o Cancelado (si no está graduado o egresado)
       if (student.status === StudentStatus.ACTIVO) {
         if (
           body.status !== StudentStatus.PAUSADO &&
