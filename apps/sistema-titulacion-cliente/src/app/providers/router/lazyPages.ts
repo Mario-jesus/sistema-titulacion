@@ -67,3 +67,21 @@ export const StudentsPage = lazy(() =>
     default: module.StudentsPage,
   }))
 );
+
+export const StudentsInProgressPage = lazy(() =>
+  import('@pages/StudentsInProgressPage').then((module) => ({
+    default: module.StudentsInProgressPage,
+  }))
+);
+
+export const StudentsScheduledPage = lazy(() =>
+  import('@pages/StudentsScheduledPage').then((module) => ({
+    default: module.StudentsScheduledPage,
+  }))
+);
+
+export const StudentsGraduatedPage = lazy(() =>
+  import('@pages/StudentsGraduatedPage').then((module) => ({
+    default: module.StudentsGraduatedPage,
+  }))
+);

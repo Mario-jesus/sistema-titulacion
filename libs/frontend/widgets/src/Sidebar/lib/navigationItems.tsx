@@ -66,6 +66,11 @@ export const createDefaultNavigationItems = (): SidebarItem[] => [
         path: '/students/in-progress',
       },
       {
+        id: 'alumnos-programados',
+        label: 'Programados',
+        path: '/students/scheduled',
+      },
+      {
         id: 'alumnos-titulados',
         label: 'Titulados',
         path: '/students/graduated',

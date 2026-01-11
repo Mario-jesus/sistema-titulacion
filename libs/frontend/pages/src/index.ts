@@ -7,3 +7,6 @@ export * from './ModalitiesPage';
 export * from './QuotasPage';
 export * from './IngressEgressPage';
 export * from './StudentsPage';
+export * from './StudentsInProgressPage';
+export * from './StudentsScheduledPage';
+export * from './StudentsGraduatedPage';

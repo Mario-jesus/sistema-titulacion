@@ -1,0 +1,11 @@
+import { StudentsInProgressList } from '@features/students/ui';
+
+/**
+ * Página de Estudiantes en Proceso
+ *
+ * Componente de orquestación que renderiza el componente de la feature.
+ * No contiene lógica de negocio, solo composición.
+ */
+export function StudentsInProgressPage() {
+  return <StudentsInProgressList />;
+}

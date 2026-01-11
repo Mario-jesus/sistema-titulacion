@@ -1,0 +1,1 @@
+export { StudentsGraduatedPage } from './StudentsGraduatedPage';
