@@ -394,7 +394,7 @@ export function StudentForm({
       title={mode === 'create' ? 'Crear Estudiante' : 'Editar Estudiante'}
       isOpen={isOpen}
       onClose={handleClose}
-      maxWidth="lg"
+      maxWidth="xl"
     >
       {/* Pestañas */}
       <div className="flex border-b border-gray-3-light dark:border-gray-6-dark mb-4">
@@ -407,10 +407,10 @@ export function StudentForm({
               onClick={() => !disabled && setActiveTab(tab.id)}
               disabled={disabled}
               className={`
-                px-4 py-2 text-sm font-medium border-b-2 transition-colors
+                px-4 py-2 text-sm font-medium border-b-2 transition-colors cursor-pointer
                 ${
                   activeTab === tab.id
-                    ? 'border-(--color-primary-color) text-(--color-primary-color)'
+                    ? 'border-(--color-primary-color) text-(--color-primary-color) dark:brightness-130'
                     : disabled
                     ? 'border-transparent text-(--color-base-secondary-typo) opacity-50 cursor-not-allowed'
                     : 'border-transparent text-(--color-base-secondary-typo) hover:text-(--color-base-primary-typo)'

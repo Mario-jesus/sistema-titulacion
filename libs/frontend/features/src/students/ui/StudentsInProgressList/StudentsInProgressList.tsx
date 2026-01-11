@@ -23,11 +23,15 @@ import type {
 import { loadGenerations } from '../../api/generationsHelper';
 import { loadCareers } from '../../api/careersHelper';
 import { loadGraduationOptions } from '@features/graduations/api/graduationOptionsHelper';
+import { findCapturedFieldsByStudentId } from '@features/captured-fields/api/studentHelper';
+import { findGraduationByStudentId } from '@features/graduations/api/studentHelper';
 import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import type { GraduationOption } from '@entities/graduation-option';
 import type { Student } from '@entities/student';
 import { StudentStatus } from '@entities/student';
+import type { CapturedFields } from '@entities/captured-fields';
+import type { Graduation } from '@entities/graduation';
 
 /**
  * Componente para listar estudiantes en proceso de titulación
@@ -70,9 +74,11 @@ export function StudentsInProgressList() {
   // Estados para modales
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedInProgressStudent, setSelectedInProgressStudent] =
-    useState<InProgressStudent | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedCapturedFields, setSelectedCapturedFields] =
+    useState<CapturedFields | null>(null);
+  const [selectedGraduation, setSelectedGraduation] =
+    useState<Graduation | null>(null);
 
   // Cargar generaciones y carreras al montar
   useEffect(() => {
@@ -100,6 +106,15 @@ export function StudentsInProgressList() {
         console.error('Error al cargar opciones de graduación:', error);
       });
   }, []);
+
+  // Helper para obtener nombre de generación
+  const getGenerationName = useCallback(
+    (generationId: string) => {
+      const generation = generations.find((g) => g.id === generationId);
+      return generation?.name || generationId;
+    },
+    [generations]
+  );
 
   // Helper para obtener nombre de carrera
   const getCareerName = useCallback(
@@ -163,7 +178,7 @@ export function StudentsInProgressList() {
         // Buscar estudiante por controlNumber usando el endpoint de búsqueda
         const response = await studentsService.list({
           search: controlNumber,
-          limit: 1,
+          limit: 10, // Aumentar límite para mejorar chances de encontrar el estudiante
         });
 
         // Buscar el estudiante que coincida exactamente con el controlNumber
@@ -172,6 +187,12 @@ export function StudentsInProgressList() {
         );
 
         if (student) {
+          // Si el estudiante tiene todos los campos necesarios, usarlo directamente
+          // De lo contrario, obtener el estudiante completo por ID
+          if (student.email && student.phoneNumber) {
+            // El estudiante del listado parece tener todos los campos
+            return student;
+          }
           // Obtener el estudiante completo por ID para asegurar que tenemos todos los datos
           const fullStudent = await getStudentById(student.id);
           return fullStudent.success ? fullStudent.data : null;
@@ -189,17 +210,38 @@ export function StudentsInProgressList() {
   // Abrir modal de detalles
   const handleOpenDetail = useCallback(
     async (inProgressStudent: InProgressStudent) => {
-      setSelectedInProgressStudent(inProgressStudent);
+      // Abrir modal inmediatamente para mejor UX
       setIsDetailModalOpen(true);
+      // Limpiar datos previos mientras cargamos los nuevos
+      setSelectedStudent(null);
+      setSelectedCapturedFields(null);
+      setSelectedGraduation(null);
 
       try {
         const student = await fetchStudentByControlNumber(
           inProgressStudent.controlNumber
         );
-        setSelectedStudent(student);
+
+        if (student) {
+          setSelectedStudent(student);
+
+          // Cargar datos relacionados en paralelo
+          const [capturedFields, graduation] = await Promise.all([
+            findCapturedFieldsByStudentId(student.id),
+            findGraduationByStudentId(student.id),
+          ]);
+          setSelectedCapturedFields(capturedFields);
+          setSelectedGraduation(graduation);
+        } else {
+          setSelectedStudent(null);
+          setSelectedCapturedFields(null);
+          setSelectedGraduation(null);
+        }
       } catch (error) {
         console.error('Error al cargar estudiante:', error);
         setSelectedStudent(null);
+        setSelectedCapturedFields(null);
+        setSelectedGraduation(null);
       }
     },
     [fetchStudentByControlNumber]
@@ -413,16 +455,58 @@ export function StudentsInProgressList() {
     [handleOpenDetail, handleOpenEdit, handleDelete, handleStatusChange]
   );
 
-  // Campos para el modal de detalles
-  const detailFields: DetailField<InProgressStudent>[] = useMemo(
-    () => [
+  // Obtener label del status
+  const getStatusLabel = useCallback((status: StudentStatus) => {
+    switch (status) {
+      case StudentStatus.ACTIVO:
+        return 'Activo';
+      case StudentStatus.PAUSADO:
+        return 'Pausado';
+      case StudentStatus.CANCELADO:
+        return 'Cancelado';
+      default:
+        return status;
+    }
+  }, []);
+
+  // Campos para el modal de detalles (incluyendo CapturedFields y Graduation)
+  const detailFields: DetailField<any>[] = useMemo(() => {
+    const fields: DetailField<any>[] = [
       {
         key: 'controlNumber',
         label: 'Número de Control',
       },
       {
-        key: 'fullName',
-        label: 'Nombre Completo',
+        key: 'firstName',
+        label: 'Nombre',
+      },
+      {
+        key: 'paternalLastName',
+        label: 'Apellido Paterno',
+      },
+      {
+        key: 'maternalLastName',
+        label: 'Apellido Materno',
+      },
+      {
+        key: 'email',
+        label: 'Email',
+      },
+      {
+        key: 'phoneNumber',
+        label: 'Teléfono',
+      },
+      {
+        key: 'birthDate',
+        label: 'Fecha de Nacimiento',
+        render: (value: Date | string) => {
+          const date = value instanceof Date ? value : new Date(value);
+          return date.toLocaleDateString('es-MX', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        },
       },
       {
         key: 'sex',
@@ -431,23 +515,195 @@ export function StudentsInProgressList() {
           value === 'MASCULINO' ? 'Masculino' : 'Femenino',
       },
       {
+        key: 'generationId',
+        label: 'Generación',
+        render: (value: string) => getGenerationName(value),
+      },
+      {
         key: 'careerId',
         label: 'Carrera',
         render: (value: string) => getCareerName(value),
       },
       {
-        key: 'graduationOptionId',
-        label: 'Opción de Titulación',
-        render: (value: string | null) => getGraduationOptionName(value),
+        key: 'status',
+        label: 'Estado',
+        render: (value: StudentStatus) => {
+          let statusColor = 'text-(--color-green)';
+          if (value === StudentStatus.PAUSADO) {
+            statusColor = 'text-(--color-yellow)';
+          } else if (value === StudentStatus.CANCELADO) {
+            statusColor = 'text-(--color-salmon)';
+          }
+          return (
+            <span className={`${statusColor} font-medium`}>
+              {getStatusLabel(value)}
+            </span>
+          );
+        },
       },
       {
-        key: 'projectName',
-        label: 'Nombre del Proyecto',
-        render: (value: string | null) => value || '—',
+        key: 'isEgressed',
+        label: 'Egresado',
+        render: (value: boolean) => (
+          <span
+            className={
+              value
+                ? 'text-(--color-green) font-medium'
+                : 'text-(--color-yellow)'
+            }
+          >
+            {value ? 'Sí' : 'No'}
+          </span>
+        ),
       },
-    ],
-    [getCareerName, getGraduationOptionName]
-  );
+      {
+        key: 'createdAt',
+        label: 'Fecha de Creación',
+        render: (value: Date | string) => {
+          const date = value instanceof Date ? value : new Date(value);
+          return date.toLocaleDateString('es-MX', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        },
+      },
+      {
+        key: 'updatedAt',
+        label: 'Última Actualización',
+        render: (value: Date | string) => {
+          const date = value instanceof Date ? value : new Date(value);
+          return date.toLocaleDateString('es-MX', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        },
+      },
+    ];
+
+    // Separador y campos de CapturedFields
+    fields.push({
+      key: '__separator_1__',
+      label: '',
+      isSeparator: true,
+    });
+
+    fields.push(
+      {
+        key: '__capturedFields_projectName__',
+        label: 'Nombre del Proyecto',
+        render: () => selectedCapturedFields?.projectName || '—',
+      },
+      {
+        key: '__capturedFields_company__',
+        label: 'Empresa',
+        render: () => selectedCapturedFields?.company || '—',
+      },
+      {
+        key: '__capturedFields_processDate__',
+        label: 'Fecha del Proceso',
+        render: () => {
+          if (!selectedCapturedFields?.processDate) return '—';
+          const date =
+            selectedCapturedFields.processDate instanceof Date
+              ? selectedCapturedFields.processDate
+              : new Date(selectedCapturedFields.processDate);
+          return date.toLocaleDateString('es-MX', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        },
+      }
+    );
+
+    // Separador y campos de Graduation
+    fields.push({
+      key: '__separator_2__',
+      label: '',
+      isSeparator: true,
+    });
+
+    fields.push(
+      {
+        key: '__graduation_graduationOptionId__',
+        label: 'Opción de Titulación',
+        render: () =>
+          getGraduationOptionName(
+            selectedGraduation?.graduationOptionId ?? null
+          ),
+      },
+      {
+        key: '__graduation_graduationDate__',
+        label: 'Fecha de Titulación',
+        render: () => {
+          if (!selectedGraduation?.graduationDate) return '—';
+          const date =
+            selectedGraduation.graduationDate instanceof Date
+              ? selectedGraduation.graduationDate
+              : new Date(selectedGraduation.graduationDate);
+          return date.toLocaleDateString('es-MX', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+        },
+      },
+      {
+        key: '__graduation_isGraduated__',
+        label: 'Titulado',
+        render: () => (
+          <span
+            className={
+              selectedGraduation?.isGraduated
+                ? 'text-(--color-green) font-medium'
+                : 'text-(--color-yellow)'
+            }
+          >
+            {selectedGraduation?.isGraduated ? 'Sí' : 'No'}
+          </span>
+        ),
+      },
+      {
+        key: '__graduation_president__',
+        label: 'Presidente del Comité',
+        render: () => selectedGraduation?.president || '—',
+      },
+      {
+        key: '__graduation_secretary__',
+        label: 'Secretario del Comité',
+        render: () => selectedGraduation?.secretary || '—',
+      },
+      {
+        key: '__graduation_vocal__',
+        label: 'Vocal del Comité',
+        render: () => selectedGraduation?.vocal || '—',
+      },
+      {
+        key: '__graduation_substituteVocal__',
+        label: 'Vocal Suplente del Comité',
+        render: () => selectedGraduation?.substituteVocal || '—',
+      },
+      {
+        key: '__graduation_notes__',
+        label: 'Notas',
+        render: () => selectedGraduation?.notes || '—',
+        fullWidth: true,
+      }
+    );
+
+    return fields;
+  }, [
+    getGenerationName,
+    getCareerName,
+    getStatusLabel,
+    getGraduationOptionName,
+    selectedCapturedFields,
+    selectedGraduation,
+  ]);
 
   useEffect(() => {
     loadStudents();
@@ -664,12 +920,13 @@ export function StudentsInProgressList() {
       {/* Modal de detalles */}
       <DetailModal
         title="Detalles del Estudiante en Proceso"
-        data={selectedInProgressStudent}
+        data={selectedStudent}
         isOpen={isDetailModalOpen}
         onClose={() => {
           setIsDetailModalOpen(false);
-          setSelectedInProgressStudent(null);
           setSelectedStudent(null);
+          setSelectedCapturedFields(null);
+          setSelectedGraduation(null);
         }}
         fields={detailFields}
         maxWidth="lg"
