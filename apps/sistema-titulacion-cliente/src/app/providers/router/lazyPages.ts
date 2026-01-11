@@ -61,3 +61,9 @@ export const IngressEgressPage = lazy(() =>
     default: module.IngressEgressPage,
   }))
 );
+
+export const StudentsPage = lazy(() =>
+  import('@pages/StudentsPage').then((module) => ({
+    default: module.StudentsPage,
+  }))
+);

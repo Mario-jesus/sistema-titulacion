@@ -13,6 +13,7 @@ import {
   ModalitiesPage,
   IngressEgressPage,
   QuotasPage,
+  StudentsPage,
 } from './lazyPages';
 
 export function AppRouter() {
@@ -108,10 +109,7 @@ export function AppRouter() {
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Alumnos"
-                    description="Esta sección está en desarrollo. Aquí podrás gestionar la información de los alumnos."
-                  />
+                  <StudentsPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
@@ -125,8 +123,8 @@ export function AppRouter() {
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
                   <ComingSoonPage
-                    title="Alumnos - En Proceso"
-                    description="Esta sección está en desarrollo. Aquí podrás ver los alumnos que están en proceso de titulación."
+                    title="Estudiantes - En Proceso"
+                    description="Esta sección está en desarrollo. Aquí podrás ver los estudiantes que están en proceso de titulación."
                   />
                 </Suspense>
               </LayoutWithSidebar>
@@ -141,8 +139,8 @@ export function AppRouter() {
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
                   <ComingSoonPage
-                    title="Alumnos - Titulados"
-                    description="Esta sección está en desarrollo. Aquí podrás ver los alumnos que ya están titulados."
+                    title="Estudiantes - Titulados"
+                    description="Esta sección está en desarrollo. Aquí podrás ver los estudiantes que ya están titulados."
                   />
                 </Suspense>
               </LayoutWithSidebar>

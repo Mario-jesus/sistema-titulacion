@@ -18,3 +18,6 @@ export * from './quotas';
 
 // Ingress-Egress feature
 export * from './ingress-egress';
+
+// Students feature
+export * from './students';

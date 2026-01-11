@@ -6,3 +6,4 @@ export * from './CareersPage';
 export * from './ModalitiesPage';
 export * from './QuotasPage';
 export * from './IngressEgressPage';
+export * from './StudentsPage';
