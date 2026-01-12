@@ -120,4 +120,14 @@ export const API_ENDPOINTS = {
     DETAIL: (generationId: string, careerId: string) =>
       `/ingress-egress/${generationId}/${careerId}`,
   },
+  // Respaldos
+  BACKUPS: {
+    LIST: '/backups',
+    DETAIL: (id: string) => `/backups/${id}`,
+    CREATE: '/backups',
+    DELETE: (id: string) => `/backups/${id}`,
+    DOWNLOAD: (id: string) => `/backups/${id}/download`,
+    RESTORE: (id: string) => `/backups/${id}/restore`,
+    UPLOAD: '/backups/upload',
+  },
 } as const;

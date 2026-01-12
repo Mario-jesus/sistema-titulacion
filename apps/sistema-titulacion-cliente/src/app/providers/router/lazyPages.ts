@@ -97,3 +97,9 @@ export const StudentsGraduatedPage = lazy(() =>
     default: module.StudentsGraduatedPage,
   }))
 );
+
+export const BackupsPage = lazy(() =>
+  import('@pages/BackupsPage').then((module) => ({
+    default: module.BackupsPage,
+  }))
+);

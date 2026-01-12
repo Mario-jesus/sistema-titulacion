@@ -36,9 +36,6 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../shared/tsconfig.lib.json"
-    },
-    {
       "path": "../features/tsconfig.lib.json"
     }
   ]

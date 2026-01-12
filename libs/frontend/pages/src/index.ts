@@ -12,3 +12,4 @@ export * from './StudentsInProgressPage';
 export * from './StudentsScheduledPage';
 export * from './StudentsGraduatedPage';
 export * from './AccessesPage';
+export * from './BackupsPage';

@@ -49,3 +49,5 @@ export {
   findGraduationByStudentId,
   generateGraduationId,
 } from './graduations';
+export { mockBackups, findBackupById, generateBackupId } from './backups';
+export type { Backup, BackupStatus } from './backups';

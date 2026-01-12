@@ -16,6 +16,7 @@ import { ingressEgressReducer } from '@features/ingress-egress';
 import { studentsReducer } from '@features/students';
 import { capturedFieldsReducer } from '@features/captured-fields';
 import { graduationsReducer } from '@features/graduations';
+import { backupsReducer } from '@features/backups';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -33,6 +34,7 @@ export const store = configureStore({
     students: studentsReducer,
     capturedFields: capturedFieldsReducer,
     graduations: graduationsReducer,
+    backups: backupsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

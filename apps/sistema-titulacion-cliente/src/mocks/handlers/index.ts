@@ -11,6 +11,7 @@ import { capturedFieldsHandlers } from './captured-fields.handlers';
 import { graduationsHandlers } from './graduations.handlers';
 import { ingressEgressHandlers } from './ingress-egress.handlers';
 import { dashboardHandlers } from './dashboard.handlers';
+import { backupsHandlers } from './backups.handlers';
 
 /**
  * Combina todos los handlers de diferentes módulos
@@ -34,6 +35,7 @@ export const handlers: HttpHandler[] = [
   ...graduationsHandlers,
   ...ingressEgressHandlers,
   ...dashboardHandlers,
+  ...backupsHandlers,
   // Agrega más handlers aquí cuando los necesites:
   // ...modulesHandlers,
   // etc.

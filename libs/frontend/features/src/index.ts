@@ -33,3 +33,6 @@ export * from './users';
 
 // Dashboard feature
 export * from './dashboard';
+
+// Backups feature
+export * from './backups';

@@ -19,6 +19,7 @@ import {
   StudentsInProgressPage,
   StudentsScheduledPage,
   StudentsGraduatedPage,
+  BackupsPage,
 } from './lazyPages';
 
 export function AppRouter() {
@@ -218,10 +219,7 @@ export function AppRouter() {
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Respaldos"
-                    description="Esta sección está en desarrollo. Aquí podrás gestionar los respaldos del sistema."
-                  />
+                  <BackupsPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>
