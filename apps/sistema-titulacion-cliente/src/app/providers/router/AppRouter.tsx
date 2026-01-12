@@ -7,6 +7,7 @@ import { PageLoader } from './components';
 import {
   LoginPage,
   ComingSoonPage,
+  DashboardPage,
   AccessesPage,
   GenerationsPage,
   GraduationOptionsPage,
@@ -45,10 +46,7 @@ export function AppRouter() {
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Panel"
-                    description="Esta sección está en desarrollo. Aquí podrás ver el resumen general del sistema."
-                  />
+                  <DashboardPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>

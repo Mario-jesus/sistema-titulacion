@@ -30,3 +30,6 @@ export * from './graduations';
 
 // Users feature
 export * from './users';
+
+// Dashboard feature
+export * from './dashboard';

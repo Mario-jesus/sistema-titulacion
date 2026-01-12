@@ -26,6 +26,12 @@ export const ComingSoonPage = lazy(() =>
   }))
 );
 
+export const DashboardPage = lazy(() =>
+  import('@pages/DashboardPage').then((module) => ({
+    default: module.DashboardPage,
+  }))
+);
+
 export const AccessesPage = lazy(() =>
   import('@pages/AccessesPage').then((module) => ({
     default: module.AccessesPage,

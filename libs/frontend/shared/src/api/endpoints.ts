@@ -22,6 +22,10 @@ export const API_ENDPOINTS = {
     DEACTIVATE: (id: string) => `/users/${id}/deactivate`,
     CHANGE_PASSWORD: (id: string) => `/users/${id}/change-password`,
   },
+  // Dashboard
+  DASHBOARD: {
+    GET: '/dashboard',
+  },
   // Opciones de Titulación
   GRADUATION_OPTIONS: {
     LIST: '/graduation-options',

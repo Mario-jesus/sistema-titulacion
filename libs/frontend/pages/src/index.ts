@@ -1,5 +1,6 @@
 export * from './LoginPage';
 export * from './ComingSoonPage';
+export * from './DashboardPage';
 export * from './GenerationsPage';
 export * from './GraduationOptionsPage';
 export * from './CareersPage';
