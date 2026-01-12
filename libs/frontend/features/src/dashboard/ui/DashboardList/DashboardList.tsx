@@ -93,11 +93,14 @@ export function DashboardList() {
 
   const {
     stats,
-    ingressEgressByGeneration,
+    ingressEgressByGeneration: rawIngressEgressByGeneration,
     statusDistribution,
     studentsByCareer,
     recentStudents,
   } = data;
+
+  // Limitar a máximo 6 generaciones (las más recientes)
+  const ingressEgressByGeneration = rawIngressEgressByGeneration.slice(-6);
 
   // Agregar colores a statusDistribution para el gráfico de pastel
   const statusDistributionWithColors: Array<

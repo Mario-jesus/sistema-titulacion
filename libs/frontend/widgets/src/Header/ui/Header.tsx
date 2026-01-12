@@ -19,7 +19,7 @@ export function Header({
 
   return (
     <header
-      className={`flex items-center justify-between px-3 md:px-6 py-3 md:py-4 rounded-lg relative z-10 max-h-17 bg-(--color-component-bg) ${className}`}
+      className={`flex items-center justify-between px-3 md:px-6 py-3 md:py-4 rounded-lg shadow-2xs dark:shadow-gray-3-dark relative z-10 max-h-17 bg-(--color-component-bg) ${className}`}
     >
       {/* Sección izquierda: Botón menú móvil y Título */}
       <div className="flex items-center gap-4 flex-1 min-w-0">

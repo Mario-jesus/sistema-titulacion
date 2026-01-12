@@ -181,17 +181,27 @@ function calculateIngressEgressByGeneration(): IngressEgressByGeneration[] {
         student.generationId === generation.id && student.isEgressed === true
     ).length;
 
+    // Formato: "startYear-endYear"
+    const startYear = generation.startYear.getFullYear();
+    const endYear = generation.endYear.getFullYear();
+    const generationLabel = `${startYear}-${endYear}`;
+
     result.set(generation.id, {
-      generation: generation.name as string,
+      generation: generationLabel,
       generationId: generation.id,
       admissions,
       egresses,
     });
   });
 
-  return Array.from(result.values()).sort((a, b) =>
-    a.generation.localeCompare(b.generation)
-  );
+  return Array.from(result.values())
+    .sort((a, b) => {
+      // Ordenar por año de inicio (ascendente)
+      const aStartYear = parseInt(a.generation.split('-')[0] || '0', 10);
+      const bStartYear = parseInt(b.generation.split('-')[0] || '0', 10);
+      return aStartYear - bStartYear;
+    })
+    .slice(-6); // Máximo 6 generaciones más recientes
 }
 
 /**
