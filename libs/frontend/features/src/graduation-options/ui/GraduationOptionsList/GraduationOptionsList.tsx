@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { PageHeader } from '@widgets/PageHeader';
 import {
   Table,
-  Button,
   useToast,
   FilterDropdown,
   createStatusActions,
@@ -25,14 +24,12 @@ export function GraduationOptionsList() {
     graduationOptions,
     pagination,
     isLoadingList,
-    listError,
     listGraduationOptions,
     createGraduationOption,
     updateGraduationOption,
     deleteGraduationOption,
     activateGraduationOption,
     deactivateGraduationOption,
-    clearListErrors,
   } = useGraduationOptions();
 
   // Estados locales
@@ -52,32 +49,30 @@ export function GraduationOptionsList() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedOption, setSelectedOption] =
-    useState<GraduationOption | null>(null);
+  const [selectedOption, setSelectedOption] = useState<GraduationOption | null>(
+    null
+  );
 
   // Obtener activeOnly de filters
   const activeOnly = filters.activeOnly === true;
 
   // Cargar opciones de titulación
   const loadGraduationOptions = useCallback(async () => {
-    try {
-      await listGraduationOptions({
-        page,
-        limit: 10,
-        search: searchTerm || undefined,
-        activeOnly: activeOnly || undefined,
-        // Solo incluir sortBy y sortOrder si ambos están definidos
-        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
-      });
-    } catch (error) {
-      console.error('Error al cargar opciones de titulación:', error);
+    const result = await listGraduationOptions({
+      page,
+      limit: 10,
+      search: searchTerm || undefined,
+      activeOnly: activeOnly || undefined,
+      // Solo incluir sortBy y sortOrder si ambos están definidos
+      ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+    });
+
+    if (!result.success) {
       showToast({
         type: 'error',
         title: 'Error al cargar opciones de titulación',
         message:
-          error instanceof Error
-            ? error.message
-            : 'No se pudieron cargar las opciones de titulación',
+          result.error || 'No se pudieron cargar las opciones de titulación',
       });
     }
   }, [
@@ -95,13 +90,10 @@ export function GraduationOptionsList() {
   }, [loadGraduationOptions]);
 
   // Manejar búsqueda
-  const handleSearch = useCallback(
-    (value: string) => {
-      setSearchTerm(value);
-      setPage(1);
-    },
-    []
-  );
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  }, []);
 
   // Manejar ordenamiento
   const handleSort = useCallback(
@@ -468,39 +460,9 @@ export function GraduationOptionsList() {
 
       {/* Contenedor para Table y Paginación */}
       <div className="flex flex-col gap-6 rounded-lg p-6 bg-(--color-component-bg)">
-        {listError && (
-          <div
-            className="p-4 rounded-lg"
-            style={{
-              backgroundColor: 'var(--color-error-bg)',
-              color: 'var(--color-error-typo)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span>{listError}</span>
-              <Button
-                variant="ghost"
-                size="small"
-                onClick={() => {
-                  clearListErrors();
-                  showToast({
-                    type: 'info',
-                    title: 'Error limpiado',
-                    message: 'El mensaje de error se ha ocultado',
-                  });
-                }}
-              >
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        )}
-
         {isLoadingList ? (
           <div className="flex items-center justify-center py-12">
-            <div
-              className="w-12 h-12 border-4 border-(--color-gray-1) border-t-(--color-primary-color) rounded-full animate-spin"
-            />
+            <div className="w-12 h-12 border-4 border-(--color-gray-1) border-t-(--color-primary-color) rounded-full animate-spin" />
           </div>
         ) : (
           <Table

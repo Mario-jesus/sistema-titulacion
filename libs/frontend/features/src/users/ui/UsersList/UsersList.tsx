@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { PageHeader } from '@widgets/PageHeader';
 import {
   Table,
-  Button,
   useToast,
   FilterDropdown,
   createStatusActions,
@@ -28,7 +27,6 @@ export function UsersList() {
     users,
     pagination,
     isLoadingList,
-    listError,
     listUsers,
     createUser,
     updateUser,
@@ -36,7 +34,6 @@ export function UsersList() {
     activateUser,
     deactivateUser,
     changePassword,
-    clearListErrors,
   } = useUsers();
 
   // Estados locales
@@ -540,34 +537,6 @@ export function UsersList() {
 
       {/* Contenedor para Table y Paginación */}
       <div className="flex flex-col gap-6 rounded-lg p-6 bg-(--color-component-bg)">
-        {listError && (
-          <div
-            className="p-4 rounded-lg"
-            style={{
-              backgroundColor: 'var(--color-error-bg)',
-              color: 'var(--color-error-typo)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span>{listError}</span>
-              <Button
-                variant="ghost"
-                size="small"
-                onClick={() => {
-                  clearListErrors();
-                  showToast({
-                    type: 'info',
-                    title: 'Error limpiado',
-                    message: 'El mensaje de error se ha ocultado',
-                  });
-                }}
-              >
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        )}
-
         {isLoadingList ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-12 h-12 border-4 border-(--color-gray-1) border-t-(--color-primary-color) rounded-full animate-spin" />

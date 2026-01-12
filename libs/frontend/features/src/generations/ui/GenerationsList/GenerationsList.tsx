@@ -1,6 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { PageHeader } from '@widgets/PageHeader';
-import { Table, Button, useToast, FilterDropdown, createStatusActions, Pagination } from '@shared/ui';
+import {
+  Table,
+  useToast,
+  FilterDropdown,
+  createStatusActions,
+  Pagination,
+} from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { useGenerations } from '../../lib/useGenerations';
@@ -18,14 +24,12 @@ export function GenerationsList() {
     generations,
     pagination,
     isLoadingList,
-    listError,
     listGenerations,
     createGeneration,
     updateGeneration,
     deleteGeneration,
     activateGeneration,
     deactivateGeneration,
-    clearListErrors,
   } = useGenerations();
 
   // Estados locales
@@ -35,7 +39,9 @@ export function GenerationsList() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
 
   // Estados para filtros
-  const [filters, setFilters] = useState<Record<string, string | string[] | boolean>>({});
+  const [filters, setFilters] = useState<
+    Record<string, string | string[] | boolean>
+  >({});
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -51,37 +57,41 @@ export function GenerationsList() {
 
   // Cargar generaciones
   const loadGenerations = useCallback(async () => {
-    try {
-      await listGenerations({
-        page,
-        limit: 10,
-        search: searchTerm || undefined,
-        activeOnly: activeOnly || undefined,
-        // Solo incluir sortBy y sortOrder si ambos están definidos
-        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
-      });
-    } catch (error) {
-      console.error('Error al cargar generaciones:', error);
+    const result = await listGenerations({
+      page,
+      limit: 10,
+      search: searchTerm || undefined,
+      activeOnly: activeOnly || undefined,
+      // Solo incluir sortBy y sortOrder si ambos están definidos
+      ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+    });
+
+    if (!result.success) {
       showToast({
         type: 'error',
         title: 'Error al cargar generaciones',
-        message: error instanceof Error ? error.message : 'No se pudieron cargar las generaciones',
+        message: result.error || 'No se pudieron cargar las generaciones',
       });
     }
-  }, [page, searchTerm, activeOnly, sortBy, sortOrder, listGenerations, showToast]);
+  }, [
+    page,
+    searchTerm,
+    activeOnly,
+    sortBy,
+    sortOrder,
+    listGenerations,
+    showToast,
+  ]);
 
   useEffect(() => {
     loadGenerations();
   }, [loadGenerations]);
 
   // Manejar búsqueda
-  const handleSearch = useCallback(
-    (value: string) => {
-      setSearchTerm(value);
-      setPage(1);
-    },
-    []
-  );
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  }, []);
 
   // Manejar ordenamiento
   const handleSort = useCallback(
@@ -117,7 +127,10 @@ export function GenerationsList() {
         showToast({
           type: 'error',
           title: 'Error al crear generación',
-          message: error instanceof Error ? error.message : 'No se pudo crear la generación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo crear la generación',
         });
         throw error;
       }
@@ -144,7 +157,10 @@ export function GenerationsList() {
         showToast({
           type: 'error',
           title: 'Error al actualizar generación',
-          message: error instanceof Error ? error.message : 'No se pudo actualizar la generación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo actualizar la generación',
         });
         throw error;
       }
@@ -175,7 +191,10 @@ export function GenerationsList() {
         showToast({
           type: 'error',
           title: 'Error al eliminar generación',
-          message: error instanceof Error ? error.message : 'No se pudo eliminar la generación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo eliminar la generación',
         });
       }
     },
@@ -207,7 +226,10 @@ export function GenerationsList() {
         showToast({
           type: 'error',
           title: 'Error al cambiar estado',
-          message: error instanceof Error ? error.message : 'No se pudo cambiar el estado de la generación',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo cambiar el estado de la generación',
         });
       }
     },
@@ -466,39 +488,9 @@ export function GenerationsList() {
 
       {/* Contenedor para Table y Paginación */}
       <div className="flex flex-col gap-6 rounded-lg p-6 bg-(--color-component-bg)">
-        {listError && (
-          <div
-            className="p-4 rounded-lg"
-            style={{
-              backgroundColor: 'var(--color-error-bg)',
-              color: 'var(--color-error-typo)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span>{listError}</span>
-              <Button
-                variant="ghost"
-                size="small"
-                onClick={() => {
-                  clearListErrors();
-                  showToast({
-                    type: 'info',
-                    title: 'Error limpiado',
-                    message: 'El mensaje de error se ha ocultado',
-                  });
-                }}
-              >
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        )}
-
         {isLoadingList ? (
           <div className="flex items-center justify-center py-12">
-            <div
-              className="w-12 h-12 border-4 border-(--color-gray-1) border-t-(--color-primary-color) rounded-full animate-spin"
-            />
+            <div className="w-12 h-12 border-4 border-(--color-gray-1) border-t-(--color-primary-color) rounded-full animate-spin" />
           </div>
         ) : (
           <Table
