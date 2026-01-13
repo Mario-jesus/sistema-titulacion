@@ -168,7 +168,13 @@ export function Header({
           <button
             ref={userButtonRef}
             onClick={handleUserClick}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer bg-transparent hover:bg-gray-2-light active:bg-gray-3-light dark:hover:bg-gray-3-dark dark:active:bg-gray-6-dark"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-2-light active:bg-gray-3-light dark:hover:bg-gray-3-dark dark:active:bg-gray-6-dark
+              ${
+                isUserMenuOpen
+                  ? 'bg-gray-2-light dark:bg-gray-3-dark'
+                  : 'bg-transparent'
+              }
+            `}
             style={{
               color: 'var(--color-base-primary-typo)',
             }}
