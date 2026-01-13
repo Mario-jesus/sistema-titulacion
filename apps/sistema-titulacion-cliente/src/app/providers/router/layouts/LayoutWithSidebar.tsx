@@ -8,6 +8,7 @@ import {
 import type { SidebarItem } from '@widgets/Sidebar';
 import { Header } from '@widgets/Header';
 import { useAuth } from '@features/auth';
+import { ProfileModal, ChangePasswordModal } from '@features/users';
 import type { UserRole } from '@entities/user';
 
 interface LayoutWithSidebarProps {
@@ -32,6 +33,9 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
   }, [user?.role]);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+    useState(false);
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -139,10 +143,13 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
             <Header
               title={pageTitle}
               user={userInfo}
-              onUserMenuClick={() => {
-                // Aquí puedes implementar el menú del usuario si es necesario
-                console.log('User menu clicked');
+              onProfileClick={() => {
+                setIsProfileModalOpen(true);
               }}
+              onChangePasswordClick={() => {
+                setIsChangePasswordModalOpen(true);
+              }}
+              onLogoutClick={handleLogout}
               onMenuClick={handleMobileMenuToggle}
             />
           </div>
@@ -151,6 +158,19 @@ export function LayoutWithSidebar({ children }: LayoutWithSidebarProps) {
           </main>
         </div>
       </div>
+
+      {/* Modal de perfil */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+      />
+
+      {/* Modal de cambio de contraseña */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
     </div>
   );
 }

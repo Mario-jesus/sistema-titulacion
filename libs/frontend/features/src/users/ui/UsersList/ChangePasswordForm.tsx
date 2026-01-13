@@ -1,5 +1,6 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { Button, Input, Modal } from '@shared/ui';
+import { getPasswordValidationError } from '@shared/lib/validation';
 import type { ChangePasswordRequest } from '../../model/types';
 
 export interface ChangePasswordFormProps {
@@ -35,10 +36,9 @@ export function ChangePasswordForm({
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
 
-    if (!newPassword.trim()) {
-      newErrors.newPassword = 'La nueva contraseña es requerida';
-    } else if (newPassword.trim().length < 6) {
-      newErrors.newPassword = 'La contraseña debe tener al menos 6 caracteres';
+    const passwordError = getPasswordValidationError(newPassword.trim());
+    if (passwordError) {
+      newErrors.newPassword = passwordError;
     }
 
     if (!confirmPassword.trim()) {
@@ -91,7 +91,7 @@ export function ChangePasswordForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
           label="Nueva Contraseña *"
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mín. 8 caracteres: números, mayúsculas, minúsculas y símbolos"
           type="password"
           value={newPassword}
           onChange={(e) => {

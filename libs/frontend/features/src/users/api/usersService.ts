@@ -226,4 +226,54 @@ export const usersService = {
       throw error;
     }
   },
+
+  /**
+   * Actualiza el perfil del usuario autenticado (PATCH /users/me)
+   * Solo permite actualizar: username, email, avatar
+   */
+  async updateProfile(data: {
+    username?: string;
+    email?: string;
+    avatar?: string | null;
+  }): Promise<User> {
+    try {
+      logger.log('Actualizando perfil del usuario...', data);
+
+      const response = await apiClient.patch<User>(
+        API_ENDPOINTS.USERS.PATCH_ME,
+        data
+      );
+
+      logger.log('Perfil actualizado exitosamente');
+
+      return response;
+    } catch (error) {
+      logger.error('Error al actualizar perfil:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cambia la contraseña del usuario autenticado (POST /users/me/change-password)
+   * Requiere currentPassword y newPassword
+   */
+  async changePasswordMe(
+    data: ChangePasswordRequest
+  ): Promise<{ message: string }> {
+    try {
+      logger.log('Cambiando contraseña del usuario autenticado...');
+
+      const response = await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.USERS.CHANGE_PASSWORD_ME,
+        data
+      );
+
+      logger.log('Contraseña cambiada exitosamente');
+
+      return response;
+    } catch (error) {
+      logger.error('Error al cambiar contraseña:', error);
+      throw error;
+    }
+  },
 };

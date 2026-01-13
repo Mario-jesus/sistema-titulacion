@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
     ACTIVATE: (id: string) => `/users/${id}/activate`,
     DEACTIVATE: (id: string) => `/users/${id}/deactivate`,
     CHANGE_PASSWORD: (id: string) => `/users/${id}/change-password`,
+    CHANGE_PASSWORD_ME: '/users/me/change-password',
   },
   // Dashboard
   DASHBOARD: {

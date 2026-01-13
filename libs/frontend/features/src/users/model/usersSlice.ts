@@ -11,6 +11,8 @@ import {
   activateUserThunk,
   deactivateUserThunk,
   changePasswordThunk,
+  updateProfileThunk,
+  changePasswordMeThunk,
 } from './usersThunks';
 
 export interface UsersState {
@@ -43,6 +45,12 @@ export interface UsersState {
 
   isChangingPassword: boolean;
   changePasswordError: string | null;
+
+  isUpdatingProfile: boolean;
+  updateProfileError: string | null;
+
+  isChangingPasswordMe: boolean;
+  changePasswordMeError: string | null;
 }
 
 const initialState: UsersState = {
@@ -72,6 +80,12 @@ const initialState: UsersState = {
 
   isChangingPassword: false,
   changePasswordError: null,
+
+  isUpdatingProfile: false,
+  updateProfileError: null,
+
+  isChangingPasswordMe: false,
+  changePasswordMeError: null,
 };
 
 const usersSlice = createSlice({
@@ -96,6 +110,12 @@ const usersSlice = createSlice({
     clearChangePasswordError: (state) => {
       state.changePasswordError = null;
     },
+    clearUpdateProfileError: (state) => {
+      state.updateProfileError = null;
+    },
+    clearChangePasswordMeError: (state) => {
+      state.changePasswordMeError = null;
+    },
     clearCurrentUser: (state) => {
       state.currentUser = null;
       state.detailError = null;
@@ -109,6 +129,8 @@ const usersSlice = createSlice({
       state.activateError = null;
       state.deactivateError = null;
       state.changePasswordError = null;
+      state.updateProfileError = null;
+      state.changePasswordMeError = null;
     },
   },
   extraReducers: (builder) => {
@@ -302,6 +324,47 @@ const usersSlice = createSlice({
       state.changePasswordError =
         action.payload || 'Error al cambiar contraseña';
     });
+
+    // ========== UPDATE PROFILE ==========
+    builder.addCase(updateProfileThunk.pending, (state) => {
+      state.isUpdatingProfile = true;
+      state.updateProfileError = null;
+    });
+    builder.addCase(updateProfileThunk.fulfilled, (state, action) => {
+      state.isUpdatingProfile = false;
+      // Actualizar en la lista si existe
+      const index = state.users.findIndex(
+        (user) => user.id === action.payload.id
+      );
+      if (index !== -1) {
+        state.users[index] = action.payload;
+      }
+      // Actualizar usuario actual si es el mismo
+      if (state.currentUser && state.currentUser.id === action.payload.id) {
+        state.currentUser = action.payload;
+      }
+      state.updateProfileError = null;
+    });
+    builder.addCase(updateProfileThunk.rejected, (state, action) => {
+      state.isUpdatingProfile = false;
+      state.updateProfileError = action.payload || 'Error al actualizar perfil';
+    });
+
+    // ========== CHANGE PASSWORD ME ==========
+    builder.addCase(changePasswordMeThunk.pending, (state) => {
+      state.isChangingPasswordMe = true;
+      state.changePasswordMeError = null;
+    });
+    builder.addCase(changePasswordMeThunk.fulfilled, (state) => {
+      state.isChangingPasswordMe = false;
+      state.changePasswordMeError = null;
+      // No actualizamos el usuario porque la contraseña no se retorna
+    });
+    builder.addCase(changePasswordMeThunk.rejected, (state, action) => {
+      state.isChangingPasswordMe = false;
+      state.changePasswordMeError =
+        action.payload || 'Error al cambiar contraseña';
+    });
   },
 });
 
@@ -312,6 +375,8 @@ export const {
   clearUpdateError,
   clearDeleteError,
   clearChangePasswordError,
+  clearUpdateProfileError,
+  clearChangePasswordMeError,
   clearCurrentUser,
   clearAllErrors,
 } = usersSlice.actions;

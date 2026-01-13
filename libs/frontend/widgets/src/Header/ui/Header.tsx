@@ -1,4 +1,5 @@
-import { ThemeToggle } from '@shared/ui';
+import { useState, useRef, useEffect } from 'react';
+import { ThemeToggle, DropdownMenu, DropdownMenuItem } from '@shared/ui';
 import { HeaderProps } from '../model';
 import { BackArrowIcon, ChevronDownIcon, MenuIcon } from './icons';
 
@@ -8,14 +9,90 @@ export function Header({
   onBack,
   user,
   onUserMenuClick,
+  onProfileClick,
+  onChangePasswordClick,
+  onLogoutClick,
   className = '',
   onMenuClick,
 }: HeaderProps) {
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState<
+    { x: number; y: number } | undefined
+  >(undefined);
+
   const handleUserClick = () => {
-    if (onUserMenuClick) {
-      onUserMenuClick();
+    if (userButtonRef.current) {
+      const rect = userButtonRef.current.getBoundingClientRect();
+      // Posicionar el menú alineado a la derecha del botón
+      // El menú tiene un ancho mínimo de 160px, así que lo posicionamos para que quede alineado a la derecha
+      setMenuPosition({
+        x: rect.right - 180, // Ancho aproximado del menú (180px para dar margen)
+        y: rect.bottom + 8, // 8px de espacio debajo del botón
+      });
+      // Toggle del menú: si está abierto, se mantiene abierto; si está cerrado, se abre
+      setIsUserMenuOpen((prev) => !prev);
     }
   };
+
+  // Cerrar menú cuando se hace click fuera (pero no en el botón del usuario ni en el menú)
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const clickedOnButton = userButtonRef.current?.contains(target);
+      const clickedOnMenu = menuRef.current?.contains(target);
+
+      // Solo cerrar si el click está fuera del botón y del menú
+      if (!clickedOnButton && !clickedOnMenu) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    // Usar un pequeño delay para evitar que se cierre inmediatamente al hacer click en el botón
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
+  // Items del menú dropdown
+  const menuItems: DropdownMenuItem[] = [
+    {
+      label: 'Perfil',
+      onClick: () => {
+        if (onProfileClick) {
+          onProfileClick();
+        } else if (onUserMenuClick) {
+          onUserMenuClick();
+        }
+      },
+    },
+    {
+      label: 'Cambiar contraseña',
+      onClick: () => {
+        if (onChangePasswordClick) {
+          onChangePasswordClick();
+        }
+      },
+    },
+    { separator: true, label: '' },
+    {
+      label: 'Salir',
+      onClick: () => {
+        if (onLogoutClick) {
+          onLogoutClick();
+        }
+      },
+      variant: 'danger',
+    },
+  ];
 
   return (
     <header
@@ -87,14 +164,17 @@ export function Header({
 
       {/* Sección derecha: Información del usuario */}
       {user && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative">
           <button
+            ref={userButtonRef}
             onClick={handleUserClick}
             className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer bg-transparent hover:bg-gray-2-light active:bg-gray-3-light dark:hover:bg-gray-3-dark dark:active:bg-gray-6-dark"
             style={{
               color: 'var(--color-base-primary-typo)',
             }}
             type="button"
+            aria-label="Menú de usuario"
+            aria-expanded={isUserMenuOpen}
           >
             {user.avatar ? (
               <img
@@ -135,8 +215,27 @@ export function Header({
                 {user.role}
               </div>
             </div>
-            <ChevronDownIcon size={16} className="hidden md:block" />
+            <div
+              className="hidden md:block transition-transform duration-200 ease-in-out"
+              style={{
+                transform: isUserMenuOpen ? 'rotateX(180deg)' : 'rotateX(0deg)',
+                transformStyle: 'preserve-3d',
+                display: 'inline-block',
+              }}
+            >
+              <ChevronDownIcon size={16} />
+            </div>
           </button>
+
+          {/* Menú dropdown */}
+          <div ref={menuRef}>
+            <DropdownMenu
+              isOpen={isUserMenuOpen}
+              onClose={() => setIsUserMenuOpen(false)}
+              position={menuPosition}
+              items={menuItems}
+            />
+          </div>
         </div>
       )}
     </header>

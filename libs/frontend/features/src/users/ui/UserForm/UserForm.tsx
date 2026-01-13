@@ -1,5 +1,6 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { Button, Input, Modal } from '@shared/ui';
+import { getPasswordValidationError } from '@shared/lib/validation';
 import type { CreateUserRequest, UpdateUserRequest } from '../../model/types';
 import type { User } from '@entities/user';
 import { UserRole } from '@entities/user';
@@ -66,10 +67,11 @@ export function UserForm({
     }
 
     // Password solo requerido en modo creación
-    if (mode === 'create' && !password.trim()) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (mode === 'create' && password.trim().length < 8) {
-      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+    if (mode === 'create') {
+      const passwordError = getPasswordValidationError(password.trim());
+      if (passwordError) {
+        newErrors.password = passwordError;
+      }
     }
 
     if (!role) {
@@ -167,7 +169,7 @@ export function UserForm({
         {mode === 'create' && (
           <Input
             label="Contraseña *"
-            placeholder="Mínimo 8 caracteres"
+            placeholder="Mín. 8 caracteres: números, mayúsculas, minúsculas y símbolos"
             type="password"
             value={password}
             onChange={(e) => {

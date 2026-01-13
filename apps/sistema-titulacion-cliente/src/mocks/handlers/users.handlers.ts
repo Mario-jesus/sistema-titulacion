@@ -110,6 +110,44 @@ function isValidUsernameFormat(username: string): boolean {
 }
 
 /**
+ * Valida que la contraseña cumpla con los requisitos estrictos:
+ * - Mínimo 8 caracteres
+ * - Al menos un número
+ * - Al menos una letra minúscula
+ * - Al menos una letra mayúscula
+ * - Al menos un símbolo
+ * @param password - Contraseña a validar
+ * @returns true si es válida, false en caso contrario
+ */
+function isValidPasswordFormat(password: string): boolean {
+  if (password.length < 8) {
+    return false;
+  }
+
+  // Verificar que tenga al menos un número
+  if (!/\d/.test(password)) {
+    return false;
+  }
+
+  // Verificar que tenga al menos una letra minúscula
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+
+  // Verificar que tenga al menos una letra mayúscula
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+
+  // Verificar que tenga al menos un símbolo (carácter especial)
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Excluye el campo avatar de un objeto User
  * El avatar solo debe ser visible/actualizable por el usuario propietario en PATCH /users/me
  */
@@ -385,11 +423,22 @@ export const usersHandlers = [
       );
     }
 
-    if (!body.password || body.password.length < 6) {
+    if (!body.password) {
+      return HttpResponse.json(
+        {
+          error: 'La contraseña es requerida',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato de contraseña: mínimo 8 caracteres, números, mayúsculas, minúsculas y símbolos
+    if (!isValidPasswordFormat(body.password)) {
       return HttpResponse.json(
         {
           error:
-            'La contraseña es requerida y debe tener al menos 6 caracteres',
+            'La contraseña debe tener al menos 8 caracteres, incluyendo números, letras mayúsculas, letras minúsculas y símbolos',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -591,6 +640,115 @@ export const usersHandlers = [
     });
   }),
 
+  // PATCH /users/me (Update own profile) - Usuario autenticado
+  // IMPORTANTE: Este handler debe estar ANTES de /users/:id para evitar que :id capture "me"
+  http.patch(buildApiUrl('/users/me'), async ({ request }) => {
+    await delay(400);
+
+    const authenticatedUser = getAuthenticatedUser(request);
+    if (!authenticatedUser) {
+      return HttpResponse.json(
+        {
+          error: 'No autorizado',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = (await request.json()) as UpdateMeRequest;
+
+    // Validaciones
+    if (body.username !== undefined && body.username.trim().length === 0) {
+      return HttpResponse.json(
+        {
+          error: 'El nombre de usuario no puede estar vacío',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato del username si se proporciona: alfanumérico y sin espacios
+    if (body.username && !isValidUsernameFormat(body.username.trim())) {
+      return HttpResponse.json(
+        {
+          error:
+            'El nombre de usuario debe contener solo letras y números, sin espacios',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (body.email !== undefined && body.email.trim().length === 0) {
+      return HttpResponse.json(
+        {
+          error: 'El email no puede estar vacío',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato de email si se proporciona
+    if (body.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.email)) {
+        return HttpResponse.json(
+          {
+            error: 'El formato del email no es válido',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Verificar duplicados de username (excluyendo el usuario actual)
+    if (body.username) {
+      const existingUser = findUserByUsername(body.username);
+      if (existingUser && existingUser.id !== authenticatedUser.id) {
+        return HttpResponse.json(
+          {
+            error: 'Ya existe un usuario con ese nombre de usuario',
+            code: 'DUPLICATE_ERROR',
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Verificar duplicados de email (excluyendo el usuario actual)
+    if (body.email) {
+      const existingUser = findUserByEmail(body.email);
+      if (existingUser && existingUser.id !== authenticatedUser.id) {
+        return HttpResponse.json(
+          {
+            error: 'Ya existe un usuario con ese email',
+            code: 'DUPLICATE_ERROR',
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Actualizar usuario (solo campos permitidos: username, email, avatar)
+    Object.assign(authenticatedUser, {
+      ...(body.username && { username: body.username.trim() }),
+      ...(body.email && { email: body.email.toLowerCase().trim() }),
+      ...(body.avatar !== undefined && { avatar: body.avatar }),
+      updatedAt: new Date(),
+    });
+
+    return HttpResponse.json({
+      ...authenticatedUser,
+      lastLogin: authenticatedUser.lastLogin?.toISOString() ?? null,
+      createdAt: authenticatedUser.createdAt.toISOString(),
+      updatedAt: authenticatedUser.updatedAt.toISOString(),
+    });
+  }),
+
   // PATCH /users/:id (Partial Update) - Solo administradores
   http.patch(buildApiUrl('/users/:id'), async ({ params, request }) => {
     await delay(400);
@@ -721,114 +879,6 @@ export const usersHandlers = [
       lastLogin: targetUser.lastLogin?.toISOString() ?? null,
       createdAt: targetUser.createdAt.toISOString(),
       updatedAt: targetUser.updatedAt.toISOString(),
-    });
-  }),
-
-  // PATCH /users/me (Update own profile) - Usuario autenticado
-  http.patch(buildApiUrl('/users/me'), async ({ request }) => {
-    await delay(400);
-
-    const authenticatedUser = getAuthenticatedUser(request);
-    if (!authenticatedUser) {
-      return HttpResponse.json(
-        {
-          error: 'No autorizado',
-          code: 'UNAUTHORIZED',
-        },
-        { status: 401 }
-      );
-    }
-
-    const body = (await request.json()) as UpdateMeRequest;
-
-    // Validaciones
-    if (body.username !== undefined && body.username.trim().length === 0) {
-      return HttpResponse.json(
-        {
-          error: 'El nombre de usuario no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar formato del username si se proporciona: alfanumérico y sin espacios
-    if (body.username && !isValidUsernameFormat(body.username.trim())) {
-      return HttpResponse.json(
-        {
-          error:
-            'El nombre de usuario debe contener solo letras y números, sin espacios',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (body.email !== undefined && body.email.trim().length === 0) {
-      return HttpResponse.json(
-        {
-          error: 'El email no puede estar vacío',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar formato de email si se proporciona
-    if (body.email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(body.email)) {
-        return HttpResponse.json(
-          {
-            error: 'El formato del email no es válido',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Verificar duplicados de username (excluyendo el usuario actual)
-    if (body.username) {
-      const existingUser = findUserByUsername(body.username);
-      if (existingUser && existingUser.id !== authenticatedUser.id) {
-        return HttpResponse.json(
-          {
-            error: 'Ya existe un usuario con ese nombre de usuario',
-            code: 'DUPLICATE_ERROR',
-          },
-          { status: 409 }
-        );
-      }
-    }
-
-    // Verificar duplicados de email (excluyendo el usuario actual)
-    if (body.email) {
-      const existingUser = findUserByEmail(body.email);
-      if (existingUser && existingUser.id !== authenticatedUser.id) {
-        return HttpResponse.json(
-          {
-            error: 'Ya existe un usuario con ese email',
-            code: 'DUPLICATE_ERROR',
-          },
-          { status: 409 }
-        );
-      }
-    }
-
-    // Actualizar usuario (solo campos permitidos: username, email, avatar)
-    Object.assign(authenticatedUser, {
-      ...(body.username && { username: body.username.trim() }),
-      ...(body.email && { email: body.email.toLowerCase().trim() }),
-      ...(body.avatar !== undefined && { avatar: body.avatar }),
-      updatedAt: new Date(),
-    });
-
-    return HttpResponse.json({
-      ...authenticatedUser,
-      lastLogin: authenticatedUser.lastLogin?.toISOString() ?? null,
-      createdAt: authenticatedUser.createdAt.toISOString(),
-      updatedAt: authenticatedUser.updatedAt.toISOString(),
     });
   }),
 
@@ -1006,6 +1056,90 @@ export const usersHandlers = [
     }
   ),
 
+  // POST /users/me/change-password (Change own password) - Usuario autenticado
+  // IMPORTANTE: Este handler debe estar ANTES de /users/:id/change-password para evitar que :id capture "me"
+  http.post(buildApiUrl('/users/me/change-password'), async ({ request }) => {
+    await delay(300);
+
+    const authenticatedUser = getAuthenticatedUser(request);
+    if (!authenticatedUser) {
+      return HttpResponse.json(
+        {
+          error: 'No autorizado',
+          code: 'UNAUTHORIZED',
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = (await request.json()) as ChangePasswordRequest;
+
+    // Validaciones
+    if (!body.newPassword) {
+      return HttpResponse.json(
+        {
+          error: 'La nueva contraseña es requerida',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Requiere la contraseña actual
+    if (!body.currentPassword) {
+      return HttpResponse.json(
+        {
+          error: 'La contraseña actual es requerida',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar contraseña actual
+    if (!validateUserPassword(authenticatedUser.id, body.currentPassword)) {
+      return HttpResponse.json(
+        {
+          error: 'La contraseña actual es incorrecta',
+          code: 'INVALID_PASSWORD',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato de contraseña: mínimo 8 caracteres, números, mayúsculas, minúsculas y símbolos
+    if (!isValidPasswordFormat(body.newPassword)) {
+      return HttpResponse.json(
+        {
+          error:
+            'La nueva contraseña debe tener al menos 8 caracteres, incluyendo números, letras mayúsculas, letras minúsculas y símbolos',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validar que la nueva contraseña sea diferente a la actual
+    if (body.currentPassword === body.newPassword) {
+      return HttpResponse.json(
+        {
+          error:
+            'La nueva contraseña debe ser diferente a la contraseña actual',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Actualizar contraseña
+    setUserPassword(authenticatedUser.id, body.newPassword);
+    authenticatedUser.updatedAt = new Date();
+
+    return HttpResponse.json({
+      message: 'Contraseña actualizada exitosamente',
+    });
+  }),
+
   // POST /users/:id/change-password (Change password)
   http.post(
     buildApiUrl('/users/:id/change-password'),
@@ -1037,18 +1171,30 @@ export const usersHandlers = [
         );
       }
 
-      // Solo el usuario autenticado o un administrador pueden cambiar contraseñas
-      const isOwnPassword = authenticatedUser.id === targetUserId;
-      const isAdmin = authenticatedUser.role === UserRole.ADMIN;
-
-      if (!isOwnPassword && !isAdmin) {
+      // Este endpoint es exclusivo para administradores
+      // Los usuarios no-admin deben usar /users/me/change-password
+      if (authenticatedUser.role !== UserRole.ADMIN) {
         return HttpResponse.json(
           {
             error:
-              'No tienes permisos para cambiar la contraseña de este usuario',
+              'No tienes permisos para usar este endpoint. Por favor usa la opción de cambio de contraseña en tu perfil.',
             code: 'FORBIDDEN',
           },
           { status: 403 }
+        );
+      }
+
+      // Restricción: Los administradores no pueden cambiar su propia contraseña desde este endpoint
+      // Deben usar /users/me/change-password
+      const isOwnPassword = authenticatedUser.id === targetUserId;
+      if (isOwnPassword) {
+        return HttpResponse.json(
+          {
+            error:
+              'No puedes cambiar tu propia contraseña desde este endpoint. Por favor usa la opción de cambio de contraseña en tu perfil.',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
         );
       }
 
@@ -1065,50 +1211,23 @@ export const usersHandlers = [
         );
       }
 
-      // Si el usuario está cambiando su propia contraseña, requiere y valida la contraseña actual
-      if (isOwnPassword) {
-        if (!body.currentPassword) {
-          return HttpResponse.json(
-            {
-              error: 'La contraseña actual es requerida',
-              code: 'VALIDATION_ERROR',
-            },
-            { status: 400 }
-          );
-        }
-        if (!validateUserPassword(targetUserId, body.currentPassword)) {
-          return HttpResponse.json(
-            {
-              error: 'La contraseña actual es incorrecta',
-              code: 'INVALID_PASSWORD',
-            },
-            { status: 400 }
-          );
-        }
-      }
+      // Los administradores no requieren currentPassword cuando cambian la contraseña de otro usuario
+      // (isOwnPassword ya está validado arriba y retorna error, así que nunca llegamos aquí si es propia contraseña)
 
-      // Validar que la nueva contraseña tenga al menos 6 caracteres
-      if (body.newPassword.length < 6) {
-        return HttpResponse.json(
-          {
-            error: 'La nueva contraseña debe tener al menos 6 caracteres',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      // Validar que la nueva contraseña sea diferente a la actual
-      if (isOwnPassword && body.currentPassword === body.newPassword) {
+      // Validar formato de contraseña: mínimo 8 caracteres, números, mayúsculas, minúsculas y símbolos
+      if (!isValidPasswordFormat(body.newPassword)) {
         return HttpResponse.json(
           {
             error:
-              'La nueva contraseña debe ser diferente a la contraseña actual',
+              'La nueva contraseña debe tener al menos 8 caracteres, incluyendo números, letras mayúsculas, letras minúsculas y símbolos',
             code: 'VALIDATION_ERROR',
           },
           { status: 400 }
         );
       }
+
+      // No validamos que la nueva contraseña sea diferente a la actual porque
+      // los administradores no proporcionan currentPassword cuando cambian la contraseña de otro usuario
 
       // Actualizar contraseña
       setUserPassword(targetUserId, body.newPassword);

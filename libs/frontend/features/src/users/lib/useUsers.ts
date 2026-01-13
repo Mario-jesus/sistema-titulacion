@@ -21,6 +21,8 @@ import {
   activateUserThunk,
   deactivateUserThunk,
   changePasswordThunk,
+  updateProfileThunk,
+  changePasswordMeThunk,
 } from '../model/usersThunks';
 import {
   clearListError,
@@ -29,6 +31,8 @@ import {
   clearUpdateError,
   clearDeleteError,
   clearChangePasswordError,
+  clearUpdateProfileError,
+  clearChangePasswordMeError,
   clearCurrentUser,
   clearAllErrors,
   type UsersState,
@@ -65,6 +69,12 @@ export function useUsers() {
   const isChangingPassword = useSelector(
     (state: AppState) => state.users.isChangingPassword
   );
+  const isUpdatingProfile = useSelector(
+    (state: AppState) => state.users.isUpdatingProfile
+  );
+  const isChangingPasswordMe = useSelector(
+    (state: AppState) => state.users.isChangingPasswordMe
+  );
 
   // Errores
   const listError = useSelector((state: AppState) => state.users.listError);
@@ -80,6 +90,12 @@ export function useUsers() {
   );
   const changePasswordError = useSelector(
     (state: AppState) => state.users.changePasswordError
+  );
+  const updateProfileError = useSelector(
+    (state: AppState) => state.users.updateProfileError
+  );
+  const changePasswordMeError = useSelector(
+    (state: AppState) => state.users.changePasswordMeError
   );
 
   // ========== ACTIONS ==========
@@ -269,6 +285,52 @@ export function useUsers() {
     [dispatch]
   );
 
+  const updateProfile = useCallback(
+    async (data: {
+      username?: string;
+      email?: string;
+      avatar?: string | null;
+    }): Promise<Result<User>> => {
+      const result = await dispatch(updateProfileThunk(data));
+
+      if (updateProfileThunk.rejected.match(result)) {
+        return {
+          success: false,
+          error: result.payload || 'Error al actualizar perfil',
+          code: extractErrorCode(result.payload),
+        };
+      }
+
+      return {
+        success: true,
+        data: result.payload,
+      };
+    },
+    [dispatch]
+  );
+
+  const changePasswordMe = useCallback(
+    async (
+      data: ChangePasswordRequest
+    ): Promise<Result<{ message: string }>> => {
+      const result = await dispatch(changePasswordMeThunk(data));
+
+      if (changePasswordMeThunk.rejected.match(result)) {
+        return {
+          success: false,
+          error: result.payload || 'Error al cambiar contraseña',
+          code: extractErrorCode(result.payload),
+        };
+      }
+
+      return {
+        success: true,
+        data: { message: result.payload.message },
+      };
+    },
+    [dispatch]
+  );
+
   // ========== CLEAR ACTIONS ==========
   const clearErrors = useCallback(() => {
     dispatch(clearAllErrors());
@@ -298,6 +360,14 @@ export function useUsers() {
     dispatch(clearChangePasswordError());
   }, [dispatch]);
 
+  const clearUpdateProfileErrors = useCallback(() => {
+    dispatch(clearUpdateProfileError());
+  }, [dispatch]);
+
+  const clearChangePasswordMeErrors = useCallback(() => {
+    dispatch(clearChangePasswordMeError());
+  }, [dispatch]);
+
   const clearCurrent = useCallback(() => {
     dispatch(clearCurrentUser());
   }, [dispatch]);
@@ -317,6 +387,8 @@ export function useUsers() {
     isActivating,
     isDeactivating,
     isChangingPassword,
+    isUpdatingProfile,
+    isChangingPasswordMe,
 
     // ========== ERRORS ==========
     listError,
@@ -327,6 +399,8 @@ export function useUsers() {
     activateError,
     deactivateError,
     changePasswordError,
+    updateProfileError,
+    changePasswordMeError,
 
     // ========== ACTIONS ==========
     listUsers,
@@ -338,6 +412,8 @@ export function useUsers() {
     activateUser,
     deactivateUser,
     changePassword,
+    updateProfile,
+    changePasswordMe,
 
     // ========== CLEAR ACTIONS ==========
     clearErrors,
@@ -347,6 +423,8 @@ export function useUsers() {
     clearUpdateErrors,
     clearDeleteErrors,
     clearChangePasswordErrors,
+    clearUpdateProfileErrors,
+    clearChangePasswordMeErrors,
     clearCurrent,
   };
 }

@@ -184,3 +184,41 @@ export const changePasswordThunk = createAsyncThunk<
     return rejectWithValue(message);
   }
 });
+
+// ========== UPDATE PROFILE ==========
+export const updateProfileThunk = createAsyncThunk<
+  User,
+  { username?: string; email?: string; avatar?: string | null },
+  { rejectValue: string }
+>('users/updateProfile', async (data, { rejectWithValue }) => {
+  try {
+    const user = await usersService.updateProfile(data);
+    return user;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al actualizar perfil';
+    logger.error('Error en updateProfileThunk:', error);
+    return rejectWithValue(message);
+  }
+});
+
+// ========== CHANGE PASSWORD ME ==========
+export const changePasswordMeThunk = createAsyncThunk<
+  { message: string },
+  ChangePasswordRequest,
+  { rejectValue: string }
+>('users/changePasswordMe', async (data, { rejectWithValue }) => {
+  try {
+    const response = await usersService.changePasswordMe(data);
+    return response;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al cambiar contraseña';
+    logger.error('Error en changePasswordMeThunk:', error);
+    return rejectWithValue(message);
+  }
+});
