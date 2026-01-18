@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "init-msw": "node apps/sistema-titulacion-cliente/scripts/init-msw.js",
-    "prepare": "is-ci || husky"
+    "init-msw": "node apps/sistema-titulacion-cliente/scripts/init-msw.js"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
