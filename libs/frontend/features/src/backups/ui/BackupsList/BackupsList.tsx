@@ -525,8 +525,8 @@ export function BackupsList() {
     <div className="flex flex-col gap-6 w-full">
       {/* Contenedor para Header */}
       <div className="rounded-lg mt-6 p-6 bg-(--color-component-bg)">
-        <div className="flex items-center justify-between gap-2 md:gap-4 w-full min-w-0">
-          <div className="max-w-2xs w-full">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-4 w-full min-w-0">
+          <div className="sm:max-w-2xs w-full">
             <Search
               placeholder="Buscar respaldos..."
               value={searchTerm}
@@ -536,7 +536,7 @@ export function BackupsList() {
               fullWidth
             />
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 shrink-0">
             <Button
               variant="secondary"
               size="small"
