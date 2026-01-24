@@ -50,7 +50,7 @@ interface ListResponse {
 export const quotasHandlers = [
   // GET /quotas (List)
   http.get(buildApiUrl('/quotas'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -168,7 +168,7 @@ export const quotasHandlers = [
 
   // GET /quotas/:id (Detail)
   http.get(buildApiUrl('/quotas/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const quota = findQuotaById(id as string);
@@ -192,7 +192,7 @@ export const quotasHandlers = [
 
   // POST /quotas (Create)
   http.post(buildApiUrl('/quotas'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateQuotaRequest;
 
@@ -291,7 +291,7 @@ export const quotasHandlers = [
 
   // PUT /quotas/:id (Update)
   http.put(buildApiUrl('/quotas/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const { id } = params;
     const quota = findQuotaById(id as string);
@@ -387,7 +387,7 @@ export const quotasHandlers = [
 
   // PATCH /quotas/:id (Partial Update)
   http.patch(buildApiUrl('/quotas/:id'), async ({ params, request }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const quota = findQuotaById(id as string);
@@ -491,7 +491,7 @@ export const quotasHandlers = [
 
   // DELETE /quotas/:id
   http.delete(buildApiUrl('/quotas/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const index = mockQuotas.findIndex((quota: Quota) => quota.id === id);
@@ -515,7 +515,7 @@ export const quotasHandlers = [
 
   // POST /quotas/:id/activate
   http.post(buildApiUrl('/quotas/:id/activate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const quota = findQuotaById(id as string);
@@ -542,7 +542,7 @@ export const quotasHandlers = [
 
   // POST /quotas/:id/deactivate
   http.post(buildApiUrl('/quotas/:id/deactivate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const quota = findQuotaById(id as string);

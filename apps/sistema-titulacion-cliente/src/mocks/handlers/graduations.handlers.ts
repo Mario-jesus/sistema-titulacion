@@ -41,7 +41,7 @@ interface UpdateGraduationRequest {
 export const graduationsHandlers = [
   // GET /graduations/student/:id (Detail by studentId)
   http.get(buildApiUrl('/graduations/student/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const graduation = findGraduationByStudentId(id as string);
@@ -66,7 +66,7 @@ export const graduationsHandlers = [
 
   // POST /graduations (Create)
   http.post(buildApiUrl('/graduations'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateGraduationRequest;
 
@@ -254,7 +254,7 @@ export const graduationsHandlers = [
   http.put(
     buildApiUrl('/graduations/student/:id'),
     async ({ params, request }) => {
-      await delay(400);
+      await delay();
 
       const { id } = params;
       const graduation = findGraduationByStudentId(id as string);
@@ -459,7 +459,7 @@ export const graduationsHandlers = [
   http.patch(
     buildApiUrl('/graduations/student/:id'),
     async ({ params, request }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const graduation = findGraduationByStudentId(id as string);
@@ -674,7 +674,7 @@ export const graduationsHandlers = [
 
   // DELETE /graduations/student/:id (Delete by studentId)
   http.delete(buildApiUrl('/graduations/student/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const graduation = findGraduationByStudentId(id as string);
@@ -704,7 +704,7 @@ export const graduationsHandlers = [
   http.post(
     buildApiUrl('/graduations/:studentId/graduate'),
     async ({ params }) => {
-      await delay(300);
+      await delay();
 
       const { studentId } = params;
       const graduation = findGraduationByStudentId(studentId as string);
@@ -789,7 +789,7 @@ export const graduationsHandlers = [
   http.post(
     buildApiUrl('/graduations/:studentId/ungraduate'),
     async ({ params }) => {
-      await delay(300);
+      await delay();
 
       const { studentId } = params;
       const graduation = findGraduationByStudentId(studentId as string);

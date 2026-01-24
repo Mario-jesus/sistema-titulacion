@@ -46,7 +46,7 @@ interface ListResponse {
 export const careersHandlers = [
   // GET /careers (List)
   http.get(buildApiUrl('/careers'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -168,7 +168,7 @@ export const careersHandlers = [
 
   // GET /careers/:id (Detail)
   http.get(buildApiUrl('/careers/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const career = findCareerById(id as string);
@@ -199,7 +199,7 @@ export const careersHandlers = [
 
   // POST /careers (Create)
   http.post(buildApiUrl('/careers'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateCareerRequest;
 
@@ -308,7 +308,7 @@ export const careersHandlers = [
 
   // PUT /careers/:id (Update)
   http.put(buildApiUrl('/careers/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const { id } = params;
     const career = findCareerById(id as string);
@@ -431,7 +431,7 @@ export const careersHandlers = [
 
   // PATCH /careers/:id (Partial Update)
   http.patch(buildApiUrl('/careers/:id'), async ({ params, request }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const career = findCareerById(id as string);
@@ -561,7 +561,7 @@ export const careersHandlers = [
 
   // DELETE /careers/:id
   http.delete(buildApiUrl('/careers/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const index = mockCareers.findIndex((career: Career) => career.id === id);
@@ -585,7 +585,7 @@ export const careersHandlers = [
 
   // POST /careers/:id/activate
   http.post(buildApiUrl('/careers/:id/activate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const career = findCareerById(id as string);
@@ -619,7 +619,7 @@ export const careersHandlers = [
 
   // POST /careers/:id/deactivate
   http.post(buildApiUrl('/careers/:id/deactivate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const career = findCareerById(id as string);

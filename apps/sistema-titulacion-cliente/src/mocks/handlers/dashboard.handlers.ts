@@ -292,7 +292,7 @@ function getRecentStudents(): RecentStudent[] {
  */
 export const dashboardHandlers = [
   http.get(buildApiUrl('/dashboard'), async () => {
-    await delay(300);
+    await delay();
 
     const stats = calculateDashboardStats();
     const ingressEgressByGeneration = calculateIngressEgressByGeneration();

@@ -119,7 +119,7 @@ function calculateIngressEgressData(): IngressEgress[] {
 export const ingressEgressHandlers = [
   // GET /ingress-egress (List)
   http.get(buildApiUrl('/ingress-egress'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -248,7 +248,7 @@ export const ingressEgressHandlers = [
   http.get(
     buildApiUrl('/ingress-egress/:generationId/:careerId'),
     async ({ params }) => {
-      await delay(200);
+      await delay();
 
       const generationId = Array.isArray(params.generationId)
         ? params.generationId[0]

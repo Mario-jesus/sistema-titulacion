@@ -103,3 +103,9 @@ export const BackupsPage = lazy(() =>
     default: module.BackupsPage,
   }))
 );
+
+export const ReportsPage = lazy(() =>
+  import('@pages/ReportsPage').then((module) => ({
+    default: module.ReportsPage,
+  }))
+);

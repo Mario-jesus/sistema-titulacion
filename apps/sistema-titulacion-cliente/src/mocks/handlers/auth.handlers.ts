@@ -35,7 +35,7 @@ interface LogoutRequest {
 export const authHandlers = [
   // POST /auth/login
   http.post(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     // Verificar rate limiting
     if (checkRateLimit(request, 'LOGIN')) {
@@ -123,7 +123,7 @@ export const authHandlers = [
 
   // POST /auth/refresh
   http.post(buildApiUrl(API_ENDPOINTS.AUTH.REFRESH), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     // Verificar rate limiting
     if (checkRateLimit(request, 'REFRESH')) {
@@ -216,7 +216,7 @@ export const authHandlers = [
 
   // GET /auth/me
   http.get(buildApiUrl(API_ENDPOINTS.AUTH.ME), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '') || '';
@@ -260,7 +260,7 @@ export const authHandlers = [
 
   // POST /auth/logout
   http.post(buildApiUrl(API_ENDPOINTS.AUTH.LOGOUT), async ({ request }) => {
-    await delay(200);
+    await delay();
 
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '') || '';

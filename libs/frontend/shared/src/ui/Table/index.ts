@@ -7,6 +7,13 @@ export type {
   SortDirection,
 } from './Table';
 
+export { GroupedTable } from './GroupedTable';
+export type {
+  GroupedTableProps,
+  GroupedColumn,
+  GroupedTableRow,
+} from './GroupedTable';
+
 export { createStatusActions } from './statusTransitions';
 export type { StatusTransitionConfig } from './statusTransitions';
 

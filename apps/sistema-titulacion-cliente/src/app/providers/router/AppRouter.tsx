@@ -6,7 +6,6 @@ import { LayoutWithSidebar } from './layouts';
 import { PageLoader } from './components';
 import {
   LoginPage,
-  ComingSoonPage,
   DashboardPage,
   AccessesPage,
   GenerationsPage,
@@ -20,6 +19,7 @@ import {
   StudentsScheduledPage,
   StudentsGraduatedPage,
   BackupsPage,
+  ReportsPage,
 } from './lazyPages';
 
 export function AppRouter() {
@@ -190,10 +190,7 @@ export function AppRouter() {
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <ComingSoonPage
-                    title="Reportes"
-                    description="Esta sección está en desarrollo. Aquí podrás generar y visualizar reportes del sistema."
-                  />
+                  <ReportsPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>

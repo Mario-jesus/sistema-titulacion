@@ -12,6 +12,7 @@ import { graduationsHandlers } from './graduations.handlers';
 import { ingressEgressHandlers } from './ingress-egress.handlers';
 import { dashboardHandlers } from './dashboard.handlers';
 import { backupsHandlers } from './backups.handlers';
+import { reportsHandlers } from './reports.handlers';
 
 /**
  * Combina todos los handlers de diferentes módulos
@@ -36,6 +37,7 @@ export const handlers: HttpHandler[] = [
   ...ingressEgressHandlers,
   ...dashboardHandlers,
   ...backupsHandlers,
+  ...reportsHandlers,
   // Agrega más handlers aquí cuando los necesites:
   // ...modulesHandlers,
   // etc.

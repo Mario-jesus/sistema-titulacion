@@ -44,6 +44,36 @@ export const mockGenerations: Generation[] = [
     createdAt: new Date('2024-01-18T10:00:00Z'),
     updatedAt: new Date('2024-01-20T10:00:00Z'),
   },
+  {
+    id: '5',
+    name: 'Generación 2018-2022',
+    startYear: new Date('2018-08-01T00:00:00Z'),
+    endYear: new Date('2022-07-31T23:59:59Z'),
+    description: 'Generación de estudiantes que ingresaron en 2018',
+    isActive: false,
+    createdAt: new Date('2024-01-19T10:00:00Z'),
+    updatedAt: new Date('2024-01-19T10:00:00Z'),
+  },
+  {
+    id: '6',
+    name: 'Generación 2017-2021',
+    startYear: new Date('2017-08-01T00:00:00Z'),
+    endYear: new Date('2021-07-31T23:59:59Z'),
+    description: 'Generación de estudiantes que ingresaron en 2017',
+    isActive: false,
+    createdAt: new Date('2024-01-20T10:00:00Z'),
+    updatedAt: new Date('2024-01-20T10:00:00Z'),
+  },
+  {
+    id: '7',
+    name: 'Generación 2023-2027',
+    startYear: new Date('2023-08-01T00:00:00Z'),
+    endYear: new Date('2027-07-31T23:59:59Z'),
+    description: 'Generación de estudiantes que ingresaron en 2023',
+    isActive: true,
+    createdAt: new Date('2024-01-21T10:00:00Z'),
+    updatedAt: new Date('2024-01-21T10:00:00Z'),
+  },
 ];
 
 /**

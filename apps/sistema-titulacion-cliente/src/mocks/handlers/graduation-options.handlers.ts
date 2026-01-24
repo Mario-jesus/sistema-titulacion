@@ -43,7 +43,7 @@ interface ListResponse {
 export const graduationOptionsHandlers = [
   // GET /graduation-options (List)
   http.get(buildApiUrl('/graduation-options'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -145,7 +145,7 @@ export const graduationOptionsHandlers = [
 
   // GET /graduation-options/:id (Detail)
   http.get(buildApiUrl('/graduation-options/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const option = findGraduationOptionById(id as string);
@@ -169,7 +169,7 @@ export const graduationOptionsHandlers = [
 
   // POST /graduation-options (Create)
   http.post(buildApiUrl('/graduation-options'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateGraduationOptionRequest;
 
@@ -224,7 +224,7 @@ export const graduationOptionsHandlers = [
   http.put(
     buildApiUrl('/graduation-options/:id'),
     async ({ params, request }) => {
-      await delay(400);
+      await delay();
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);
@@ -291,7 +291,7 @@ export const graduationOptionsHandlers = [
   http.patch(
     buildApiUrl('/graduation-options/:id'),
     async ({ params, request }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);
@@ -362,7 +362,7 @@ export const graduationOptionsHandlers = [
 
   // DELETE /graduation-options/:id
   http.delete(buildApiUrl('/graduation-options/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const index = mockGraduationOptions.findIndex((opt) => opt.id === id);
@@ -388,7 +388,7 @@ export const graduationOptionsHandlers = [
   http.post(
     buildApiUrl('/graduation-options/:id/activate'),
     async ({ params }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);
@@ -418,7 +418,7 @@ export const graduationOptionsHandlers = [
   http.post(
     buildApiUrl('/graduation-options/:id/deactivate'),
     async ({ params }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);

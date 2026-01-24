@@ -24,6 +24,14 @@ export type {
   SortDirection,
 } from './Table';
 
+export { GroupedTable } from './Table/GroupedTable';
+export type {
+  GroupedTableProps,
+  GroupedColumn,
+  GroupedTableRow,
+  ThemeColor,
+} from './Table/GroupedTable';
+
 export { Pagination } from './Pagination/Pagination';
 export type { PaginationProps } from './Pagination/Pagination';
 

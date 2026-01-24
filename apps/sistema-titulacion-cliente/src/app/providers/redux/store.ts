@@ -17,6 +17,7 @@ import { studentsReducer } from '@features/students';
 import { capturedFieldsReducer } from '@features/captured-fields';
 import { graduationsReducer } from '@features/graduations';
 import { backupsReducer } from '@features/backups';
+import { reportsReducer } from '@features/reports';
 import { userReducer, setUser, clearUser } from '@entities/user';
 
 export const store = configureStore({
@@ -35,6 +36,7 @@ export const store = configureStore({
     capturedFields: capturedFieldsReducer,
     graduations: graduationsReducer,
     backups: backupsReducer,
+    reports: reportsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

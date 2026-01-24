@@ -39,7 +39,7 @@ interface ListResponse {
 export const modalitiesHandlers = [
   // GET /modalities (List)
   http.get(buildApiUrl('/modalities'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -141,7 +141,7 @@ export const modalitiesHandlers = [
 
   // GET /modalities/:id (Detail)
   http.get(buildApiUrl('/modalities/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const modality = findModalityById(id as string);
@@ -165,7 +165,7 @@ export const modalitiesHandlers = [
 
   // POST /modalities (Create)
   http.post(buildApiUrl('/modalities'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateModalityRequest;
 
@@ -217,7 +217,7 @@ export const modalitiesHandlers = [
 
   // PUT /modalities/:id (Update)
   http.put(buildApiUrl('/modalities/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const { id } = params;
     const modality = findModalityById(id as string);
@@ -281,7 +281,7 @@ export const modalitiesHandlers = [
 
   // PATCH /modalities/:id (Partial Update)
   http.patch(buildApiUrl('/modalities/:id'), async ({ params, request }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const modality = findModalityById(id as string);
@@ -350,7 +350,7 @@ export const modalitiesHandlers = [
 
   // DELETE /modalities/:id
   http.delete(buildApiUrl('/modalities/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const index = mockModalities.findIndex((mod: Modality) => mod.id === id);
@@ -374,7 +374,7 @@ export const modalitiesHandlers = [
 
   // POST /modalities/:id/activate
   http.post(buildApiUrl('/modalities/:id/activate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const modality = findModalityById(id as string);
@@ -401,7 +401,7 @@ export const modalitiesHandlers = [
 
   // POST /modalities/:id/deactivate
   http.post(buildApiUrl('/modalities/:id/deactivate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const modality = findModalityById(id as string);

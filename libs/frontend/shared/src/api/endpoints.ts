@@ -131,4 +131,8 @@ export const API_ENDPOINTS = {
     RESTORE: (id: string) => `/backups/${id}/restore`,
     UPLOAD: '/backups/upload',
   },
+  // Reportes
+  REPORTS: {
+    GENERATE: '/reports/generate',
+  },
 } as const;

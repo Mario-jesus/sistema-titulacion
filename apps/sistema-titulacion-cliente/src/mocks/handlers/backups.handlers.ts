@@ -38,7 +38,7 @@ interface ListResponse {
 export const backupsHandlers = [
   // GET /backups (List)
   http.get(buildApiUrl(API_ENDPOINTS.BACKUPS.LIST), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -90,7 +90,7 @@ export const backupsHandlers = [
   http.get(
     buildApiUrl(API_ENDPOINTS.BACKUPS.DETAIL(':id')),
     async ({ params }) => {
-      await delay(200);
+      await delay();
 
       const id = params.id as string;
       const backup = findBackupById(id);
@@ -111,7 +111,7 @@ export const backupsHandlers = [
 
   // POST /backups (Create)
   http.post(buildApiUrl(API_ENDPOINTS.BACKUPS.CREATE), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateBackupRequest;
 
@@ -150,7 +150,7 @@ export const backupsHandlers = [
   http.delete(
     buildApiUrl(API_ENDPOINTS.BACKUPS.DELETE(':id')),
     async ({ params }) => {
-      await delay(300);
+      await delay();
 
       const id = params.id as string;
       const index = mockBackups.findIndex((backup) => backup.id === id);
@@ -175,7 +175,7 @@ export const backupsHandlers = [
   http.get(
     buildApiUrl(API_ENDPOINTS.BACKUPS.DOWNLOAD(':id')),
     async ({ params }) => {
-      await delay(500);
+      await delay();
 
       const id = params.id as string;
       const backup = findBackupById(id);
@@ -213,7 +213,7 @@ export const backupsHandlers = [
   http.post(
     buildApiUrl(API_ENDPOINTS.BACKUPS.RESTORE(':id')),
     async ({ params, request }) => {
-      await delay(300);
+      await delay();
 
       const id = params.id as string;
       const backup = findBackupById(id);
@@ -248,7 +248,7 @@ export const backupsHandlers = [
 
   // POST /backups/upload (Upload file for restore)
   http.post(buildApiUrl(API_ENDPOINTS.BACKUPS.UPLOAD), async ({ request }) => {
-    await delay(1000);
+    await delay();
 
     // En producción, aquí se procesaría el archivo subido
     // Por ahora simulamos la subida y restauración

@@ -36,3 +36,6 @@ export * from './dashboard';
 
 // Backups feature
 export * from './backups';
+
+// Reports feature
+export * from './reports';

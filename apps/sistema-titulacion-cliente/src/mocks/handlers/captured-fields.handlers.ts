@@ -31,7 +31,7 @@ interface UpdateCapturedFieldsRequest {
 export const capturedFieldsHandlers = [
   // GET /captured-fields/student/:id (Detail by studentId)
   http.get(buildApiUrl('/captured-fields/student/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const fieldsArray = findCapturedFieldsByStudentId(id as string);
@@ -59,7 +59,7 @@ export const capturedFieldsHandlers = [
 
   // POST /captured-fields (Create)
   http.post(buildApiUrl('/captured-fields'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateCapturedFieldsRequest;
 
@@ -181,7 +181,7 @@ export const capturedFieldsHandlers = [
   http.put(
     buildApiUrl('/captured-fields/student/:id'),
     async ({ params, request }) => {
-      await delay(400);
+      await delay();
 
       const { id } = params;
       const fieldsArray = findCapturedFieldsByStudentId(id as string);
@@ -303,7 +303,7 @@ export const capturedFieldsHandlers = [
   http.patch(
     buildApiUrl('/captured-fields/student/:id'),
     async ({ params, request }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const fieldsArray = findCapturedFieldsByStudentId(id as string);
@@ -432,7 +432,7 @@ export const capturedFieldsHandlers = [
   http.delete(
     buildApiUrl('/captured-fields/student/:id'),
     async ({ params }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const fieldsArray = findCapturedFieldsByStudentId(id as string);

@@ -159,7 +159,7 @@ function excludeAvatar(user: User): Omit<User, 'avatar'> & { avatar?: never } {
 export const usersHandlers = [
   // GET /users (List)
   http.get(buildApiUrl('/users'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -317,7 +317,7 @@ export const usersHandlers = [
 
   // GET /users/:id (Detail)
   http.get(buildApiUrl('/users/:id'), async ({ params, request }) => {
-    await delay(200);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -364,7 +364,7 @@ export const usersHandlers = [
 
   // POST /users (Create)
   http.post(buildApiUrl('/users'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -509,7 +509,7 @@ export const usersHandlers = [
 
   // PUT /users/:id (Update) - Solo administradores
   http.put(buildApiUrl('/users/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -643,7 +643,7 @@ export const usersHandlers = [
   // PATCH /users/me (Update own profile) - Usuario autenticado
   // IMPORTANTE: Este handler debe estar ANTES de /users/:id para evitar que :id capture "me"
   http.patch(buildApiUrl('/users/me'), async ({ request }) => {
-    await delay(400);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -751,7 +751,7 @@ export const usersHandlers = [
 
   // PATCH /users/:id (Partial Update) - Solo administradores
   http.patch(buildApiUrl('/users/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -884,7 +884,7 @@ export const usersHandlers = [
 
   // DELETE /users/:id (Delete)
   http.delete(buildApiUrl('/users/:id'), async ({ params, request }) => {
-    await delay(300);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -944,7 +944,7 @@ export const usersHandlers = [
 
   // POST /users/:id/activate
   http.post(buildApiUrl('/users/:id/activate'), async ({ params, request }) => {
-    await delay(200);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -996,7 +996,7 @@ export const usersHandlers = [
   http.post(
     buildApiUrl('/users/:id/deactivate'),
     async ({ params, request }) => {
-      await delay(200);
+      await delay();
 
       const authenticatedUser = getAuthenticatedUser(request);
       if (!authenticatedUser) {
@@ -1059,7 +1059,7 @@ export const usersHandlers = [
   // POST /users/me/change-password (Change own password) - Usuario autenticado
   // IMPORTANTE: Este handler debe estar ANTES de /users/:id/change-password para evitar que :id capture "me"
   http.post(buildApiUrl('/users/me/change-password'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const authenticatedUser = getAuthenticatedUser(request);
     if (!authenticatedUser) {
@@ -1144,7 +1144,7 @@ export const usersHandlers = [
   http.post(
     buildApiUrl('/users/:id/change-password'),
     async ({ params, request }) => {
-      await delay(300);
+      await delay();
 
       const authenticatedUser = getAuthenticatedUser(request);
       if (!authenticatedUser) {

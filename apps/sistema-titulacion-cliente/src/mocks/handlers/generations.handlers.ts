@@ -47,7 +47,7 @@ interface ListResponse {
 export const generationsHandlers = [
   // GET /generations (List)
   http.get(buildApiUrl('/generations'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -168,7 +168,7 @@ export const generationsHandlers = [
 
   // GET /generations/:id (Detail)
   http.get(buildApiUrl('/generations/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const generation = findGenerationById(id as string);
@@ -194,7 +194,7 @@ export const generationsHandlers = [
 
   // POST /generations (Create)
   http.post(buildApiUrl('/generations'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateGenerationRequest;
 
@@ -274,7 +274,7 @@ export const generationsHandlers = [
 
   // PUT /generations/:id (Update)
   http.put(buildApiUrl('/generations/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const { id } = params;
     const generation = findGenerationById(id as string);
@@ -380,7 +380,7 @@ export const generationsHandlers = [
 
   // PATCH /generations/:id (Partial Update)
   http.patch(buildApiUrl('/generations/:id'), async ({ params, request }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const generation = findGenerationById(id as string);
@@ -480,7 +480,7 @@ export const generationsHandlers = [
 
   // DELETE /generations/:id
   http.delete(buildApiUrl('/generations/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const index = mockGenerations.findIndex((gen: Generation) => gen.id === id);
@@ -504,7 +504,7 @@ export const generationsHandlers = [
 
   // POST /generations/:id/activate
   http.post(buildApiUrl('/generations/:id/activate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const generation = findGenerationById(id as string);
@@ -533,7 +533,7 @@ export const generationsHandlers = [
 
   // POST /generations/:id/deactivate
   http.post(buildApiUrl('/generations/:id/deactivate'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const generation = findGenerationById(id as string);

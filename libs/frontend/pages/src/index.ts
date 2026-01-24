@@ -13,3 +13,4 @@ export * from './StudentsScheduledPage';
 export * from './StudentsGraduatedPage';
 export * from './AccessesPage';
 export * from './BackupsPage';
+export * from './ReportsPage';

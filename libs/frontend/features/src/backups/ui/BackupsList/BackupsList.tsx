@@ -545,7 +545,7 @@ export function BackupsList() {
               Restaurar desde Archivo
             </Button>
             <Button
-              variant="primary"
+              variant="outline"
               size="small"
               onClick={() => setIsCreateModalOpen(true)}
             >

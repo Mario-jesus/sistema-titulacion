@@ -111,7 +111,7 @@ interface GraduatedListResponse {
 export const studentsHandlers = [
   // GET /students (List)
   http.get(buildApiUrl('/students'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -293,7 +293,7 @@ export const studentsHandlers = [
 
   // GET /students/in-progress (List Students In Progress)
   http.get(buildApiUrl('/students/in-progress'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -490,7 +490,7 @@ export const studentsHandlers = [
 
   // GET /students/scheduled (List Scheduled Students)
   http.get(buildApiUrl('/students/scheduled'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -700,7 +700,7 @@ export const studentsHandlers = [
 
   // GET /students/graduated (List Graduated Students)
   http.get(buildApiUrl('/students/graduated'), async ({ request }) => {
-    await delay(300);
+    await delay();
 
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
@@ -893,7 +893,7 @@ export const studentsHandlers = [
 
   // GET /students/:id (Detail)
   http.get(buildApiUrl('/students/:id'), async ({ params }) => {
-    await delay(200);
+    await delay();
 
     const { id } = params;
     const student = findStudentById(id as string);
@@ -918,7 +918,7 @@ export const studentsHandlers = [
 
   // POST /students (Create)
   http.post(buildApiUrl('/students'), async ({ request }) => {
-    await delay(500);
+    await delay();
 
     const body = (await request.json()) as CreateStudentRequest;
 
@@ -1069,7 +1069,7 @@ export const studentsHandlers = [
 
   // PUT /students/:id (Update)
   http.put(buildApiUrl('/students/:id'), async ({ params, request }) => {
-    await delay(400);
+    await delay();
 
     const { id } = params;
     const student = findStudentById(id as string);
@@ -1268,7 +1268,7 @@ export const studentsHandlers = [
 
   // PATCH /students/:id (Partial Update)
   http.patch(buildApiUrl('/students/:id'), async ({ params, request }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const student = findStudentById(id as string);
@@ -1480,7 +1480,7 @@ export const studentsHandlers = [
 
   // DELETE /students/:id
   http.delete(buildApiUrl('/students/:id'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const index = mockStudents.findIndex(
@@ -1508,7 +1508,7 @@ export const studentsHandlers = [
   http.post(
     buildApiUrl('/students/:id/status'),
     async ({ params, request }) => {
-      await delay(300);
+      await delay();
 
       const { id } = params;
       const student = findStudentById(id as string);
@@ -1622,7 +1622,7 @@ export const studentsHandlers = [
 
   // POST /students/:id/egress (Marcar como egresado)
   http.post(buildApiUrl('/students/:id/egress'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const student = findStudentById(id as string);
@@ -1662,7 +1662,7 @@ export const studentsHandlers = [
 
   // POST /students/:id/unegress (Marcar como no egresado)
   http.post(buildApiUrl('/students/:id/unegress'), async ({ params }) => {
-    await delay(300);
+    await delay();
 
     const { id } = params;
     const student = findStudentById(id as string);
