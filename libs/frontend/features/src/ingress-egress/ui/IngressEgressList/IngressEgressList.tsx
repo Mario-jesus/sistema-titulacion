@@ -3,7 +3,9 @@ import { PageHeader } from '@widgets/PageHeader';
 import { Table, useToast, FilterDropdown, Pagination } from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
+import { exportTable } from '@shared/lib/excel';
 import { useIngressEgress } from '../../lib/useIngressEgress';
+import { ingressEgressService } from '../../api/ingressEgressService';
 import type { IngressEgress } from '@entities/ingress-egress';
 import type { TableColumn, DetailField } from '@shared/ui';
 
@@ -223,6 +225,86 @@ export function IngressEgressList() {
     return false;
   });
 
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Función para exportar a Excel
+  const handleExportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      // Obtener todos los datos sin paginación para exportar
+      const response = await ingressEgressService.list({
+        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+        search: searchTerm || undefined,
+        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+        ...(filters.generationId
+          ? { generationId: filters.generationId as string }
+          : {}),
+        ...(filters.careerId ? { careerId: filters.careerId as string } : {}),
+      });
+
+      // Columnas para exportación
+      const exportColumns: TableColumn<IngressEgress>[] = [
+        {
+          key: 'generationName',
+          label: 'Generación',
+        },
+        {
+          key: 'careerName',
+          label: 'Carrera',
+        },
+        {
+          key: 'admissionNumber',
+          label: 'Ingreso',
+        },
+        {
+          key: 'egressNumber',
+          label: 'Egreso',
+        },
+      ];
+
+      // Preparar datos para exportación
+      // Los números se exportan como números (sin formato de miles)
+      const exportData = response.data.map((item) => ({
+        ...item,
+        admissionNumber: item.admissionNumber,
+        egressNumber: item.egressNumber,
+      }));
+
+      // Generar nombre de archivo con fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `ingreso-egreso-${dateStr}`;
+
+      // Exportar
+      await exportTable({
+        filename,
+        sheetName: 'Ingreso y Egreso',
+        columns: exportColumns,
+        data: exportData,
+        title: 'Ingreso y Egreso',
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message:
+          'Los datos de ingreso y egreso se han exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar ingreso y egreso:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar los datos de ingreso y egreso',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [searchTerm, sortBy, sortOrder, filters, showToast]);
+
   // Acciones de fila (solo ver detalles, sin editar/eliminar)
   const getRowActions = useCallback(
     (ingressEgress: IngressEgress): DropdownMenuItem[] => {
@@ -246,6 +328,12 @@ export function IngressEgressList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
+          exportAction={{
+            label: 'Exportar a Excel',
+            onClick: handleExportToExcel,
+            isLoading: isExporting,
+            disabled: isLoadingList || ingressEgressList.length === 0,
+          }}
           filters={
             filterConfigs.length > 0
               ? {

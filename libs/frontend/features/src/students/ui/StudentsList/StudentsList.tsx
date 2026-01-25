@@ -9,7 +9,9 @@ import {
 } from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
+import { exportTable } from '@shared/lib/excel';
 import { useStudents } from '../../lib/useStudents';
+import { studentsService } from '../../api/studentsService';
 import { StudentForm } from '../StudentForm/StudentForm';
 import { loadGenerations } from '../../api/generationsHelper';
 import { loadCareers } from '../../api/careersHelper';
@@ -121,8 +123,27 @@ export function StudentsList({
   // Helper para obtener nombre de generación
   const getGenerationName = useCallback(
     (generationId: string) => {
+      if (!generationId) return '';
       const generation = generations.find((g) => g.id === generationId);
-      return generation?.name || generationId;
+      if (!generation) return '';
+
+      // Si tiene nombre, usarlo
+      if (generation.name) return generation.name;
+
+      // Si no tiene nombre, usar startYear-endYear como fallback
+      if (generation.startYear && generation.endYear) {
+        const startYear =
+          generation.startYear instanceof Date
+            ? generation.startYear.getFullYear()
+            : new Date(generation.startYear).getFullYear();
+        const endYear =
+          generation.endYear instanceof Date
+            ? generation.endYear.getFullYear()
+            : new Date(generation.endYear).getFullYear();
+        return `${startYear}-${endYear}`;
+      }
+
+      return '';
     },
     [generations]
   );
@@ -130,8 +151,9 @@ export function StudentsList({
   // Helper para obtener nombre de carrera
   const getCareerName = useCallback(
     (careerId: string) => {
+      if (!careerId) return '';
       const career = careers.find((c) => c.id === careerId);
-      return career?.name || careerId;
+      return career?.name || '';
     },
     [careers]
   );
@@ -139,11 +161,11 @@ export function StudentsList({
   // Helper para obtener nombre de opción de graduación
   const getGraduationOptionName = useCallback(
     (graduationOptionId: string | null) => {
-      if (!graduationOptionId) return '—';
+      if (!graduationOptionId) return '';
       const option = graduationOptions.find(
         (opt) => opt.id === graduationOptionId
       );
-      return option?.name || graduationOptionId;
+      return option?.name || '';
     },
     [graduationOptions]
   );
@@ -871,6 +893,122 @@ export function StudentsList({
     return false;
   });
 
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Función para exportar a Excel
+  const handleExportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      // Obtener todos los datos sin paginación para exportar
+      const response = await studentsService.list({
+        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+        search: searchTerm || undefined,
+        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+        ...(filters.status ? { status: filters.status as StudentStatus } : {}),
+        ...(filters.isEgressed && filters.isEgressed !== 'all'
+          ? { isEgressed: filters.isEgressed === 'true' }
+          : {}),
+        ...(filters.generationId
+          ? { generationId: filters.generationId as string }
+          : {}),
+        ...(filters.careerId ? { careerId: filters.careerId as string } : {}),
+        ...(graduatedOnly ? { isEgressed: true } : {}),
+      });
+
+      // Columnas para exportación
+      const exportColumns: TableColumn<
+        Student & {
+          fullName: string;
+          generationName: string;
+          careerName: string;
+          statusLabel: string;
+        }
+      >[] = [
+        {
+          key: 'controlNumber',
+          label: 'Número de Control',
+        },
+        {
+          key: 'fullName',
+          label: 'Nombre Completo',
+        },
+        {
+          key: 'email',
+          label: 'Email',
+        },
+        {
+          key: 'generationName',
+          label: 'Generación',
+        },
+        {
+          key: 'careerName',
+          label: 'Carrera',
+        },
+        {
+          key: 'isEgressed',
+          label: 'Egresado',
+        },
+        {
+          key: 'statusLabel',
+          label: 'Estado',
+        },
+      ];
+
+      // Preparar datos para exportación
+      const exportData = response.data.map((student) => ({
+        ...student,
+        fullName:
+          `${student.firstName} ${student.paternalLastName} ${student.maternalLastName}`.trim(),
+        generationName: getGenerationName(student.generationId),
+        careerName: getCareerName(student.careerId),
+        isEgressed: student.isEgressed ? 'Sí' : 'No',
+        statusLabel: getStatusLabel(student.status),
+      }));
+
+      // Generar nombre de archivo con fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `estudiantes-${dateStr}`;
+
+      // Exportar
+      await exportTable({
+        filename,
+        sheetName: 'Estudiantes',
+        columns: exportColumns,
+        data: exportData,
+        title: 'Estudiantes',
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message: 'Los estudiantes se han exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar estudiantes:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar los estudiantes',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [
+    searchTerm,
+    sortBy,
+    sortOrder,
+    filters,
+    graduatedOnly,
+    getGenerationName,
+    getCareerName,
+    getStatusLabel,
+    showToast,
+  ]);
+
   // Mapear StudentStatus a claves para createStatusActions
   const getStatusKey = useCallback((status: StudentStatus) => {
     switch (status) {
@@ -1006,6 +1144,12 @@ export function StudentsList({
           primaryAction={{
             label: 'Añadir',
             onClick: () => setIsCreateModalOpen(true),
+          }}
+          exportAction={{
+            label: 'Exportar a Excel',
+            onClick: handleExportToExcel,
+            isLoading: isExporting,
+            disabled: isLoadingList || students.length === 0,
           }}
           filters={{
             label: 'Filtros',

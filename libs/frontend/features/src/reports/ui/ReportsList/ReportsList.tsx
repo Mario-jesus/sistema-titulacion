@@ -9,8 +9,9 @@ import {
 } from '@shared/ui';
 import type { TableColumn } from '@shared/ui';
 import type { GroupedColumn, GroupedTableRow } from '@shared/ui';
+import { exportTable, exportGroupedTable } from '@shared/lib/excel';
 import { useReports } from '../../lib/useReports';
-import { useCareers } from '@features/careers';
+import { useCareers } from '../../../careers';
 import { Sex } from '@entities/student';
 import type {
   ReportType,
@@ -797,6 +798,124 @@ export function ReportsList() {
     }
   };
 
+  // Función para exportar el reporte a Excel
+  const handleExportToExcel = useCallback(async () => {
+    if (!currentReport) {
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message: 'No hay reporte generado para exportar',
+      });
+      return;
+    }
+
+    try {
+      // Generar nombre de archivo basado en el tipo de reporte y fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const reportTypeStr =
+        currentReport.type === 'por-generaciones'
+          ? 'por-generaciones'
+          : 'por-carreras';
+      const filename = `reporte-${reportTypeStr}-${dateStr}`;
+
+      // Generar título del reporte
+      const title = `Reporte ${
+        currentReport.type === 'por-generaciones'
+          ? 'por Generaciones'
+          : 'por Carreras'
+      }`;
+
+      switch (currentReport.tableType) {
+        case 'grouped': {
+          const grouped = transformGroupedReport(
+            currentReport as ReportByGenerationsGroupedResponse
+          );
+          await exportGroupedTable({
+            filename,
+            sheetName: 'Reporte',
+            rowIndexLabel: 'POR COHORTE',
+            columnGroups: grouped.columnGroups,
+            rows: grouped.rows,
+            title,
+          });
+          break;
+        }
+
+        case 'table': {
+          if (currentReport.type === 'por-generaciones') {
+            const table = transformGenerationsTableReport(
+              currentReport as ReportByGenerationsTableResponse
+            );
+            await exportTable({
+              filename,
+              sheetName: 'Reporte',
+              columns: table.columns,
+              data: table.data,
+              title,
+            });
+          } else {
+            const table = transformCareersTableReport(
+              currentReport as ReportByCareersTableResponse
+            );
+            await exportTable({
+              filename,
+              sheetName: 'Reporte',
+              columns: table.columns,
+              data: table.data,
+              title,
+            });
+          }
+          break;
+        }
+
+        case 'summary': {
+          const table = transformSummaryReport(
+            currentReport as ReportOverallSummaryResponse
+          );
+          await exportTable({
+            filename,
+            sheetName: 'Reporte',
+            columns: table.columns,
+            data: table.data,
+            title,
+          });
+          break;
+        }
+
+        default:
+          showToast({
+            type: 'error',
+            title: 'Error al exportar',
+            message: 'Tipo de reporte no soportado para exportación',
+          });
+          return;
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message: 'El reporte se ha exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar reporte:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar el reporte',
+      });
+    }
+  }, [
+    currentReport,
+    transformGroupedReport,
+    transformGenerationsTableReport,
+    transformCareersTableReport,
+    transformSummaryReport,
+    showToast,
+  ]);
+
   // Función para generar reporte
   const handleGenerateReport = useCallback(async () => {
     const request = {
@@ -862,13 +981,25 @@ export function ReportsList() {
           >
             Reportes
           </h2>
-          <Button
-            variant="outline"
-            size="small"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Configurar Reporte
-          </Button>
+          <div className="flex items-center gap-3">
+            {currentReport && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={handleExportToExcel}
+                disabled={isLoading}
+              >
+                Exportar a Excel
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="small"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Configurar Reporte
+            </Button>
+          </div>
         </div>
       </div>
 

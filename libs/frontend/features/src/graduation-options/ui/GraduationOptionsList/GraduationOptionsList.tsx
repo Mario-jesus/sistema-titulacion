@@ -9,7 +9,9 @@ import {
 } from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
+import { exportTable } from '@shared/lib/excel';
 import { useGraduationOptions } from '../../lib/useGraduationOptions';
+import { graduationOptionsService } from '../../api/graduationOptionsService';
 import { GraduationOptionForm } from '../GraduationOptionForm/GraduationOptionForm';
 import type { GraduationOption } from '@entities/graduation-option';
 import type { TableColumn, DetailField } from '@shared/ui';
@@ -364,6 +366,77 @@ export function GraduationOptionsList() {
     return false;
   });
 
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Función para exportar a Excel
+  const handleExportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      // Obtener todos los datos sin paginación para exportar
+      const response = await graduationOptionsService.list({
+        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+        search: searchTerm || undefined,
+        activeOnly: activeOnly || undefined,
+        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+      });
+
+      // Columnas para exportación (incluyendo estado)
+      const exportColumns: TableColumn<GraduationOption>[] = [
+        {
+          key: 'name',
+          label: 'Nombre',
+        },
+        {
+          key: 'description',
+          label: 'Descripción',
+        },
+        {
+          key: 'isActive',
+          label: 'Estado',
+        },
+      ];
+
+      // Preparar datos para exportación
+      const exportData = response.data.map((option) => ({
+        ...option,
+        isActive: option.isActive ? 'Activa' : 'Inactiva',
+      }));
+
+      // Generar nombre de archivo con fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `opciones-titulacion-${dateStr}`;
+
+      // Exportar
+      await exportTable({
+        filename,
+        sheetName: 'Opciones de Titulación',
+        columns: exportColumns,
+        data: exportData,
+        title: 'Opciones de Titulación',
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message:
+          'Las opciones de titulación se han exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar opciones de titulación:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar las opciones de titulación',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [searchTerm, activeOnly, sortBy, sortOrder, showToast]);
+
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (option: GraduationOption): DropdownMenuItem[] => {
@@ -437,6 +510,12 @@ export function GraduationOptionsList() {
           primaryAction={{
             label: 'Añadir',
             onClick: () => setIsCreateModalOpen(true),
+          }}
+          exportAction={{
+            label: 'Exportar a Excel',
+            onClick: handleExportToExcel,
+            isLoading: isExporting,
+            disabled: isLoadingList || graduationOptions.length === 0,
           }}
           filters={{
             label: 'Filtros',

@@ -117,10 +117,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         .join(' '),
       secondary: [
         'border-none',
-        'bg-(--color-gray-3)',
+        'bg-gray-2-light dark:bg-gray-3-dark',
         'text-(--color-base-secondary-typo)',
-        isInteractive && 'hover:bg-(--color-gray-3)/85',
-        isInteractive && 'active:bg-(--color-gray-3)/70',
+        isInteractive &&
+          'hover:bg-gray-1-light/50 dark:hover:bg-gray-3-dark/50',
+        isInteractive &&
+          'active:bg-gray-1-light/70 dark:active:bg-gray-3-dark/70',
         'focus-visible:outline-(--color-primary-color)',
       ]
         .filter(Boolean)

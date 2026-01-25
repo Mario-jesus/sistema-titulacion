@@ -13,6 +13,7 @@ import type {
   DropdownMenuItem,
   DetailField,
 } from '@shared/ui';
+import { exportTable } from '@shared/lib/excel';
 import { useStudents } from '../../lib/useStudents';
 import { useGraduations } from '@features/graduations';
 import { StudentForm } from '../StudentForm/StudentForm';
@@ -129,14 +130,46 @@ export function StudentsGraduatedList() {
   // Helper para obtener nombre de opción de graduación
   const getGraduationOptionName = useCallback(
     (graduationOptionId: string | null) => {
-      if (!graduationOptionId) return '—';
+      if (!graduationOptionId) return '';
       const option = graduationOptions.find(
         (opt) => opt.id === graduationOptionId
       );
-      return option?.name || graduationOptionId;
+      return option?.name || '';
     },
     [graduationOptions]
   );
+
+  // Formatear fecha de graduación (para UI)
+  const formatGraduationDate = useCallback((dateString: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return '';
+    }
+  }, []);
+
+  // Formatear fecha en formato YYYY-mm-dd (para exportación)
+  const formatDateForExport = useCallback((dateString: string | null) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      // Verificar que la fecha es válida
+      if (isNaN(date.getTime())) return '';
+      // Formatear como YYYY-mm-dd
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch {
+      return '';
+    }
+  }, []);
 
   // Cargar estudiantes titulados
   const loadStudents = useCallback(async () => {
@@ -496,6 +529,120 @@ export function StudentsGraduatedList() {
     return false;
   });
 
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Función para exportar a Excel
+  const handleExportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      // Obtener todos los datos sin paginación para exportar
+      const response = await studentsService.listGraduated({
+        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+        search: searchTerm || undefined,
+        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+        ...(filters.careerId ? { careerId: filters.careerId as string } : {}),
+        ...(filters.generationId
+          ? { generationId: filters.generationId as string }
+          : {}),
+        ...(filters.sex ? { sex: filters.sex as string } : {}),
+      });
+
+      // Columnas para exportación
+      const exportColumns: TableColumn<
+        GraduatedStudent & {
+          careerName: string;
+          generationName: string;
+          graduationOptionName: string;
+          sexLabel: string;
+        }
+      >[] = [
+        {
+          key: 'controlNumber',
+          label: 'Número de Control',
+        },
+        {
+          key: 'fullName',
+          label: 'Nombre Completo',
+        },
+        {
+          key: 'sexLabel',
+          label: 'Sexo',
+        },
+        {
+          key: 'careerName',
+          label: 'Carrera',
+        },
+        {
+          key: 'generationName',
+          label: 'Generación',
+        },
+        {
+          key: 'graduationOptionName',
+          label: 'Opción de Titulación',
+        },
+        {
+          key: 'graduationDate',
+          label: 'Fecha de Titulación',
+        },
+      ];
+
+      // Preparar datos para exportación
+      const exportData = response.data.map((student) => ({
+        ...student,
+        careerName: getCareerName(student.careerId),
+        generationName: getGenerationName(student.generationId),
+        graduationOptionName: getGraduationOptionName(
+          student.graduationOptionId
+        ),
+        sexLabel: student.sex === 'MASCULINO' ? 'Masculino' : 'Femenino',
+        graduationDate: formatDateForExport(student.graduationDate),
+      }));
+
+      // Generar nombre de archivo con fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `estudiantes-titulados-${dateStr}`;
+
+      // Exportar
+      await exportTable({
+        filename,
+        sheetName: 'Estudiantes Titulados',
+        columns: exportColumns,
+        data: exportData,
+        title: 'Estudiantes Titulados',
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message:
+          'Los estudiantes titulados se han exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar estudiantes titulados:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar los estudiantes titulados',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [
+    searchTerm,
+    sortBy,
+    sortOrder,
+    filters,
+    getCareerName,
+    getGenerationName,
+    getGraduationOptionName,
+    formatDateForExport,
+    showToast,
+  ]);
+
   // Configuración de filtros
   const filterConfigs: FilterConfig[] = useMemo(
     () => [
@@ -529,20 +676,6 @@ export function StudentsGraduatedList() {
     ],
     [careers, generations]
   );
-
-  // Formatear fecha de graduación
-  const formatGraduationDate = useCallback((dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return dateString;
-    }
-  }, []);
 
   // Columnas de la tabla
   const columns: TableColumn<GraduatedStudent>[] = useMemo(
@@ -882,6 +1015,12 @@ export function StudentsGraduatedList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
+          exportAction={{
+            label: 'Exportar a Excel',
+            onClick: handleExportToExcel,
+            isLoading: isExporting,
+            disabled: isLoadingGraduated || graduatedStudents.length === 0,
+          }}
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),

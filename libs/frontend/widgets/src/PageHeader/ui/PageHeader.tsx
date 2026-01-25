@@ -40,6 +40,17 @@ import { FilterIcon, PlusIcon } from './icons';
  *   }}
  * />
  *
+ * // Con acción de exportación
+ * <PageHeader
+ *   title="Reportes"
+ *   exportAction={{
+ *     label: 'Exportar a Excel',
+ *     onClick: () => handleExport(),
+ *     isLoading: isExporting,
+ *     disabled: !hasData
+ *   }}
+ * />
+ *
  * // Uso completo con todas las opciones
  * <PageHeader
  *   title="Opciones de titulación"
@@ -54,6 +65,11 @@ import { FilterIcon, PlusIcon } from './icons';
  *     label: 'Añadir',
  *     onClick: () => handleAdd(),
  *     isLoading: isAdding
+ *   }}
+ *   exportAction={{
+ *     label: 'Exportar a Excel',
+ *     onClick: () => handleExport(),
+ *     isLoading: isExporting
  *   }}
  *   filters={{
  *     label: 'Filtros',
@@ -76,11 +92,12 @@ export function PageHeader({
   onSearchClear,
   primaryAction,
   filters,
+  exportAction,
   className = '',
 }: PageHeaderProps) {
   return (
     <div className={`flex flex-col gap-3 md:gap-4 w-full ${className}`}>
-      {/* Primera fila: Título y acción principal */}
+      {/* Primera fila: Título y acciones */}
       <div className="flex items-center justify-between gap-2 md:gap-4 w-full min-w-0">
         <h2
           className="text-lg md:text-xl font-semibold min-w-0 flex-1 truncate"
@@ -91,22 +108,35 @@ export function PageHeader({
           {title}
         </h2>
 
-        {primaryAction && (
-          <Button
-            variant="outline"
-            size="small"
-            onClick={primaryAction.onClick}
-            isLoading={primaryAction.isLoading}
-            className="shrink-0"
-          >
-            {primaryAction.icon ? (
-              <span className="mr-2">{primaryAction.icon}</span>
-            ) : (
-              <PlusIcon size={16} className="mr-2" />
-            )}
-            {primaryAction.label}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {exportAction && (
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={exportAction.onClick}
+              isLoading={exportAction.isLoading}
+              disabled={exportAction.disabled}
+            >
+              {exportAction.label || 'Exportar a Excel'}
+            </Button>
+          )}
+
+          {primaryAction && (
+            <Button
+              variant="outline"
+              size="small"
+              onClick={primaryAction.onClick}
+              isLoading={primaryAction.isLoading}
+            >
+              {primaryAction.icon ? (
+                <span className="mr-2">{primaryAction.icon}</span>
+              ) : (
+                <PlusIcon size={16} className="mr-2" />
+              )}
+              {primaryAction.label}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Separador */}

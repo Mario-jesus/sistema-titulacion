@@ -28,6 +28,13 @@ export interface PageHeaderProps {
     /** Referencia al botón de filtros (para posicionar el dropdown) */
     buttonRef?: React.RefObject<HTMLButtonElement | null>;
   };
+  /** Acción de exportación (ej: botón "Exportar a Excel") */
+  exportAction?: {
+    label?: string;
+    onClick: () => void | Promise<void>;
+    isLoading?: boolean;
+    disabled?: boolean;
+  };
   /** Clase CSS adicional */
   className?: string;
 }

@@ -13,6 +13,7 @@ import type {
   DropdownMenuItem,
   DetailField,
 } from '@shared/ui';
+import { exportTable } from '@shared/lib/excel';
 import { useStudents } from '../../lib/useStudents';
 import { StudentForm } from '../StudentForm/StudentForm';
 import { studentsService } from '../../api/studentsService';
@@ -128,11 +129,11 @@ export function StudentsInProgressList() {
   // Helper para obtener nombre de opción de graduación
   const getGraduationOptionName = useCallback(
     (graduationOptionId: string | null) => {
-      if (!graduationOptionId) return '—';
+      if (!graduationOptionId) return '';
       const option = graduationOptions.find(
         (opt) => opt.id === graduationOptionId
       );
-      return option?.name || graduationOptionId;
+      return option?.name || '';
     },
     [graduationOptions]
   );
@@ -593,7 +594,7 @@ export function StudentsInProgressList() {
       {
         key: '__capturedFields_projectName__',
         label: 'Nombre del Proyecto',
-        render: () => selectedCapturedFields?.projectName || '—',
+        render: () => selectedCapturedFields?.projectName || '',
       },
       {
         key: '__capturedFields_company__',
@@ -781,6 +782,112 @@ export function StudentsInProgressList() {
     return false;
   });
 
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Función para exportar a Excel
+  const handleExportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      // Obtener todos los datos sin paginación para exportar
+      const response = await studentsService.listInProgress({
+        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+        search: searchTerm || undefined,
+        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+        ...(filters.careerId ? { careerId: filters.careerId as string } : {}),
+        ...(filters.generationId
+          ? { generationId: filters.generationId as string }
+          : {}),
+        ...(filters.sex ? { sex: filters.sex as string } : {}),
+      });
+
+      // Columnas para exportación
+      const exportColumns: TableColumn<
+        InProgressStudent & {
+          careerName: string;
+          graduationOptionName: string;
+          sexLabel: string;
+        }
+      >[] = [
+        {
+          key: 'controlNumber',
+          label: 'Número de Control',
+        },
+        {
+          key: 'fullName',
+          label: 'Nombre Completo',
+        },
+        {
+          key: 'sexLabel',
+          label: 'Sexo',
+        },
+        {
+          key: 'careerName',
+          label: 'Carrera',
+        },
+        {
+          key: 'graduationOptionName',
+          label: 'Opción de Titulación',
+        },
+        {
+          key: 'projectName',
+          label: 'Nombre del Proyecto',
+        },
+      ];
+
+      // Preparar datos para exportación
+      const exportData = response.data.map((student) => ({
+        ...student,
+        careerName: getCareerName(student.careerId),
+        graduationOptionName: getGraduationOptionName(
+          student.graduationOptionId
+        ),
+        sexLabel: student.sex === 'MASCULINO' ? 'Masculino' : 'Femenino',
+        projectName: student.projectName || '',
+      }));
+
+      // Generar nombre de archivo con fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `estudiantes-en-proceso-${dateStr}`;
+
+      // Exportar
+      await exportTable({
+        filename,
+        sheetName: 'Estudiantes en Proceso',
+        columns: exportColumns,
+        data: exportData,
+        title: 'Estudiantes en Proceso',
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message:
+          'Los estudiantes en proceso se han exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar estudiantes en proceso:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar los estudiantes en proceso',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [
+    searchTerm,
+    sortBy,
+    sortOrder,
+    filters,
+    getCareerName,
+    getGraduationOptionName,
+    showToast,
+  ]);
+
   // Configuración de filtros
   const filterConfigs: FilterConfig[] = useMemo(
     () => [
@@ -848,7 +955,7 @@ export function StudentsInProgressList() {
       {
         key: 'projectName',
         label: 'Nombre del Proyecto',
-        render: (value: string | null) => value || '—',
+        render: (value: string | null) => value || '',
       },
     ],
     [getCareerName, getGraduationOptionName]
@@ -864,6 +971,12 @@ export function StudentsInProgressList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
+          exportAction={{
+            label: 'Exportar a Excel',
+            onClick: handleExportToExcel,
+            isLoading: isExporting,
+            disabled: isLoadingInProgress || inProgressStudents.length === 0,
+          }}
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),

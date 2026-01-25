@@ -9,7 +9,9 @@ import {
 } from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
+import { exportTable } from '@shared/lib/excel';
 import { useQuotas } from '../../lib/useQuotas';
+import { quotasService } from '../../api/quotasService';
 import { QuotaForm } from '../QuotaForm/QuotaForm';
 import { loadGenerations } from '../../api/generationsHelper';
 import { loadCareers } from '../../api/careersHelper';
@@ -441,6 +443,106 @@ export function QuotasList() {
     return false;
   });
 
+  // Estado para exportación
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Función para exportar a Excel
+  const handleExportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      // Obtener todos los datos sin paginación para exportar
+      const response = await quotasService.list({
+        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+        search: searchTerm || undefined,
+        activeOnly: activeOnly || undefined,
+        ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
+      });
+
+      // Columnas para exportación
+      const exportColumns: TableColumn<
+        Quota & { generationName: string; careerName: string; total: number }
+      >[] = [
+        {
+          key: 'generationName',
+          label: 'Generación',
+        },
+        {
+          key: 'careerName',
+          label: 'Carrera',
+        },
+        {
+          key: 'newAdmissionQuotasMale',
+          label: 'Cupos Hombres',
+        },
+        {
+          key: 'newAdmissionQuotasFemale',
+          label: 'Cupos Mujeres',
+        },
+        {
+          key: 'total',
+          label: 'Total Cupos',
+        },
+        {
+          key: 'description',
+          label: 'Descripción',
+        },
+        {
+          key: 'isActive',
+          label: 'Estado',
+        },
+      ];
+
+      // Preparar datos para exportación
+      // Incluir nombres de generación y carrera, y calcular total
+      const exportData = response.data.map((quota) => ({
+        ...quota,
+        generationName: getGenerationName(quota.generationId),
+        careerName: getCareerName(quota.careerId),
+        total: quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
+        isActive: quota.isActive ? 'Activo' : 'Inactivo',
+      }));
+
+      // Generar nombre de archivo con fecha
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `cupos-${dateStr}`;
+
+      // Exportar
+      await exportTable({
+        filename,
+        sheetName: 'Cupos',
+        columns: exportColumns,
+        data: exportData,
+        title: 'Cupos',
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Exportación exitosa',
+        message: 'Los cupos se han exportado a Excel correctamente',
+      });
+    } catch (error) {
+      console.error('Error al exportar cupos:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo exportar los cupos',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [
+    searchTerm,
+    activeOnly,
+    sortBy,
+    sortOrder,
+    getGenerationName,
+    getCareerName,
+    showToast,
+  ]);
+
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (quota: Quota): DropdownMenuItem[] => {
@@ -512,6 +614,12 @@ export function QuotasList() {
           primaryAction={{
             label: 'Añadir',
             onClick: () => setIsCreateModalOpen(true),
+          }}
+          exportAction={{
+            label: 'Exportar a Excel',
+            onClick: handleExportToExcel,
+            isLoading: isExporting,
+            disabled: isLoadingList || quotas.length === 0,
           }}
           filters={{
             label: 'Filtros',
