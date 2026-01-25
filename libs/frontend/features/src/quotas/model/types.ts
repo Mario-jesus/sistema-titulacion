@@ -11,7 +11,8 @@ export type ListQuotasResponse = ListResponse<Quota>;
 export interface CreateQuotaRequest {
   generationId: string;
   careerId: string;
-  newAdmissionQuotas: number;
+  newAdmissionQuotasMale: number;
+  newAdmissionQuotasFemale: number;
   description?: string | null;
   isActive?: boolean;
 }
@@ -19,7 +20,8 @@ export interface CreateQuotaRequest {
 export interface UpdateQuotaRequest {
   generationId?: string;
   careerId?: string;
-  newAdmissionQuotas?: number;
+  newAdmissionQuotasMale?: number;
+  newAdmissionQuotasFemale?: number;
   description?: string | null;
   isActive?: boolean;
 }
@@ -30,7 +32,8 @@ export interface QuotaError {
   fieldErrors?: {
     generationId?: string;
     careerId?: string;
-    newAdmissionQuotas?: string;
+    newAdmissionQuotasMale?: string;
+    newAdmissionQuotasFemale?: string;
     description?: string;
   };
 }

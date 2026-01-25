@@ -5,9 +5,11 @@ import { mockQuotas } from '../data/quotas';
 import { mockGenerations } from '../data/generations';
 import { mockCareers } from '../data/careers';
 import { findGraduationByStudentId } from '../data/graduations';
+import { Sex } from '@entities/student';
 
 type ReportType = 'por-generaciones' | 'por-carreras';
 type GraduationRateDenominator = 'ingreso' | 'egreso';
+type SexFilter = 'general' | Sex.MASCULINO | Sex.FEMENINO;
 
 interface GenerateReportRequest {
   dateRange?: {
@@ -25,6 +27,7 @@ interface GenerateReportRequest {
   graduationRateDenominator: GraduationRateDenominator;
   includeOtherValue: boolean;
   reportType: ReportType;
+  sex?: SexFilter; // Filtro de sexo: 'general', 'MASCULINO' o 'FEMENINO'
 }
 
 interface ReportMetrics {
@@ -190,8 +193,18 @@ const calculatePercentage = (
 
 const calculateMetricsForCombination = (
   generationId: string,
-  careerId: string
+  careerId: string,
+  sexFilter?: SexFilter
 ): ReportMetrics => {
+  // Filtrar estudiantes por sexo si se especifica
+  const filterBySex = (student: (typeof mockStudents)[0]): boolean => {
+    if (!sexFilter || sexFilter === 'general') {
+      return true;
+    }
+    return student.sex === sexFilter;
+  };
+
+  // Calcular ingresos según el filtro de sexo
   const ingreso = mockQuotas
     .filter(
       (quota) =>
@@ -199,19 +212,34 @@ const calculateMetricsForCombination = (
         quota.generationId === generationId &&
         quota.careerId === careerId
     )
-    .reduce((sum, quota) => sum + quota.newAdmissionQuotas, 0);
+    .reduce((sum, quota) => {
+      if (!sexFilter || sexFilter === 'general') {
+        // Si no hay filtro, sumar ambos
+        return (
+          sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale
+        );
+      } else if (sexFilter === Sex.MASCULINO) {
+        return sum + quota.newAdmissionQuotasMale;
+      } else if (sexFilter === Sex.FEMENINO) {
+        return sum + quota.newAdmissionQuotasFemale;
+      }
+      return sum;
+    }, 0);
 
+  // Para egresos y titulados, sí podemos filtrar por sexo ya que tenemos los estudiantes
   const egreso = mockStudents.filter(
     (student) =>
       student.generationId === generationId &&
       student.careerId === careerId &&
-      student.isEgressed === true
+      student.isEgressed === true &&
+      filterBySex(student)
   ).length;
 
   const titulados = mockStudents.filter((student) => {
     if (
       student.generationId !== generationId ||
-      student.careerId !== careerId
+      student.careerId !== careerId ||
+      !filterBySex(student)
     ) {
       return false;
     }
@@ -225,7 +253,10 @@ const calculateMetricsForCombination = (
 /**
  * Calcula métricas totales para una generación (suma de todas las carreras activas)
  */
-const calculateMetricsForGeneration = (generationId: string): ReportMetrics => {
+const calculateMetricsForGeneration = (
+  generationId: string,
+  sexFilter?: SexFilter
+): ReportMetrics => {
   // Sumar todas las carreras activas
   const activeCareers = mockCareers.filter((career) => career.isActive);
 
@@ -234,7 +265,11 @@ const calculateMetricsForGeneration = (generationId: string): ReportMetrics => {
   let totalTitulados = 0;
 
   activeCareers.forEach((career) => {
-    const metrics = calculateMetricsForCombination(generationId, career.id);
+    const metrics = calculateMetricsForCombination(
+      generationId,
+      career.id,
+      sexFilter
+    );
     totalIngreso += metrics.ingreso;
     totalEgreso += metrics.egreso;
     totalTitulados += metrics.titulados;
@@ -274,7 +309,7 @@ const filterGenerationsByYear = (startYear?: number, endYear?: number) => {
 /**
  * Calcula métricas totales para todas las generaciones y todas las carreras activas
  */
-const calculateOverallGrandTotal = (): ReportMetrics => {
+const calculateOverallGrandTotal = (sexFilter?: SexFilter): ReportMetrics => {
   const activeCareers = mockCareers.filter((career) => career.isActive);
   let totalIngreso = 0;
   let totalEgreso = 0;
@@ -282,7 +317,11 @@ const calculateOverallGrandTotal = (): ReportMetrics => {
 
   mockGenerations.forEach((generation) => {
     activeCareers.forEach((career) => {
-      const metrics = calculateMetricsForCombination(generation.id, career.id);
+      const metrics = calculateMetricsForCombination(
+        generation.id,
+        career.id,
+        sexFilter
+      );
       totalIngreso += metrics.ingreso;
       totalEgreso += metrics.egreso;
       totalTitulados += metrics.titulados;
@@ -331,6 +370,9 @@ export const reportsHandlers = [
 
     const filteredGenerations = filterGenerationsByYear(startYear, endYear);
 
+    // Obtener filtro de sexo (por defecto 'general')
+    const sexFilter: SexFilter = body.sex || 'general';
+
     // Detectar si es resumen general (todas las generaciones y todas las carreras)
     const isGeneralDateRange =
       body.dateRange?.type === 'general' ||
@@ -340,7 +382,7 @@ export const reportsHandlers = [
 
     // Si es resumen general, retornar tabla de resumen
     if (isGeneralDateRange && isGeneralCareers) {
-      const metrics = calculateOverallGrandTotal();
+      const metrics = calculateOverallGrandTotal(sexFilter);
       const denominator =
         body.graduationRateDenominator === 'ingreso'
           ? metrics.ingreso
@@ -417,7 +459,8 @@ export const reportsHandlers = [
             mockGenerations.forEach((generation) => {
               const metrics = calculateMetricsForCombination(
                 generation.id,
-                career.id
+                career.id,
+                sexFilter
               );
               careerTotalIngreso += metrics.ingreso;
               careerTotalEgreso += metrics.egreso;
@@ -538,7 +581,8 @@ export const reportsHandlers = [
           sortedGenerations.forEach((generation) => {
             const metrics = calculateMetricsForCombination(
               generation.id,
-              career.id
+              career.id,
+              sexFilter
             );
             // Solo guardar titulados en valuesByGeneration
             valuesByGeneration[generation.id] = metrics.titulados;
@@ -653,7 +697,10 @@ export const reportsHandlers = [
       filteredGenerations
         .sort((a, b) => a.startYear.getFullYear() - b.startYear.getFullYear())
         .forEach((generation) => {
-          const metrics = calculateMetricsForGeneration(generation.id);
+          const metrics = calculateMetricsForGeneration(
+            generation.id,
+            sexFilter
+          );
           const genStartYear = generation.startYear.getFullYear();
           const genEndYear = generation.endYear.getFullYear();
 
@@ -772,7 +819,8 @@ export const reportsHandlers = [
       filteredCareers.forEach((career) => {
         const metrics = calculateMetricsForCombination(
           generation.id,
-          career.id
+          career.id,
+          sexFilter
         );
 
         // Calcular el denominador según el graduationRateDenominator

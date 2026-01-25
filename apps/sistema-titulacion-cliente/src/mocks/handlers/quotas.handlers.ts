@@ -17,7 +17,8 @@ import {
 interface CreateQuotaRequest {
   generationId: string;
   careerId: string;
-  newAdmissionQuotas: number;
+  newAdmissionQuotasMale: number;
+  newAdmissionQuotasFemale: number;
   description: string | null;
   isActive: boolean;
 }
@@ -25,7 +26,8 @@ interface CreateQuotaRequest {
 interface UpdateQuotaRequest {
   generationId?: string;
   careerId?: string;
-  newAdmissionQuotas?: number;
+  newAdmissionQuotasMale?: number;
+  newAdmissionQuotasFemale?: number;
   description?: string | null;
   isActive?: boolean;
 }
@@ -63,7 +65,12 @@ export const quotasHandlers = [
     const search =
       url.searchParams.get('search') || url.searchParams.get('q') || '';
 
-    const validSortFields = ['newAdmissionQuotas', 'createdAt', 'isActive'];
+    const validSortFields = [
+      'newAdmissionQuotasMale',
+      'newAdmissionQuotasFemale',
+      'createdAt',
+      'isActive',
+    ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'createdAt';
     const sortBy = validSortFields.includes(requestedSortBy)
       ? requestedSortBy
@@ -103,9 +110,13 @@ export const quotasHandlers = [
       let bValue: string | number | boolean | Date | null;
 
       switch (sortBy) {
-        case 'newAdmissionQuotas':
-          aValue = a.newAdmissionQuotas;
-          bValue = b.newAdmissionQuotas;
+        case 'newAdmissionQuotasMale':
+          aValue = a.newAdmissionQuotasMale;
+          bValue = b.newAdmissionQuotasMale;
+          break;
+        case 'newAdmissionQuotasFemale':
+          aValue = a.newAdmissionQuotasFemale;
+          bValue = b.newAdmissionQuotasFemale;
           break;
         case 'createdAt':
           aValue = a.createdAt;
@@ -217,10 +228,26 @@ export const quotasHandlers = [
       );
     }
 
-    if (body.newAdmissionQuotas === undefined || body.newAdmissionQuotas < 0) {
+    if (
+      body.newAdmissionQuotasMale === undefined ||
+      body.newAdmissionQuotasMale < 0
+    ) {
       return HttpResponse.json(
         {
-          error: 'El número de cupos debe ser un número positivo',
+          error: 'El número de cupos para hombres debe ser un número positivo',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      body.newAdmissionQuotasFemale === undefined ||
+      body.newAdmissionQuotasFemale < 0
+    ) {
+      return HttpResponse.json(
+        {
+          error: 'El número de cupos para mujeres debe ser un número positivo',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -270,7 +297,8 @@ export const quotasHandlers = [
       id: generateQuotaId(),
       generationId: body.generationId,
       careerId: body.careerId,
-      newAdmissionQuotas: body.newAdmissionQuotas,
+      newAdmissionQuotasMale: body.newAdmissionQuotasMale,
+      newAdmissionQuotasFemale: body.newAdmissionQuotasFemale,
       description: body.description?.trim() || null,
       isActive: body.isActive ?? true,
       createdAt: new Date(),
@@ -309,10 +337,26 @@ export const quotasHandlers = [
     const body = (await request.json()) as UpdateQuotaRequest;
 
     // Validaciones
-    if (body.newAdmissionQuotas !== undefined && body.newAdmissionQuotas < 0) {
+    if (
+      body.newAdmissionQuotasMale !== undefined &&
+      body.newAdmissionQuotasMale < 0
+    ) {
       return HttpResponse.json(
         {
-          error: 'El número de cupos debe ser un número positivo',
+          error: 'El número de cupos para hombres debe ser un número positivo',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      body.newAdmissionQuotasFemale !== undefined &&
+      body.newAdmissionQuotasFemale < 0
+    ) {
+      return HttpResponse.json(
+        {
+          error: 'El número de cupos para mujeres debe ser un número positivo',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -371,8 +415,10 @@ export const quotasHandlers = [
     // Actualizar
     quota.generationId = body.generationId ?? quota.generationId;
     quota.careerId = body.careerId ?? quota.careerId;
-    quota.newAdmissionQuotas =
-      body.newAdmissionQuotas ?? quota.newAdmissionQuotas;
+    quota.newAdmissionQuotasMale =
+      body.newAdmissionQuotasMale ?? quota.newAdmissionQuotasMale;
+    quota.newAdmissionQuotasFemale =
+      body.newAdmissionQuotasFemale ?? quota.newAdmissionQuotasFemale;
     quota.description =
       body.description !== undefined ? body.description : quota.description;
     quota.isActive = body.isActive ?? quota.isActive;
@@ -405,10 +451,26 @@ export const quotasHandlers = [
     const body = (await request.json()) as Partial<UpdateQuotaRequest>;
 
     // Validaciones
-    if (body.newAdmissionQuotas !== undefined && body.newAdmissionQuotas < 0) {
+    if (
+      body.newAdmissionQuotasMale !== undefined &&
+      body.newAdmissionQuotasMale < 0
+    ) {
       return HttpResponse.json(
         {
-          error: 'El número de cupos debe ser un número positivo',
+          error: 'El número de cupos para hombres debe ser un número positivo',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      body.newAdmissionQuotasFemale !== undefined &&
+      body.newAdmissionQuotasFemale < 0
+    ) {
+      return HttpResponse.json(
+        {
+          error: 'El número de cupos para mujeres debe ser un número positivo',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -471,8 +533,11 @@ export const quotasHandlers = [
     if (body.careerId !== undefined) {
       quota.careerId = body.careerId;
     }
-    if (body.newAdmissionQuotas !== undefined) {
-      quota.newAdmissionQuotas = body.newAdmissionQuotas;
+    if (body.newAdmissionQuotasMale !== undefined) {
+      quota.newAdmissionQuotasMale = body.newAdmissionQuotasMale;
+    }
+    if (body.newAdmissionQuotasFemale !== undefined) {
+      quota.newAdmissionQuotasFemale = body.newAdmissionQuotasFemale;
     }
     if (body.description !== undefined) {
       quota.description = body.description;

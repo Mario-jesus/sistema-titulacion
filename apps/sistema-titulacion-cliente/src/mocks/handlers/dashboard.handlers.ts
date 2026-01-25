@@ -133,7 +133,8 @@ function calculateDashboardStats(): DashboardStats {
 
   // Total de ingresos (suma de newAdmissionQuotas)
   const totalAdmissions = mockQuotas.reduce(
-    (sum, quota) => sum + quota.newAdmissionQuotas,
+    (sum, quota) =>
+      sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
     0
   );
 
@@ -170,10 +171,14 @@ function calculateIngressEgressByGeneration(): IngressEgressByGeneration[] {
 
   // Agrupar por generación
   mockGenerations.forEach((generation) => {
-    // Calcular ingresos (suma de newAdmissionQuotas para esta generación)
+    // Calcular ingresos (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale para esta generación)
     const admissions = mockQuotas
       .filter((quota) => quota.generationId === generation.id)
-      .reduce((sum, quota) => sum + quota.newAdmissionQuotas, 0);
+      .reduce(
+        (sum, quota) =>
+          sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
+        0
+      );
 
     // Calcular egresos (estudiantes egresados de esta generación)
     const egresses = mockStudents.filter(
@@ -208,9 +213,10 @@ function calculateIngressEgressByGeneration(): IngressEgressByGeneration[] {
  * Calcula la distribución: Ingreso, Egreso y Titulación
  */
 function calculateStatusDistribution(): StatusDistribution[] {
-  // Total de ingresos (suma de newAdmissionQuotas)
+  // Total de ingresos (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale)
   const totalAdmissions = mockQuotas.reduce(
-    (sum, quota) => sum + quota.newAdmissionQuotas,
+    (sum, quota) =>
+      sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
     0
   );
 

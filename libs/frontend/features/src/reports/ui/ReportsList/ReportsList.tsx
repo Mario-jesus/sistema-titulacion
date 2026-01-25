@@ -11,8 +11,10 @@ import type { TableColumn } from '@shared/ui';
 import type { GroupedColumn, GroupedTableRow } from '@shared/ui';
 import { useReports } from '../../lib/useReports';
 import { useCareers } from '@features/careers';
+import { Sex } from '@entities/student';
 import type {
   ReportType,
+  SexFilter,
   ReportByGenerationsGroupedResponse,
   ReportByGenerationsTableResponse,
   ReportByCareersTableResponse,
@@ -38,6 +40,7 @@ interface SavedReportConfig {
   graduationRateDenominator: 'ingreso' | 'egreso';
   includeOtherValue: boolean;
   reportType: ReportType;
+  sex: SexFilter;
 }
 
 // Valores por defecto
@@ -50,6 +53,7 @@ const defaultConfig: SavedReportConfig = {
   graduationRateDenominator: 'egreso',
   includeOtherValue: false,
   reportType: 'por-generaciones',
+  sex: 'general',
 };
 
 // Función para cargar configuración desde localStorage
@@ -75,6 +79,7 @@ const loadConfigFromStorage = (): SavedReportConfig => {
             ? config.includeOtherValue
             : defaultConfig.includeOtherValue,
         reportType: config.reportType || defaultConfig.reportType,
+        sex: config.sex || defaultConfig.sex,
       };
     }
   } catch (error) {
@@ -126,6 +131,9 @@ export function ReportsList() {
     initialConfig.reportType
   );
 
+  // Estados para filtro de sexo - inicializar desde localStorage
+  const [sex, setSex] = useState<SexFilter>(initialConfig.sex);
+
   // Bandera para evitar guardar en el primer render
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -147,6 +155,7 @@ export function ReportsList() {
       graduationRateDenominator,
       includeOtherValue,
       reportType,
+      sex,
     };
     try {
       localStorage.setItem(REPORT_CONFIG_STORAGE_KEY, JSON.stringify(config));
@@ -163,6 +172,7 @@ export function ReportsList() {
     graduationRateDenominator,
     includeOtherValue,
     reportType,
+    sex,
   ]);
 
   // Cargar carreras al montar el componente
@@ -777,6 +787,7 @@ export function ReportsList() {
     setGraduationRateDenominator(defaultConfig.graduationRateDenominator);
     setIncludeOtherValue(defaultConfig.includeOtherValue);
     setReportType(defaultConfig.reportType);
+    setSex(defaultConfig.sex);
 
     // Limpiar localStorage
     try {
@@ -807,6 +818,7 @@ export function ReportsList() {
       graduationRateDenominator,
       includeOtherValue,
       reportType,
+      ...(sex !== 'general' ? { sex } : {}),
     };
 
     const result = await generateReport(request);
@@ -834,6 +846,7 @@ export function ReportsList() {
     graduationRateDenominator,
     includeOtherValue,
     reportType,
+    sex,
     generateReport,
     showToast,
   ]);
@@ -867,7 +880,68 @@ export function ReportsList() {
         maxWidth="xl"
       >
         <div className="flex flex-col gap-6">
-          {/* Sección 1: Rango de Fechas (Generaciones) */}
+          {/* Sección 1: Tipo de Reporte */}
+          <div className="flex flex-col gap-3">
+            <h3
+              className="text-base font-medium"
+              style={{ color: 'var(--color-base-primary-typo)' }}
+            >
+              Tipo de Reporte
+            </h3>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="reportType"
+                  checked={reportType === 'por-carreras'}
+                  onChange={() => setReportType('por-carreras')}
+                  className="w-4 h-4"
+                  style={{
+                    accentColor: 'var(--color-primary-color)',
+                  }}
+                />
+                <div className="flex flex-col">
+                  <span style={{ color: 'var(--color-base-primary-typo)' }}>
+                    Por Carreras
+                  </span>
+                  <span
+                    className="text-sm"
+                    style={{ color: 'var(--color-base-secondary-typo)' }}
+                  >
+                    Las carreras aparecen en filas, las generaciones en columnas
+                  </span>
+                </div>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="reportType"
+                  checked={reportType === 'por-generaciones'}
+                  onChange={() => setReportType('por-generaciones')}
+                  className="w-4 h-4"
+                  style={{
+                    accentColor: 'var(--color-primary-color)',
+                  }}
+                />
+                <div className="flex flex-col">
+                  <span style={{ color: 'var(--color-base-primary-typo)' }}>
+                    Por Generaciones
+                  </span>
+                  <span
+                    className="text-sm"
+                    style={{ color: 'var(--color-base-secondary-typo)' }}
+                  >
+                    Las generaciones aparecen en filas, las carreras en columnas
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Separador */}
+          <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark" />
+
+          {/* Sección 2: Rango de Fechas (Generaciones) */}
           <div className="flex flex-col gap-3">
             <h3
               className="text-base font-medium"
@@ -942,7 +1016,7 @@ export function ReportsList() {
           {/* Separador */}
           <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark" />
 
-          {/* Sección 2: Carreras */}
+          {/* Sección 3: Carreras */}
           <div className="flex flex-col gap-3">
             <h3
               className="text-base font-medium"
@@ -1022,7 +1096,67 @@ export function ReportsList() {
           {/* Separador */}
           <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark" />
 
-          {/* Sección 3: Columnas de Valores Numéricos */}
+          {/* Sección 3.5: Filtro de Sexo */}
+          <div className="flex flex-col gap-3">
+            <h3
+              className="text-base font-medium"
+              style={{ color: 'var(--color-base-primary-typo)' }}
+            >
+              Filtro por Sexo
+            </h3>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="sex"
+                  checked={sex === 'general'}
+                  onChange={() => setSex('general')}
+                  className="w-4 h-4"
+                  style={{
+                    accentColor: 'var(--color-primary-color)',
+                  }}
+                />
+                <span style={{ color: 'var(--color-base-primary-typo)' }}>
+                  General (Todos)
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="sex"
+                  checked={sex === Sex.MASCULINO}
+                  onChange={() => setSex(Sex.MASCULINO)}
+                  className="w-4 h-4"
+                  style={{
+                    accentColor: 'var(--color-primary-color)',
+                  }}
+                />
+                <span style={{ color: 'var(--color-base-primary-typo)' }}>
+                  Masculino
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="sex"
+                  checked={sex === Sex.FEMENINO}
+                  onChange={() => setSex(Sex.FEMENINO)}
+                  className="w-4 h-4"
+                  style={{
+                    accentColor: 'var(--color-primary-color)',
+                  }}
+                />
+                <span style={{ color: 'var(--color-base-primary-typo)' }}>
+                  Femenino
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Separador */}
+          <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark" />
+
+          {/* Sección 4: Columnas de Valores Numéricos */}
           <div className="flex flex-col gap-3">
             <h3
               className="text-base font-medium"
@@ -1106,67 +1240,6 @@ export function ReportsList() {
                   </div>
                 </label>
               </div>
-            </div>
-          </div>
-
-          {/* Separador */}
-          <div className="h-px w-full bg-gray-3-light dark:bg-gray-6-dark" />
-
-          {/* Sección 4: Tipo de Reporte */}
-          <div className="flex flex-col gap-3">
-            <h3
-              className="text-base font-medium"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
-              Tipo de Reporte
-            </h3>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="reportType"
-                  checked={reportType === 'por-carreras'}
-                  onChange={() => setReportType('por-carreras')}
-                  className="w-4 h-4"
-                  style={{
-                    accentColor: 'var(--color-primary-color)',
-                  }}
-                />
-                <div className="flex flex-col">
-                  <span style={{ color: 'var(--color-base-primary-typo)' }}>
-                    Por Carreras
-                  </span>
-                  <span
-                    className="text-sm"
-                    style={{ color: 'var(--color-base-secondary-typo)' }}
-                  >
-                    Las carreras aparecen en filas, las generaciones en columnas
-                  </span>
-                </div>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="reportType"
-                  checked={reportType === 'por-generaciones'}
-                  onChange={() => setReportType('por-generaciones')}
-                  className="w-4 h-4"
-                  style={{
-                    accentColor: 'var(--color-primary-color)',
-                  }}
-                />
-                <div className="flex flex-col">
-                  <span style={{ color: 'var(--color-base-primary-typo)' }}>
-                    Por Generaciones
-                  </span>
-                  <span
-                    className="text-sm"
-                    style={{ color: 'var(--color-base-secondary-typo)' }}
-                  >
-                    Las generaciones aparecen en filas, las carreras en columnas
-                  </span>
-                </div>
-              </label>
             </div>
           </div>
 

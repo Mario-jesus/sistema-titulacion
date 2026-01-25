@@ -2,7 +2,8 @@ export interface Quota {
   id: string;
   generationId: string;
   careerId: string;
-  newAdmissionQuotas: number;
+  newAdmissionQuotasMale: number;
+  newAdmissionQuotasFemale: number;
   description: string | null;
   isActive: boolean;
   createdAt: Date;

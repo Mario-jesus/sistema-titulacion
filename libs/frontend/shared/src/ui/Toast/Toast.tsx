@@ -100,7 +100,7 @@ export function Toast({
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg min-w-[300px] max-w-[500px] transition-all duration-300 ${className}`}
+      className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg min-w-[300px] max-w-[500px] ${className}`}
       style={{
         backgroundColor: 'var(--color-component-bg)',
         borderColor: config.borderColor,
@@ -144,18 +144,12 @@ export function Toast({
       {/* Close button */}
       <button
         onClick={() => onClose(id)}
-        className="shrink-0 ml-2 p-1 rounded transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1"
+        className="shrink-0 ml-2 p-1 rounded transition-colors duration-200 cursor-pointer bg-transparent hover:bg-gray-2-light dark:hover:bg-gray-3-dark focus:outline-none focus:ring-2 focus:ring-offset-1"
         style={
           {
             '--tw-ring-color': 'var(--color-primary-color)',
           } as React.CSSProperties & { '--tw-ring-color'?: string }
         }
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--color-gray-2)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
         aria-label="Cerrar"
         type="button"
       >

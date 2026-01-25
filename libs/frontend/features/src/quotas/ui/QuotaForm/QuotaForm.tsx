@@ -24,7 +24,10 @@ export function QuotaForm({
 }: QuotaFormProps) {
   const [generationId, setGenerationId] = useState('');
   const [careerId, setCareerId] = useState('');
-  const [newAdmissionQuotas, setNewAdmissionQuotas] = useState<number>(0);
+  const [newAdmissionQuotasMale, setNewAdmissionQuotasMale] =
+    useState<number>(0);
+  const [newAdmissionQuotasFemale, setNewAdmissionQuotasFemale] =
+    useState<number>(0);
   const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +38,8 @@ export function QuotaForm({
   const [errors, setErrors] = useState<{
     generationId?: string;
     careerId?: string;
-    newAdmissionQuotas?: string;
+    newAdmissionQuotasMale?: string;
+    newAdmissionQuotasFemale?: string;
     description?: string;
   }>({});
 
@@ -75,14 +79,16 @@ export function QuotaForm({
     if (isOpen && mode === 'edit' && initialData) {
       setGenerationId(initialData.generationId || '');
       setCareerId(initialData.careerId || '');
-      setNewAdmissionQuotas(initialData.newAdmissionQuotas || 0);
+      setNewAdmissionQuotasMale(initialData.newAdmissionQuotasMale || 0);
+      setNewAdmissionQuotasFemale(initialData.newAdmissionQuotasFemale || 0);
       setDescription(initialData.description || '');
       setIsActive(initialData.isActive);
     } else if (isOpen && mode === 'create') {
       // Resetear formulario en modo creación
       setGenerationId('');
       setCareerId('');
-      setNewAdmissionQuotas(0);
+      setNewAdmissionQuotasMale(0);
+      setNewAdmissionQuotasFemale(0);
       setDescription('');
       setIsActive(true);
     }
@@ -100,9 +106,17 @@ export function QuotaForm({
       newErrors.careerId = 'La carrera es requerida';
     }
 
-    if (newAdmissionQuotas === undefined || newAdmissionQuotas < 0) {
-      newErrors.newAdmissionQuotas =
-        'El número de cupos debe ser un número positivo';
+    if (newAdmissionQuotasMale === undefined || newAdmissionQuotasMale < 0) {
+      newErrors.newAdmissionQuotasMale =
+        'El número de cupos para hombres debe ser un número positivo';
+    }
+
+    if (
+      newAdmissionQuotasFemale === undefined ||
+      newAdmissionQuotasFemale < 0
+    ) {
+      newErrors.newAdmissionQuotasFemale =
+        'El número de cupos para mujeres debe ser un número positivo';
     }
 
     setErrors(newErrors);
@@ -123,7 +137,8 @@ export function QuotaForm({
         await onSubmit({
           generationId,
           careerId,
-          newAdmissionQuotas,
+          newAdmissionQuotasMale,
+          newAdmissionQuotasFemale,
           description: description.trim() || null,
           isActive,
         });
@@ -131,7 +146,8 @@ export function QuotaForm({
         await onSubmit({
           generationId,
           careerId,
-          newAdmissionQuotas,
+          newAdmissionQuotasMale,
+          newAdmissionQuotasFemale,
           description: description.trim() || null,
           isActive,
         });
@@ -226,24 +242,65 @@ export function QuotaForm({
           )}
         </div>
 
-        <Input
-          label="Número de cupos *"
-          type="number"
-          placeholder="Ej: 50"
-          value={newAdmissionQuotas.toString()}
-          onChange={(e) => {
-            const value = parseInt(e.target.value, 10);
-            setNewAdmissionQuotas(isNaN(value) ? 0 : value);
-            if (errors.newAdmissionQuotas) {
-              setErrors({ ...errors, newAdmissionQuotas: undefined });
-            }
-          }}
-          error={errors.newAdmissionQuotas}
-          fullWidth
-          disabled={isSubmitting}
-          required
-          min={0}
-        />
+        <div className="flex flex-col gap-4">
+          <div>
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: 'var(--color-base-primary-typo)' }}
+            >
+              Cupos por Sexo *
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Cupos para Hombres *"
+                type="number"
+                placeholder="Ej: 30"
+                value={newAdmissionQuotasMale.toString()}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10);
+                  setNewAdmissionQuotasMale(isNaN(value) ? 0 : value);
+                  if (errors.newAdmissionQuotasMale) {
+                    setErrors({ ...errors, newAdmissionQuotasMale: undefined });
+                  }
+                }}
+                error={errors.newAdmissionQuotasMale}
+                disabled={isSubmitting}
+                required
+                min={0}
+              />
+              <Input
+                label="Cupos para Mujeres *"
+                type="number"
+                placeholder="Ej: 20"
+                value={newAdmissionQuotasFemale.toString()}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10);
+                  setNewAdmissionQuotasFemale(isNaN(value) ? 0 : value);
+                  if (errors.newAdmissionQuotasFemale) {
+                    setErrors({
+                      ...errors,
+                      newAdmissionQuotasFemale: undefined,
+                    });
+                  }
+                }}
+                error={errors.newAdmissionQuotasFemale}
+                disabled={isSubmitting}
+                required
+                min={0}
+              />
+            </div>
+            <div
+              className="mt-2 text-sm"
+              style={{ color: 'var(--color-base-secondary-typo)' }}
+            >
+              Total:{' '}
+              {(
+                newAdmissionQuotasMale + newAdmissionQuotasFemale
+              ).toLocaleString()}{' '}
+              cupos
+            </div>
+          </div>
+        </div>
 
         <div>
           <label

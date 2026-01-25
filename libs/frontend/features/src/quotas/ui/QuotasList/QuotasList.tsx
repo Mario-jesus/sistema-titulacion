@@ -295,10 +295,25 @@ export function QuotasList() {
       render: (value: string) => getCareerName(value),
     },
     {
-      key: 'newAdmissionQuotas',
-      label: 'Cupos',
+      key: 'newAdmissionQuotasMale',
+      label: 'Cupos Hombres',
       sortable: true,
       render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: 'newAdmissionQuotasFemale',
+      label: 'Cupos Mujeres',
+      sortable: true,
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: 'total',
+      label: 'Total Cupos',
+      sortable: false,
+      render: (_value: unknown, quota: Quota) =>
+        (
+          quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale
+        ).toLocaleString(),
     },
     {
       key: 'description',
@@ -320,9 +335,22 @@ export function QuotasList() {
       render: (value: string) => getCareerName(value),
     },
     {
-      key: 'newAdmissionQuotas',
-      label: 'Número de Cupos',
+      key: 'newAdmissionQuotasMale',
+      label: 'Cupos para Hombres',
       render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: 'newAdmissionQuotasFemale',
+      label: 'Cupos para Mujeres',
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: 'total',
+      label: 'Total de Cupos',
+      render: (_value: unknown, quota: Quota) =>
+        (
+          quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale
+        ).toLocaleString(),
     },
     {
       key: 'description',

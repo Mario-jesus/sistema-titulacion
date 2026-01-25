@@ -2,8 +2,11 @@
  * Tipos e interfaces para el módulo de Reportes
  */
 
+import type { Sex } from '@entities/student';
+
 export type ReportType = 'por-generaciones' | 'por-carreras';
 export type GraduationRateDenominator = 'ingreso' | 'egreso';
+export type SexFilter = 'general' | Sex.MASCULINO | Sex.FEMENINO;
 
 /**
  * Request para generar un reporte
@@ -24,6 +27,7 @@ export interface GenerateReportRequest {
   graduationRateDenominator: GraduationRateDenominator;
   includeOtherValue: boolean;
   reportType: ReportType;
+  sex?: SexFilter;
 }
 
 /**

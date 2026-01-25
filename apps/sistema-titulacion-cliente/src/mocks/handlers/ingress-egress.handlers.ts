@@ -50,13 +50,16 @@ function calculateIngressEgressData(): IngressEgress[] {
       return;
     }
 
-    // Calcular número de ingreso (suma de newAdmissionQuotas para esta generación y carrera)
+    // Calcular número de ingreso (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale para esta generación y carrera)
     const admissionNumber = mockQuotas
       .filter(
         (q) =>
           q.generationId === quota.generationId && q.careerId === quota.careerId
       )
-      .reduce((sum, q) => sum + q.newAdmissionQuotas, 0);
+      .reduce(
+        (sum, q) => sum + q.newAdmissionQuotasMale + q.newAdmissionQuotasFemale,
+        0
+      );
 
     // Calcular número de egreso (estudiantes con isEgressed = true)
     const egressNumber = mockStudents.filter(
@@ -291,12 +294,16 @@ export const ingressEgressHandlers = [
         );
       }
 
-      // Calcular número de ingreso
+      // Calcular número de ingreso (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale)
       const admissionNumber = mockQuotas
         .filter(
           (q) => q.generationId === generationId && q.careerId === careerId
         )
-        .reduce((sum, q) => sum + q.newAdmissionQuotas, 0);
+        .reduce(
+          (sum, q) =>
+            sum + q.newAdmissionQuotasMale + q.newAdmissionQuotasFemale,
+          0
+        );
 
       // Calcular número de egreso
       const egressNumber = mockStudents.filter(
