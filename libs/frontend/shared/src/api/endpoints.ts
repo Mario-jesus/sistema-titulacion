@@ -96,6 +96,7 @@ export const API_ENDPOINTS = {
     CHANGE_STATUS: (id: string) => `/students/${id}/status`,
     EGRESS: (id: string) => `/students/${id}/egress`,
     UNEGRESS: (id: string) => `/students/${id}/unegress`,
+    UPDATE_PROCESS_STATUS: (id: string) => `/students/${id}/process-status`,
   },
   // Campos Capturados
   CAPTURED_FIELDS: {

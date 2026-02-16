@@ -4,9 +4,7 @@ import { mockStudents } from '../data/students';
 import { mockQuotas } from '../data/quotas';
 import { mockGenerations } from '../data/generations';
 import { mockCareers } from '../data/careers';
-import { findGraduationByStudentId } from '../data/graduations';
-import { findCapturedFieldsByStudentId } from '../data/captured-fields';
-import { StudentStatus } from '@entities/student';
+import { StudentStatus, StudentProcessStatus } from '@entities/student';
 
 /**
  * Handlers para endpoints del dashboard
@@ -71,60 +69,20 @@ function calculateDashboardStats(): DashboardStats {
     (student) => student.status === StudentStatus.ACTIVO
   ).length;
 
-  // Estudiantes en proceso
-  // Un estudiante está en proceso si:
-  // 1. Tiene status ACTIVO
-  // 2. No está titulado (no tiene Graduation o isGraduated=false)
-  // 3. No tiene datos en CapturedFields O no tiene datos en Graduation
-  const inProgress = mockStudents.filter((student) => {
-    if (student.status !== StudentStatus.ACTIVO) {
-      return false;
-    }
+  // Estudiantes en proceso - NUEVA LÓGICA
+  const inProgress = mockStudents.filter(
+    (student) => student.processStatus === StudentProcessStatus.IN_PROCESS
+  ).length;
 
-    const graduation = findGraduationByStudentId(student.id);
-    if (graduation && graduation.isGraduated === true) {
-      return false;
-    }
+  // Estudiantes programados - NUEVA LÓGICA
+  const scheduled = mockStudents.filter(
+    (student) => student.processStatus === StudentProcessStatus.SCHEDULED
+  ).length;
 
-    const capturedFields = findCapturedFieldsByStudentId(student.id);
-    const hasCapturedFields = capturedFields !== null;
-    const hasGraduation = graduation !== null;
-
-    // Si tiene datos en ambas tablas, aunque no esté titulado, NO es un estudiante en proceso
-    if (hasCapturedFields && hasGraduation) {
-      return false;
-    }
-
-    return true;
-  }).length;
-
-  // Estudiantes programados
-  // Un estudiante está programado si:
-  // 1. Tiene status ACTIVO
-  // 2. No está titulado (isGraduated=false)
-  // 3. Ya tiene datos en AMBAS tablas: Graduation Y CapturedFields
-  const scheduled = mockStudents.filter((student) => {
-    if (student.status !== StudentStatus.ACTIVO) {
-      return false;
-    }
-
-    const graduation = findGraduationByStudentId(student.id);
-    if (graduation && graduation.isGraduated === true) {
-      return false;
-    }
-
-    const capturedFields = findCapturedFieldsByStudentId(student.id);
-    const hasCapturedFields = capturedFields !== null;
-    const hasGraduation = graduation !== null;
-
-    return hasCapturedFields && hasGraduation;
-  }).length;
-
-  // Estudiantes graduados
-  const graduatedStudents = mockStudents.filter((student) => {
-    const graduation = findGraduationByStudentId(student.id);
-    return graduation !== undefined && graduation.isGraduated === true;
-  }).length;
+  // Estudiantes graduados - NUEVA LÓGICA
+  const graduatedStudents = mockStudents.filter(
+    (student) => student.processStatus === StudentProcessStatus.GRADUATED
+  ).length;
 
   // Estudiantes egresados
   const egressedStudents = mockStudents.filter(
@@ -225,11 +183,10 @@ function calculateStatusDistribution(): StatusDistribution[] {
     (student) => student.isEgressed === true
   ).length;
 
-  // Total de titulados (estudiantes con isGraduated = true)
-  const totalTitulados = mockStudents.filter((student) => {
-    const graduation = findGraduationByStudentId(student.id);
-    return graduation !== undefined && graduation.isGraduated === true;
-  }).length;
+  // Total de titulados - NUEVA LÓGICA
+  const totalTitulados = mockStudents.filter(
+    (student) => student.processStatus === StudentProcessStatus.GRADUATED
+  ).length;
 
   return [
     { name: 'Ingreso', value: totalAdmissions },

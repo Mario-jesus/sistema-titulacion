@@ -7,7 +7,6 @@ import {
   mockCapturedFields,
   findCapturedFieldsByStudentId,
   generateCapturedFieldsId,
-  findGraduationByStudentId,
 } from '../data';
 
 /**
@@ -27,6 +26,10 @@ interface UpdateCapturedFieldsRequest {
   projectName?: string;
   company?: string;
 }
+
+// Normalizar fechas que pueden venir como string
+const toDate = (value: string | Date) =>
+  value instanceof Date ? value : new Date(value);
 
 export const capturedFieldsHandlers = [
   // GET /captured-fields/student/:id (Detail by studentId)
@@ -51,9 +54,9 @@ export const capturedFieldsHandlers = [
 
     return HttpResponse.json({
       ...fields,
-      processDate: fields.processDate.toISOString().split('T')[0],
-      createdAt: fields.createdAt.toISOString(),
-      updatedAt: fields.updatedAt.toISOString(),
+      processDate: toDate(fields.processDate).toISOString().split('T')[0],
+      createdAt: toDate(fields.createdAt).toISOString(),
+      updatedAt: toDate(fields.updatedAt).toISOString(),
     });
   }),
 
@@ -128,19 +131,6 @@ export const capturedFieldsHandlers = [
       );
     }
 
-    // Validar que el estudiante no esté titulado
-    const graduation = findGraduationByStudentId(body.studentId);
-    if (graduation && graduation.isGraduated === true) {
-      return HttpResponse.json(
-        {
-          error:
-            'No se pueden capturar campos para estudiantes que ya están titulados',
-          code: 'STUDENT_ALREADY_GRADUATED',
-        },
-        { status: 400 }
-      );
-    }
-
     // Validar que no exista ya un registro de captured fields para este estudiante
     const existingFields = findCapturedFieldsByStudentId(body.studentId);
     if (existingFields && existingFields.length > 0) {
@@ -169,9 +159,11 @@ export const capturedFieldsHandlers = [
     return HttpResponse.json(
       {
         ...newCapturedFields,
-        processDate: newCapturedFields.processDate.toISOString().split('T')[0],
-        createdAt: newCapturedFields.createdAt.toISOString(),
-        updatedAt: newCapturedFields.updatedAt.toISOString(),
+        processDate: toDate(newCapturedFields.processDate)
+          .toISOString()
+          .split('T')[0],
+        createdAt: toDate(newCapturedFields.createdAt).toISOString(),
+        updatedAt: toDate(newCapturedFields.updatedAt).toISOString(),
       },
       { status: 201 }
     );
@@ -253,19 +245,6 @@ export const capturedFieldsHandlers = [
         );
       }
 
-      // Validar que el estudiante no esté titulado
-      const graduation = findGraduationByStudentId(currentStudentId);
-      if (graduation && graduation.isGraduated === true) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se pueden modificar campos capturados para estudiantes que ya están titulados',
-            code: 'STUDENT_ALREADY_GRADUATED',
-          },
-          { status: 400 }
-        );
-      }
-
       // Si se cambia el estudiante, validar que no exista ya un registro para el nuevo estudiante
       if (body.studentId !== undefined && body.studentId !== fields.studentId) {
         const existingFields = findCapturedFieldsByStudentId(body.studentId);
@@ -292,9 +271,9 @@ export const capturedFieldsHandlers = [
 
       return HttpResponse.json({
         ...fields,
-        processDate: fields.processDate.toISOString().split('T')[0],
-        createdAt: fields.createdAt.toISOString(),
-        updatedAt: fields.updatedAt.toISOString(),
+        processDate: toDate(fields.processDate).toISOString().split('T')[0],
+        createdAt: toDate(fields.createdAt).toISOString(),
+        updatedAt: toDate(fields.updatedAt).toISOString(),
       });
     }
   ),
@@ -376,19 +355,6 @@ export const capturedFieldsHandlers = [
         );
       }
 
-      // Validar que el estudiante no esté titulado
-      const graduation = findGraduationByStudentId(currentStudentId);
-      if (graduation && graduation.isGraduated === true) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se pueden modificar campos capturados para estudiantes que ya están titulados',
-            code: 'STUDENT_ALREADY_GRADUATED',
-          },
-          { status: 400 }
-        );
-      }
-
       // Si se cambia el estudiante, validar que no exista ya un registro para el nuevo estudiante
       if (body.studentId !== undefined && body.studentId !== fields.studentId) {
         const existingFields = findCapturedFieldsByStudentId(body.studentId);
@@ -421,9 +387,9 @@ export const capturedFieldsHandlers = [
 
       return HttpResponse.json({
         ...fields,
-        processDate: fields.processDate.toISOString().split('T')[0],
-        createdAt: fields.createdAt.toISOString(),
-        updatedAt: fields.updatedAt.toISOString(),
+        processDate: toDate(fields.processDate).toISOString().split('T')[0],
+        createdAt: toDate(fields.createdAt).toISOString(),
+        updatedAt: toDate(fields.updatedAt).toISOString(),
       });
     }
   ),

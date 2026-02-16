@@ -10,6 +10,12 @@ import type {
  * Servicio para interactuar con la API de Titulaciones
  */
 export const graduationsService = {
+  normalizeOptionalDate(value?: string | Date | null): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+    return value instanceof Date ? value.toISOString() : value;
+  },
   /**
    * Obtiene los detalles de una titulación por ID
    */
@@ -26,9 +32,10 @@ export const graduationsService = {
       // Convertir graduationDate de string a Date
       return {
         ...response,
-        graduationDate: new Date(response.graduationDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        graduationDate: this.normalizeOptionalDate(response.graduationDate),
+        idCardIssueDate: this.normalizeOptionalDate(response.idCardIssueDate),
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al obtener titulación:', error);
@@ -62,9 +69,10 @@ export const graduationsService = {
       // Convertir graduationDate de string a Date
       return {
         ...response,
-        graduationDate: new Date(response.graduationDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        graduationDate: this.normalizeOptionalDate(response.graduationDate),
+        idCardIssueDate: this.normalizeOptionalDate(response.idCardIssueDate),
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al crear titulación:', error);
@@ -100,9 +108,10 @@ export const graduationsService = {
       // Convertir graduationDate de string a Date
       return {
         ...response,
-        graduationDate: new Date(response.graduationDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        graduationDate: this.normalizeOptionalDate(response.graduationDate),
+        idCardIssueDate: this.normalizeOptionalDate(response.idCardIssueDate),
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al actualizar titulación:', error);
@@ -141,9 +150,10 @@ export const graduationsService = {
       // Convertir graduationDate de string a Date
       return {
         ...response,
-        graduationDate: new Date(response.graduationDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        graduationDate: this.normalizeOptionalDate(response.graduationDate),
+        idCardIssueDate: this.normalizeOptionalDate(response.idCardIssueDate),
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al actualizar parcialmente titulación:', error);
@@ -185,9 +195,10 @@ export const graduationsService = {
       // Convertir graduationDate de string a Date
       return {
         ...response,
-        graduationDate: new Date(response.graduationDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        graduationDate: this.normalizeOptionalDate(response.graduationDate),
+        idCardIssueDate: this.normalizeOptionalDate(response.idCardIssueDate),
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al marcar estudiante como titulado:', error);
@@ -213,9 +224,10 @@ export const graduationsService = {
       // Convertir graduationDate de string a Date
       return {
         ...response,
-        graduationDate: new Date(response.graduationDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        graduationDate: this.normalizeOptionalDate(response.graduationDate),
+        idCardIssueDate: this.normalizeOptionalDate(response.idCardIssueDate),
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al desmarcar estudiante como titulado:', error);

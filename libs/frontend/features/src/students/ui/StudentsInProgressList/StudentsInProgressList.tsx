@@ -16,6 +16,7 @@ import type {
 import { exportTable } from '@shared/lib/excel';
 import { useStudents } from '../../lib/useStudents';
 import { StudentForm } from '../StudentForm/StudentForm';
+import { ScheduleModal } from '../ScheduleModal/ScheduleModal';
 import { studentsService } from '../../api/studentsService';
 import type {
   InProgressStudent,
@@ -75,6 +76,7 @@ export function StudentsInProgressList() {
   // Estados para modales
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedCapturedFields, setSelectedCapturedFields] =
     useState<CapturedFields | null>(null);
@@ -229,7 +231,7 @@ export function StudentsInProgressList() {
           // Cargar datos relacionados en paralelo
           const [capturedFields, graduation] = await Promise.all([
             findCapturedFieldsByStudentId(student.id),
-            findGraduationByStudentId(student.id),
+            findGraduationByStudentId(student.id).catch(() => null), // Manejar error 404 para estudiantes en proceso
           ]);
           setSelectedCapturedFields(capturedFields);
           setSelectedGraduation(graduation);
@@ -273,6 +275,37 @@ export function StudentsInProgressList() {
           type: 'error',
           title: 'Error',
           message: 'No se pudo cargar el estudiante para edición',
+        });
+      }
+    },
+    [fetchStudentByControlNumber, showToast]
+  );
+
+  // Abrir modal de programación
+  const handleOpenScheduleModal = useCallback(
+    async (inProgressStudent: InProgressStudent) => {
+      try {
+        const student = await fetchStudentByControlNumber(
+          inProgressStudent.controlNumber
+        );
+
+        if (!student) {
+          showToast({
+            type: 'error',
+            title: 'Error',
+            message: 'No se pudo encontrar el estudiante',
+          });
+          return;
+        }
+
+        setSelectedStudent(student);
+        setIsScheduleModalOpen(true);
+      } catch (error) {
+        console.error('Error al cargar estudiante para programación:', error);
+        showToast({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudo cargar el estudiante para programación',
         });
       }
     },
@@ -437,6 +470,11 @@ export function StudentsInProgressList() {
         },
         { separator: true, label: 'separator', onClick: () => {} },
         {
+          label: 'Marcar como Programado',
+          onClick: () => handleOpenScheduleModal(inProgressStudent),
+        },
+        { separator: true, label: 'separator2', onClick: () => {} },
+        {
           label: 'Editar',
           onClick: () => handleOpenEdit(inProgressStudent),
         },
@@ -445,7 +483,7 @@ export function StudentsInProgressList() {
           onClick: () => handleDelete(inProgressStudent),
           variant: 'danger' as const,
         },
-        { separator: true, label: 'separator2', onClick: () => {} },
+        { separator: true, label: 'separator3', onClick: () => {} },
         {
           label: 'Pausar',
           onClick: () =>
@@ -453,7 +491,13 @@ export function StudentsInProgressList() {
         },
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleDelete, handleStatusChange]
+    [
+      handleOpenDetail,
+      handleOpenEdit,
+      handleOpenScheduleModal,
+      handleDelete,
+      handleStatusChange,
+    ]
   );
 
   // Obtener label del status
@@ -633,7 +677,7 @@ export function StudentsInProgressList() {
         render: () =>
           getGraduationOptionName(
             selectedGraduation?.graduationOptionId ?? null
-          ),
+          ) || '—',
       },
       {
         key: '__graduation_graduationDate__',
@@ -654,17 +698,17 @@ export function StudentsInProgressList() {
         },
       },
       {
-        key: '__graduation_isGraduated__',
+        key: '__graduation_processStatus__',
         label: 'Titulado',
         render: () => (
           <span
             className={
-              selectedGraduation?.isGraduated
+              selectedStudent?.processStatus === 'GRADUATED'
                 ? 'text-(--color-green) font-medium'
                 : 'text-(--color-yellow)'
             }
           >
-            {selectedGraduation?.isGraduated ? 'Sí' : 'No'}
+            {selectedStudent?.processStatus === 'GRADUATED' ? 'Sí' : 'No'}
           </span>
         ),
       },
@@ -781,6 +825,20 @@ export function StudentsInProgressList() {
     if (Array.isArray(value)) return value.length > 0;
     return false;
   });
+
+  // Función para actualizar datos después de programar
+  const handleScheduleSuccess = useCallback(() => {
+    // Actualizar la lista de estudiantes en proceso
+    listInProgressStudents({
+      page,
+      search: searchTerm || undefined,
+      sortBy: sortBy || undefined,
+      sortOrder: sortOrder || undefined,
+      careerId: filters.careerId as string,
+      generationId: filters.generationId as string,
+      sex: filters.sex as string,
+    });
+  }, [listInProgressStudents, page, searchTerm, sortBy, sortOrder, filters]);
 
   // Estado para exportación
   const [isExporting, setIsExporting] = useState(false);
@@ -1056,6 +1114,19 @@ export function StudentsInProgressList() {
           onSubmit={handleEdit}
           mode="edit"
           initialData={selectedStudent}
+        />
+      )}
+
+      {/* Modal de programación */}
+      {selectedStudent && (
+        <ScheduleModal
+          isOpen={isScheduleModalOpen}
+          onClose={() => {
+            setIsScheduleModalOpen(false);
+            setSelectedStudent(null);
+          }}
+          student={selectedStudent}
+          onSuccess={handleScheduleSuccess}
         />
       )}
     </div>

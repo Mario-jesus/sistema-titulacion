@@ -1,4 +1,9 @@
-import type { Student, StudentStatus, Sex } from '@entities/student';
+import type {
+  Student,
+  StudentStatus,
+  Sex,
+  StudentProcessStatus,
+} from '@entities/student';
 import type { SearchParams, ListResponse } from '@shared/lib/model';
 
 export interface ListStudentsParams extends SearchParams {
@@ -35,8 +40,8 @@ export interface ScheduledStudent {
   sex: string;
   careerId: string;
   graduationOptionId: string | null;
-  graduationDate: string | null;
-  isGraduated: boolean;
+  graduationDate?: string | null;
+  scheduledDate?: string | null;
 }
 
 export interface ListScheduledStudentsParams extends SearchParams {
@@ -54,8 +59,10 @@ export interface GraduatedStudent {
   sex: string;
   careerId: string;
   generationId: string;
-  graduationOptionId: string;
-  graduationDate: string;
+  graduationOptionId: string | null;
+  hasIdCard?: boolean;
+  graduationDate?: string | null;
+  scheduledDate?: string | null;
 }
 
 export interface ListGraduatedStudentsParams extends SearchParams {
@@ -79,6 +86,8 @@ export interface CreateStudentRequest {
   sex: Sex;
   isEgressed?: boolean;
   status?: StudentStatus;
+  processStatus?: StudentProcessStatus;
+  hasIdCard?: boolean;
 }
 
 export interface UpdateStudentRequest {
@@ -94,6 +103,31 @@ export interface UpdateStudentRequest {
   sex?: Sex;
   isEgressed?: boolean;
   status?: StudentStatus;
+  processStatus?: StudentProcessStatus;
+  hasIdCard?: boolean;
+}
+
+// Tipos para transiciones de estado
+export interface ScheduleStudentRequest {
+  processStatus: StudentProcessStatus.SCHEDULED;
+  scheduledDate: string;
+}
+
+export interface GraduateStudentRequest {
+  processStatus: StudentProcessStatus.GRADUATED;
+  graduationDate?: string;
+  hasIdCard: boolean;
+  idCardNumber?: string;
+  idCardIssueDate?: string;
+}
+
+export interface UpdateProcessStatusRequest {
+  processStatus: StudentProcessStatus;
+  hasIdCard?: boolean;
+  scheduledDate?: string;
+  graduationDate?: string;
+  idCardNumber?: string;
+  idCardIssueDate?: string;
 }
 
 export interface StudentError {

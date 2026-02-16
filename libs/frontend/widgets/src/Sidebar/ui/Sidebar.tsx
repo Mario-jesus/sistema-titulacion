@@ -234,7 +234,7 @@ export function Sidebar({
                   <div>
                     <button
                       onClick={() => handleItemClickWithClose(item)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 relative overflow-hidden cursor-pointer active:opacity-80 ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 relative overflow-hidden cursor-pointer active:opacity-80 outline-none focus:outline-none ${
                         isCollapsed ? 'justify-center' : ''
                       } ${
                         isParentActive
@@ -307,7 +307,7 @@ export function Sidebar({
                                 onClick={() =>
                                   handleSubItemClickWithClose(subItem)
                                 }
-                                className={`w-full flex items-center gap-3 px-10 py-2 relative cursor-pointer active:opacity-80 ${
+                                className={`w-full flex items-center gap-3 px-10 py-2 relative cursor-pointer active:opacity-80 outline-none focus:outline-none ${
                                   isSubActive
                                     ? 'bg-primary-color-light/15 text-base-primary-typo-light dark:bg-gray-3-dark dark:text-base-primary-typo-dark'
                                     : 'bg-transparent text-base-secondary-typo-light dark:text-base-secondary-typo-dark hover:bg-primary-color-light/15 dark:hover:bg-gray-3-dark hover:text-base-primary-typo-light dark:hover:text-base-primary-typo-dark'
@@ -349,7 +349,7 @@ export function Sidebar({
         >
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-6 py-2.5 cursor-pointer active:opacity-80 ${
+            className={`w-full flex items-center gap-3 px-6 py-2.5 cursor-pointer active:opacity-80 outline-none focus:outline-none ${
               isCollapsed ? 'justify-center' : ''
             }`}
             style={{

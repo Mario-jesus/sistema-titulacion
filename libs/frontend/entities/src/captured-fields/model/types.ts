@@ -1,9 +1,9 @@
 export interface CapturedFields {
   id: string;
   studentId: string;
-  processDate: Date;
+  processDate: string | Date;
   projectName: string;
   company: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }

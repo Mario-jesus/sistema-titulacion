@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { Student } from '@entities/student';
-import { StudentStatus } from '@entities/student';
+import { StudentStatus, StudentProcessStatus, Sex } from '@entities/student';
 import { buildApiUrl, delay } from '../utils';
 import { findCareerById } from '../data/careers';
 import { findGenerationById } from '../data/generations';
@@ -10,6 +10,8 @@ import {
   findStudentByControlNumber,
   generateStudentId,
   findGraduationByStudentId,
+  mockGraduations,
+  generateGraduationId,
   findCapturedFieldsByStudentId,
 } from '../data';
 
@@ -30,6 +32,8 @@ interface CreateStudentRequest {
   sex: string;
   isEgressed: boolean;
   status: StudentStatus;
+  processStatus: StudentProcessStatus;
+  hasIdCard: boolean;
 }
 
 interface UpdateStudentRequest {
@@ -45,6 +49,8 @@ interface UpdateStudentRequest {
   sex?: string;
   isEgressed?: boolean;
   status?: StudentStatus;
+  processStatus?: StudentProcessStatus;
+  hasIdCard?: boolean;
 }
 
 interface PaginationData {
@@ -84,8 +90,8 @@ interface ScheduledStudent {
   sex: string;
   careerId: string;
   graduationOptionId: string | null;
-  graduationDate: string | null;
-  isGraduated: boolean;
+  graduationDate?: string | null;
+  scheduledDate?: string | null;
 }
 
 interface ScheduledListResponse {
@@ -98,9 +104,9 @@ interface GraduatedStudent {
   fullName: string;
   sex: string;
   careerId: string;
-  generationId: string;
-  graduationOptionId: string;
-  graduationDate: string;
+  graduationOptionId: string | null;
+  graduationDate?: string | null;
+  scheduledDate?: string | null;
 }
 
 interface GraduatedListResponse {
@@ -326,30 +332,15 @@ export const studentsHandlers = [
     // Filtrar estudiantes en proceso
     // Un estudiante está en proceso si:
     // 1. Tiene status ACTIVO
-    // 2. No está titulado (no tiene Graduation o isGraduated=false)
-    // 3. No tiene datos en CapturedFields O no tiene datos en Graduation
-    //    (solo se considera en proceso si falta capturar datos en alguna de las dos tablas)
-    // 4. Si tiene datos en ambas tablas, aunque no esté titulado, NO es un estudiante en proceso
+    // 2. Tiene processStatus IN_PROCESS
     let filteredData = mockStudents.filter((student: Student) => {
       // Debe tener status ACTIVO
       if (student.status !== StudentStatus.ACTIVO) {
         return false;
       }
 
-      // Verificar si está titulado
-      const graduation = findGraduationByStudentId(student.id);
-      if (graduation && graduation.isGraduated === true) {
-        return false;
-      }
-
-      // Verificar si tiene datos en CapturedFields y Graduation
-      const capturedFields = findCapturedFieldsByStudentId(student.id);
-      const hasCapturedFields = capturedFields && capturedFields.length > 0;
-      const hasGraduation = graduation !== undefined;
-
-      // Si tiene datos en ambas tablas, NO está en proceso
-      // Solo está en proceso si falta capturar datos en al menos una tabla
-      if (hasCapturedFields && hasGraduation) {
+      // Debe tener processStatus IN_PROCESS
+      if (student.processStatus !== StudentProcessStatus.IN_PROCESS) {
         return false;
       }
 
@@ -391,15 +382,16 @@ export const studentsHandlers = [
     }
 
     // Mapear a InProgressStudent y aplicar ordenamiento
-    let mappedData: InProgressStudent[] = filteredData.map(
+    const mappedData: InProgressStudent[] = filteredData.map(
       (student: Student) => {
-        const graduation = findGraduationByStudentId(student.id);
-        const capturedFields = findCapturedFieldsByStudentId(student.id);
         const fullName = `${student.firstName} ${student.paternalLastName} ${
           student.maternalLastName || ''
         }`.trim();
 
-        // Obtener projectName del primer registro de CapturedFields (si existe)
+        // Obtener datos adicionales si existen (opcional)
+        const graduation = findGraduationByStudentId(student.id);
+        const capturedFields = findCapturedFieldsByStudentId(student.id);
+
         const projectName =
           capturedFields && capturedFields.length > 0
             ? capturedFields[0].projectName || null
@@ -505,13 +497,13 @@ export const studentsHandlers = [
 
     // Validar y normalizar parámetros de ordenamiento
     const validSortFields = [
-      'fullName',
       'controlNumber',
+      'fullName',
       'sex',
       'careerId',
       'graduationOptionId',
       'graduationDate',
-      'isGraduated',
+      'scheduledDate',
     ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'fullName';
     const sortBy = validSortFields.includes(requestedSortBy)
@@ -525,27 +517,15 @@ export const studentsHandlers = [
     // Filtrar estudiantes programados
     // Un estudiante está programado si:
     // 1. Tiene status ACTIVO
-    // 2. No está titulado (isGraduated=false)
-    // 3. Ya tiene datos en AMBAS tablas: Graduation Y CapturedFields
+    // 2. Tiene processStatus SCHEDULED
     let filteredData = mockStudents.filter((student: Student) => {
       // Debe tener status ACTIVO
       if (student.status !== StudentStatus.ACTIVO) {
         return false;
       }
 
-      // Verificar si está titulado
-      const graduation = findGraduationByStudentId(student.id);
-      if (graduation && graduation.isGraduated === true) {
-        return false;
-      }
-
-      // Verificar si tiene datos en CapturedFields y Graduation
-      const capturedFields = findCapturedFieldsByStudentId(student.id);
-      const hasCapturedFields = capturedFields && capturedFields.length > 0;
-      const hasGraduation = graduation !== undefined;
-
-      // Debe tener datos en AMBAS tablas
-      if (!hasCapturedFields || !hasGraduation) {
+      // Debe tener processStatus SCHEDULED
+      if (student.processStatus !== StudentProcessStatus.SCHEDULED) {
         return false;
       }
 
@@ -587,28 +567,33 @@ export const studentsHandlers = [
     }
 
     // Mapear a ScheduledStudent y aplicar ordenamiento
-    let mappedData: ScheduledStudent[] = filteredData.map(
+    const mappedData: ScheduledStudent[] = filteredData.map(
       (student: Student) => {
-        const graduation = findGraduationByStudentId(student.id);
         const fullName = `${student.firstName} ${student.paternalLastName} ${
           student.maternalLastName || ''
         }`.trim();
 
-        // Obtener datos de Graduation si existe
+        // Obtener datos de Graduation
+        const graduation = findGraduationByStudentId(student.id);
         const graduationOptionId = graduation?.graduationOptionId || null;
+        const hasIdCard = student.hasIdCard ?? false;
         const graduationDate = graduation?.graduationDate
           ? graduation.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
           : null;
-        const isGraduated = graduation?.isGraduated || false;
+        const scheduledDate = graduation?.scheduledDate
+          ? graduation.scheduledDate.toISOString().split('T')[0]
+          : null;
 
         return {
           controlNumber: student.controlNumber || '',
           fullName,
           sex: student.sex || '',
           careerId: student.careerId,
+          generationId: student.generationId,
           graduationOptionId,
+          hasIdCard,
           graduationDate,
-          isGraduated,
+          scheduledDate,
         };
       }
     );
@@ -643,9 +628,9 @@ export const studentsHandlers = [
           aValue = a.graduationDate ?? '';
           bValue = b.graduationDate ?? '';
           break;
-        case 'isGraduated':
-          aValue = a.isGraduated ? 1 : 0;
-          bValue = b.isGraduated ? 1 : 0;
+        case 'scheduledDate':
+          aValue = a.scheduledDate ?? '';
+          bValue = b.scheduledDate ?? '';
           break;
         default:
           aValue = a.fullName?.toLowerCase() ?? '';
@@ -719,9 +704,9 @@ export const studentsHandlers = [
       'controlNumber',
       'sex',
       'careerId',
-      'generationId',
       'graduationOptionId',
       'graduationDate',
+      'scheduledDate',
     ];
     const requestedSortBy = url.searchParams.get('sortBy') || 'fullName';
     const sortBy = validSortFields.includes(requestedSortBy)
@@ -735,16 +720,15 @@ export const studentsHandlers = [
     // Filtrar estudiantes titulados
     // Un estudiante está titulado si:
     // 1. Tiene status ACTIVO
-    // 2. Está titulado (tiene Graduation con isGraduated=true)
+    // 2. Tiene processStatus GRADUATED
     let filteredData = mockStudents.filter((student: Student) => {
       // Debe tener status ACTIVO
       if (student.status !== StudentStatus.ACTIVO) {
         return false;
       }
 
-      // Verificar si está titulado
-      const graduation = findGraduationByStudentId(student.id);
-      if (!graduation || graduation.isGraduated !== true) {
+      // Debe tener processStatus GRADUATED
+      if (student.processStatus !== StudentProcessStatus.GRADUATED) {
         return false;
       }
 
@@ -786,18 +770,21 @@ export const studentsHandlers = [
     }
 
     // Mapear a GraduatedStudent y aplicar ordenamiento
-    let mappedData: GraduatedStudent[] = filteredData.map(
+    const mappedData: GraduatedStudent[] = filteredData.map(
       (student: Student) => {
         const graduation = findGraduationByStudentId(student.id);
         const fullName = `${student.firstName} ${student.paternalLastName} ${
           student.maternalLastName || ''
         }`.trim();
 
-        // Obtener datos de Graduation (siempre existe porque ya filtramos por isGraduated=true)
-        const graduationOptionId = graduation!.graduationOptionId || '';
-        const graduationDate = graduation!.graduationDate
-          ? graduation!.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
-          : '';
+        // Obtener datos de Graduation
+        const graduationOptionId = graduation?.graduationOptionId || null;
+        const graduationDate = graduation?.graduationDate
+          ? graduation.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+          : null;
+        const scheduledDate = graduation?.scheduledDate
+          ? graduation.scheduledDate.toISOString().split('T')[0]
+          : null;
 
         return {
           controlNumber: student.controlNumber || '',
@@ -806,7 +793,9 @@ export const studentsHandlers = [
           careerId: student.careerId,
           generationId: student.generationId,
           graduationOptionId,
+          hasIdCard: student.hasIdCard ?? false,
           graduationDate,
+          scheduledDate,
         };
       }
     );
@@ -833,10 +822,6 @@ export const studentsHandlers = [
           aValue = a.careerId?.toLowerCase() ?? '';
           bValue = b.careerId?.toLowerCase() ?? '';
           break;
-        case 'generationId':
-          aValue = a.generationId?.toLowerCase() ?? '';
-          bValue = b.generationId?.toLowerCase() ?? '';
-          break;
         case 'graduationOptionId':
           aValue = a.graduationOptionId?.toLowerCase() ?? '';
           bValue = b.graduationOptionId?.toLowerCase() ?? '';
@@ -844,6 +829,10 @@ export const studentsHandlers = [
         case 'graduationDate':
           aValue = a.graduationDate ?? '';
           bValue = b.graduationDate ?? '';
+          break;
+        case 'scheduledDate':
+          aValue = a.scheduledDate ?? '';
+          bValue = b.scheduledDate ?? '';
           break;
         default:
           aValue = a.fullName?.toLowerCase() ?? '';
@@ -1047,9 +1036,11 @@ export const studentsHandlers = [
       phoneNumber: body.phoneNumber?.trim() || '',
       email: body.email.trim().toLowerCase(),
       birthDate: new Date(body.birthDate),
-      sex: body.sex as any,
+      sex: body.sex as Sex,
       isEgressed: body.isEgressed ?? false,
       status: body.status ?? StudentStatus.ACTIVO,
+      processStatus: body.processStatus ?? StudentProcessStatus.NOT_STARTED,
+      hasIdCard: body.hasIdCard ?? false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -1173,7 +1164,8 @@ export const studentsHandlers = [
     ) {
       const exists = mockStudents.some(
         (s: Student) =>
-          s.id !== id && s.email.toLowerCase() === body.email!.toLowerCase()
+          s.id !== id &&
+          s.email.toLowerCase() === (body.email ?? '').toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -1198,6 +1190,7 @@ export const studentsHandlers = [
           { status: 400 }
         );
       }
+
       // Activo solo puede pasar a Pausado o Cancelado
       if (
         student.status === StudentStatus.ACTIVO &&
@@ -1251,7 +1244,7 @@ export const studentsHandlers = [
     student.birthDate = body.birthDate
       ? new Date(body.birthDate)
       : student.birthDate;
-    student.sex = body.sex ? (body.sex as any) : student.sex;
+    student.sex = body.sex ? (body.sex as Sex) : student.sex;
     student.isEgressed = body.isEgressed ?? student.isEgressed;
     if (body.status !== undefined) {
       student.status = body.status;
@@ -1372,7 +1365,8 @@ export const studentsHandlers = [
     ) {
       const exists = mockStudents.some(
         (s: Student) =>
-          s.id !== id && s.email.toLowerCase() === body.email!.toLowerCase()
+          s.id !== id &&
+          s.email.toLowerCase() === (body.email ?? '').toLowerCase()
       );
       if (exists) {
         return HttpResponse.json(
@@ -1460,7 +1454,7 @@ export const studentsHandlers = [
       student.birthDate = new Date(body.birthDate);
     }
     if (body.sex !== undefined) {
-      student.sex = body.sex as any;
+      student.sex = body.sex as Sex;
     }
     if (body.isEgressed !== undefined) {
       student.isEgressed = body.isEgressed;
@@ -1535,9 +1529,9 @@ export const studentsHandlers = [
         );
       }
 
-      // Verificar si el estudiante está graduado
-      const graduation = findGraduationByStudentId(student.id);
-      const isGraduated = graduation?.isGraduated === true;
+      // Verificar si el estudiante está graduado (usando processStatus)
+      const isGraduated =
+        student.processStatus === StudentProcessStatus.GRADUATED;
 
       // Validar transición de status
       // Cancelado no puede cambiar de status
@@ -1718,4 +1712,163 @@ export const studentsHandlers = [
       updatedAt: student.updatedAt.toISOString(),
     });
   }),
+
+  // POST /students/:id/process-status (Actualizar processStatus)
+  http.post(
+    buildApiUrl('/students/:id/process-status'),
+    async ({ params, request }) => {
+      await delay();
+
+      const { id } = params;
+      const student = findStudentById(id as string);
+
+      if (!student) {
+        return HttpResponse.json(
+          {
+            error: 'Estudiante no encontrado',
+            code: 'STUDENT_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      const body = (await request.json()) as {
+        processStatus: StudentProcessStatus;
+        hasIdCard?: boolean;
+        scheduledDate?: string; // Para estado SCHEDULED
+        graduationDate?: string; // Para estado GRADUATED
+        idCardNumber?: string; // Para estado GRADUATED
+        idCardIssueDate?: string; // Para estado GRADUATED
+      };
+
+      if (!body.processStatus) {
+        return HttpResponse.json(
+          {
+            error: 'El processStatus es requerido',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar transiciones de processStatus
+      const currentStatus = student.processStatus;
+      const newStatus = body.processStatus;
+
+      // NOT_STARTED puede pasar a cualquier estado
+      // IN_PROCESS puede pasar a SCHEDULED o volver a NOT_STARTED
+      // SCHEDULED puede pasar a GRADUATED o volver a IN_PROCESS
+      // GRADUATED no puede cambiar de estado
+
+      if (currentStatus === StudentProcessStatus.GRADUATED) {
+        return HttpResponse.json(
+          {
+            error:
+              'Un estudiante graduado no puede cambiar su estado de proceso',
+            code: 'INVALID_PROCESS_STATUS_TRANSITION',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que el estudiante esté ACTIVO para estados avanzados
+      if (
+        newStatus !== StudentProcessStatus.NOT_STARTED &&
+        newStatus !== StudentProcessStatus.IN_PROCESS &&
+        student.status !== StudentStatus.ACTIVO
+      ) {
+        return HttpResponse.json(
+          {
+            error: 'El estudiante debe estar ACTIVO para cambiar a este estado',
+            code: 'INVALID_STATUS_FOR_PROCESS',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validar que el estudiante esté egresado para estados IN_PROCESS en adelante
+      if (
+        newStatus === StudentProcessStatus.IN_PROCESS ||
+        newStatus === StudentProcessStatus.SCHEDULED ||
+        newStatus === StudentProcessStatus.GRADUATED
+      ) {
+        if (!student.isEgressed) {
+          return HttpResponse.json(
+            {
+              error:
+                'El estudiante debe estar egresado para cambiar a este estado',
+              code: 'STUDENT_NOT_EGRESSED',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Cédula profesional es opcional para graduados (hasIdCard puede ser false)
+
+      // Validar fecha programada para estado SCHEDULED
+      if (newStatus === StudentProcessStatus.SCHEDULED && !body.scheduledDate) {
+        return HttpResponse.json(
+          {
+            error:
+              'La fecha programada es requerida para estudiantes programados',
+            code: 'SCHEDULED_DATE_REQUIRED',
+          },
+          { status: 400 }
+        );
+      }
+
+      if (newStatus === StudentProcessStatus.GRADUATED) {
+        const graduationDate = body.graduationDate
+          ? new Date(body.graduationDate)
+          : undefined;
+        const idCardIssueDate = body.idCardIssueDate
+          ? new Date(body.idCardIssueDate)
+          : undefined;
+        const existingGraduation = findGraduationByStudentId(student.id);
+
+        if (existingGraduation) {
+          if (graduationDate !== undefined) {
+            existingGraduation.graduationDate = graduationDate;
+          }
+          if (body.idCardNumber !== undefined) {
+            existingGraduation.idCardNumber = body.idCardNumber || undefined;
+          }
+          if (idCardIssueDate !== undefined) {
+            existingGraduation.idCardIssueDate = idCardIssueDate;
+          }
+          existingGraduation.updatedAt = new Date();
+        } else {
+          mockGraduations.push({
+            id: generateGraduationId(),
+            studentId: student.id,
+            graduationOptionId: null,
+            graduationDate,
+            scheduledDate: undefined,
+            president: '',
+            secretary: '',
+            vocal: '',
+            substituteVocal: '',
+            notes: null,
+            idCardNumber: body.idCardNumber || undefined,
+            idCardIssueDate,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      }
+
+      // Actualizar campos del estudiante
+      student.processStatus = newStatus;
+      student.hasIdCard = body.hasIdCard ?? student.hasIdCard;
+      student.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...student,
+        birthDate: student.birthDate.toISOString().split('T')[0],
+        createdAt: student.createdAt.toISOString(),
+        updatedAt: student.updatedAt.toISOString(),
+      });
+    }
+  ),
 ];

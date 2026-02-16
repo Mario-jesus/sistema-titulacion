@@ -132,7 +132,7 @@ export const mockCapturedFields: CapturedFields[] = [
     createdAt: new Date('2024-05-05T10:00:00Z'),
     updatedAt: new Date('2024-05-05T10:00:00Z'),
   },
-  // CapturedFields para estudiantes programados (tienen CapturedFields Y Graduation, isGraduated=false)
+  // CapturedFields para estudiantes programados (tienen CapturedFields Y Graduation)
   {
     id: '19',
     studentId: '19',

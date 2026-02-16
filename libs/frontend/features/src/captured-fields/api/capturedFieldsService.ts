@@ -23,12 +23,12 @@ export const capturedFieldsService = {
 
       logger.log('Campos capturados obtenidos exitosamente', { id });
 
-      // Convertir processDate de string a Date
+      // Mantener fechas como string para evitar valores no serializables en Redux
       return {
         ...response,
-        processDate: new Date(response.processDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        processDate: response.processDate,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al obtener campos capturados:', error);
@@ -61,12 +61,12 @@ export const capturedFieldsService = {
         id: response.id,
       });
 
-      // Convertir processDate de string a Date
+      // Mantener fechas como string para evitar valores no serializables en Redux
       return {
         ...response,
-        processDate: new Date(response.processDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        processDate: response.processDate,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al crear campos capturados:', error);
@@ -102,12 +102,12 @@ export const capturedFieldsService = {
 
       logger.log('Campos capturados actualizados exitosamente', { id });
 
-      // Convertir processDate de string a Date
+      // Mantener fechas como string para evitar valores no serializables en Redux
       return {
         ...response,
-        processDate: new Date(response.processDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        processDate: response.processDate,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error('Error al actualizar campos capturados:', error);
@@ -148,12 +148,12 @@ export const capturedFieldsService = {
         id,
       });
 
-      // Convertir processDate de string a Date
+      // Mantener fechas como string para evitar valores no serializables en Redux
       return {
         ...response,
-        processDate: new Date(response.processDate),
-        createdAt: new Date(response.createdAt),
-        updatedAt: new Date(response.updatedAt),
+        processDate: response.processDate,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
       };
     } catch (error) {
       logger.error(

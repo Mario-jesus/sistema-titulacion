@@ -5,7 +5,7 @@ import type {
   UpdateStudentRequest,
 } from '../../model/types';
 import type { Student } from '@entities/student';
-import { Sex, StudentStatus } from '@entities/student';
+import { Sex, StudentStatus, StudentProcessStatus } from '@entities/student';
 import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import { loadGenerations } from '../../api/generationsHelper';
@@ -14,6 +14,7 @@ import { CapturedFieldsForm } from '@features/captured-fields';
 import { GraduationForm } from '@features/graduations/ui/GraduationForm/GraduationForm';
 import { useCapturedFields } from '@features/captured-fields';
 import { useGraduations } from '@features/graduations';
+import { useStudents } from '../../lib/useStudents';
 import { findCapturedFieldsByStudentId } from '@features/captured-fields/api/studentHelper';
 import { findGraduationByStudentId } from '@features/graduations/api/studentHelper';
 import type { CapturedFields } from '@entities/captured-fields';
@@ -54,6 +55,10 @@ export function StudentForm({
   const [sex, setSex] = useState<Sex>(Sex.MASCULINO);
   const [isEgressed, setIsEgressed] = useState(true);
   const [status, setStatus] = useState<StudentStatus>(StudentStatus.ACTIVO);
+  const [processStatus, setProcessStatus] = useState<StudentProcessStatus>(
+    StudentProcessStatus.NOT_STARTED
+  );
+  const [hasIdCard, setHasIdCard] = useState(false);
   const [generationId, setGenerationId] = useState('');
   const [careerId, setCareerId] = useState('');
 
@@ -95,6 +100,8 @@ export function StudentForm({
     isUpdating: isUpdatingGraduation,
   } = useGraduations();
 
+  const { updateStudent: updateStudentRecord } = useStudents();
+
   // Cargar generaciones y carreras cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
@@ -129,7 +136,7 @@ export function StudentForm({
   // Cargar datos iniciales cuando se abre en modo edición
   useEffect(() => {
     if (isOpen && mode === 'edit' && initialData) {
-      setControlNumber(initialData.controlNumber || '');
+      setControlNumber((initialData.controlNumber || '').toUpperCase());
       setFirstName(initialData.firstName || '');
       setPaternalLastName(initialData.paternalLastName || '');
       setMaternalLastName(initialData.maternalLastName || '');
@@ -147,6 +154,10 @@ export function StudentForm({
       setSex(initialData.sex || Sex.MASCULINO);
       setIsEgressed(initialData.isEgressed || false);
       setStatus(initialData.status || StudentStatus.ACTIVO);
+      setProcessStatus(
+        initialData.processStatus || StudentProcessStatus.NOT_STARTED
+      );
+      setHasIdCard(initialData.hasIdCard || false);
       setGenerationId(initialData.generationId || '');
       setCareerId(initialData.careerId || '');
 
@@ -181,6 +192,8 @@ export function StudentForm({
       setSex(Sex.MASCULINO);
       setIsEgressed(true);
       setStatus(StudentStatus.ACTIVO);
+      setProcessStatus(StudentProcessStatus.NOT_STARTED);
+      setHasIdCard(false);
       setGenerationId('');
       setCareerId('');
       setIsStudentSaved(false);
@@ -255,7 +268,7 @@ export function StudentForm({
 
     try {
       const formData: CreateStudentRequest | UpdateStudentRequest = {
-        controlNumber: controlNumber.trim(),
+        controlNumber: controlNumber.trim().toUpperCase(),
         firstName: firstName.trim(),
         paternalLastName: paternalLastName.trim(),
         maternalLastName: maternalLastName.trim(),
@@ -265,6 +278,9 @@ export function StudentForm({
         sex,
         isEgressed,
         status,
+        processStatus:
+          mode === 'create' ? StudentProcessStatus.NOT_STARTED : processStatus,
+        hasIdCard: mode === 'create' ? false : hasIdCard,
         generationId,
         careerId,
       };
@@ -345,6 +361,17 @@ export function StudentForm({
     if (!savedStudentId) return;
 
     if (graduationData) {
+      const updateResult = await updateStudentRecord(savedStudentId, {
+        processStatus,
+        hasIdCard,
+      });
+      if (!updateResult.success) {
+        console.error(
+          'Error al actualizar estado del proceso:',
+          updateResult.error
+        );
+        throw new Error(updateResult.error);
+      }
       const result = await updateGraduation(savedStudentId, data);
       if (!result.success) {
         console.error('Error al actualizar titulación:', result.error);
@@ -354,6 +381,17 @@ export function StudentForm({
       const updated = await findGraduationByStudentId(savedStudentId);
       setGraduationData(updated);
     } else {
+      const updateResult = await updateStudentRecord(savedStudentId, {
+        processStatus,
+        hasIdCard,
+      });
+      if (!updateResult.success) {
+        console.error(
+          'Error al actualizar estado del proceso:',
+          updateResult.error
+        );
+        throw new Error(updateResult.error);
+      }
       const result = await createGraduation(data);
       if (!result.success) {
         console.error('Error al crear titulación:', result.error);
@@ -432,7 +470,7 @@ export function StudentForm({
               placeholder="Ej: 20200001"
               value={controlNumber}
               onChange={(e) => {
-                setControlNumber(e.target.value);
+                setControlNumber(e.target.value.toUpperCase());
                 if (errors.controlNumber) {
                   setErrors({ ...errors, controlNumber: undefined });
                 }
@@ -728,15 +766,78 @@ export function StudentForm({
       )}
 
       {activeTab === 'graduation' && savedStudentId && (
-        <GraduationForm
-          studentId={savedStudentId}
-          onSubmit={handleGraduationSubmit}
-          mode={graduationData ? 'edit' : 'create'}
-          initialData={graduationData}
-          isSubmitting={isCreatingGraduation || isUpdatingGraduation}
-          onCancel={handleClose}
-          onSave={handleClose}
-        />
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                className="block text-sm font-medium mb-2"
+                style={{ color: 'var(--color-base-primary-typo)' }}
+              >
+                Estado del Proceso
+              </label>
+              <select
+                className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
+                value={processStatus}
+                onChange={(e) => {
+                  const nextStatus = e.target.value as StudentProcessStatus;
+                  setProcessStatus(nextStatus);
+                  if (nextStatus !== StudentProcessStatus.GRADUATED) {
+                    setHasIdCard(false);
+                  }
+                }}
+                disabled={isCreatingGraduation || isUpdatingGraduation}
+              >
+                <option value={StudentProcessStatus.NOT_STARTED}>
+                  Sin iniciar
+                </option>
+                <option value={StudentProcessStatus.IN_PROCESS}>
+                  En proceso
+                </option>
+                <option value={StudentProcessStatus.SCHEDULED}>
+                  Programado
+                </option>
+                <option value={StudentProcessStatus.GRADUATED}>Titulado</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="hasIdCard"
+                checked={hasIdCard}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setHasIdCard(checked);
+                  if (
+                    checked &&
+                    processStatus !== StudentProcessStatus.GRADUATED
+                  ) {
+                    setProcessStatus(StudentProcessStatus.GRADUATED);
+                  }
+                }}
+                disabled={isCreatingGraduation || isUpdatingGraduation}
+                className="w-4 h-4 rounded border-(--color-input-border) text-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 cursor-pointer"
+              />
+              <label
+                htmlFor="hasIdCard"
+                className="text-sm cursor-pointer"
+                style={{ color: 'var(--color-base-primary-typo)' }}
+              >
+                Cuenta con cédula profesional
+              </label>
+            </div>
+          </div>
+
+          <GraduationForm
+            studentId={savedStudentId}
+            onSubmit={handleGraduationSubmit}
+            mode={graduationData ? 'edit' : 'create'}
+            initialData={graduationData}
+            isSubmitting={isCreatingGraduation || isUpdatingGraduation}
+            onCancel={handleClose}
+            onSave={handleClose}
+          />
+        </div>
       )}
     </Modal>
   );

@@ -15,8 +15,8 @@ import type {
 } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
 import { useStudents } from '../../lib/useStudents';
-import { useGraduations } from '@features/graduations';
 import { StudentForm } from '../StudentForm/StudentForm';
+import { GraduateModal } from '../GraduateModal/GraduateModal';
 import { studentsService } from '../../api/studentsService';
 import type {
   ScheduledStudent,
@@ -31,7 +31,7 @@ import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import type { GraduationOption } from '@entities/graduation-option';
 import type { Student } from '@entities/student';
-import { StudentStatus } from '@entities/student';
+import { StudentProcessStatus, StudentStatus } from '@entities/student';
 import type { CapturedFields } from '@entities/captured-fields';
 import type { Graduation } from '@entities/graduation';
 
@@ -44,15 +44,12 @@ export function StudentsScheduledList() {
     scheduledStudents,
     scheduledPagination,
     isLoadingScheduled,
-    scheduledError,
     listScheduledStudents,
-    clearScheduledErrors,
     getStudentById,
     updateStudent,
     deleteStudent,
     changeStudentStatus,
   } = useStudents();
-  const { graduateStudent } = useGraduations();
 
   // Estados para relaciones
   const [generations, setGenerations] = useState<Generation[]>([]);
@@ -78,6 +75,7 @@ export function StudentsScheduledList() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isGraduateModalOpen, setIsGraduateModalOpen] = useState(false);
   const [selectedCapturedFields, setSelectedCapturedFields] =
     useState<CapturedFields | null>(null);
   const [selectedGraduation, setSelectedGraduation] =
@@ -465,18 +463,9 @@ export function StudentsScheduledList() {
     [fetchStudentByControlNumber, changeStudentStatus, showToast, loadStudents]
   );
 
-  // Manejar marcar como titulado
-  const handleGraduate = useCallback(
+  // Abrir modal de titulación
+  const handleOpenGraduateModal = useCallback(
     async (scheduledStudent: ScheduledStudent) => {
-      const fullName = scheduledStudent.fullName;
-      if (
-        !window.confirm(
-          `¿Estás seguro de marcar como titulado al estudiante "${fullName}" (${scheduledStudent.controlNumber})?`
-        )
-      ) {
-        return;
-      }
-
       try {
         const student = await fetchStudentByControlNumber(
           scheduledStudent.controlNumber
@@ -491,47 +480,24 @@ export function StudentsScheduledList() {
           return;
         }
 
-        const result = await graduateStudent(student.id);
-
-        if (!result.success) {
-          showToast({
-            type: 'error',
-            title: 'Error al marcar como titulado',
-            message: result.error,
-          });
-          return;
-        }
-
-        showToast({
-          type: 'success',
-          title: 'Estudiante titulado',
-          message: `El estudiante "${fullName}" ha sido marcado como titulado exitosamente`,
-        });
-
-        loadStudents();
+        setSelectedStudent(student);
+        setIsGraduateModalOpen(true);
       } catch (error) {
-        console.error('Error al marcar como titulado:', error);
+        console.error('Error al cargar estudiante para titulación:', error);
         showToast({
           type: 'error',
           title: 'Error',
-          message: 'No se pudo marcar el estudiante como titulado',
+          message: 'No se pudo cargar el estudiante para titulación',
         });
       }
     },
-    [fetchStudentByControlNumber, graduateStudent, showToast, loadStudents]
+    [fetchStudentByControlNumber, showToast]
   );
 
-  // Mostrar errores
-  useEffect(() => {
-    if (scheduledError) {
-      showToast({
-        type: 'error',
-        title: 'Error',
-        message: scheduledError,
-      });
-      clearScheduledErrors();
-    }
-  }, [scheduledError, showToast, clearScheduledErrors]);
+  // Actualizar datos después de titular
+  const handleGraduateSuccess = useCallback(() => {
+    loadStudents();
+  }, [loadStudents]);
 
   // Manejar búsqueda
   const handleSearch = useCallback((value: string) => {
@@ -642,7 +608,7 @@ export function StudentsScheduledList() {
           label: 'Opción de Titulación',
         },
         {
-          key: 'graduationDate',
+          key: 'scheduledDate',
           label: 'Fecha Programada',
         },
         {
@@ -659,8 +625,8 @@ export function StudentsScheduledList() {
           student.graduationOptionId
         ),
         sexLabel: student.sex === 'MASCULINO' ? 'Masculino' : 'Femenino',
-        graduationDate: formatDateForExport(student.graduationDate),
-        statusLabel: student.isGraduated ? 'Titulado' : 'Pendiente',
+        scheduledDate: formatDateForExport(student.scheduledDate ?? null),
+        statusLabel: 'Programado',
       }));
 
       // Generar nombre de archivo con fecha
@@ -771,21 +737,17 @@ export function StudentsScheduledList() {
         render: (value: string | null) => getGraduationOptionName(value),
       },
       {
-        key: 'graduationDate',
+        key: 'scheduledDate',
         label: 'Fecha Programada',
         sortable: true,
         render: (value: string | null) => formatGraduationDate(value),
       },
       {
-        key: 'isGraduated',
+        key: 'processStatus',
         label: 'Estado',
-        render: (value: boolean) => {
-          return value ? (
-            <span style={{ color: 'var(--color-green)' }}>Titulado</span>
-          ) : (
-            <span style={{ color: 'var(--color-yellow)' }}>Pendiente</span>
-          );
-        },
+        render: () => (
+          <span style={{ color: 'var(--color-yellow)' }}>Programado</span>
+        ),
       },
     ],
     [getCareerName, formatGraduationDate, getGraduationOptionName]
@@ -801,6 +763,11 @@ export function StudentsScheduledList() {
         },
         { separator: true, label: 'separator', onClick: () => {} },
         {
+          label: 'Marcar como titulado',
+          onClick: () => handleOpenGraduateModal(scheduledStudent),
+        },
+        { separator: true, label: 'separator2', onClick: () => {} },
+        {
           label: 'Editar',
           onClick: () => handleOpenEdit(scheduledStudent),
         },
@@ -809,16 +776,11 @@ export function StudentsScheduledList() {
           onClick: () => handleDelete(scheduledStudent),
           variant: 'danger' as const,
         },
-        { separator: true, label: 'separator2', onClick: () => {} },
+        { separator: true, label: 'separator3', onClick: () => {} },
         {
           label: 'Pausar',
           onClick: () =>
             handleStatusChange(scheduledStudent, StudentStatus.PAUSADO),
-        },
-        { separator: true, label: 'separator3', onClick: () => {} },
-        {
-          label: 'Marcar como titulado',
-          onClick: () => handleGraduate(scheduledStudent),
         },
       ];
     },
@@ -827,7 +789,7 @@ export function StudentsScheduledList() {
       handleOpenEdit,
       handleDelete,
       handleStatusChange,
-      handleGraduate,
+      handleOpenGraduateModal,
     ]
   );
 
@@ -1029,17 +991,19 @@ export function StudentsScheduledList() {
         },
       },
       {
-        key: '__graduation_isGraduated__',
+        key: '__graduation_processStatus__',
         label: 'Titulado',
         render: () => (
           <span
             className={
-              selectedGraduation?.isGraduated
+              selectedStudent?.processStatus === StudentProcessStatus.GRADUATED
                 ? 'text-(--color-green) font-medium'
                 : 'text-(--color-yellow)'
             }
           >
-            {selectedGraduation?.isGraduated ? 'Sí' : 'No'}
+            {selectedStudent?.processStatus === StudentProcessStatus.GRADUATED
+              ? 'Sí'
+              : 'No'}
           </span>
         ),
       },
@@ -1176,6 +1140,19 @@ export function StudentsScheduledList() {
           onSubmit={handleEdit}
           mode="edit"
           initialData={selectedStudent}
+        />
+      )}
+
+      {/* Modal de titulación */}
+      {selectedStudent && (
+        <GraduateModal
+          isOpen={isGraduateModalOpen}
+          onClose={() => {
+            setIsGraduateModalOpen(false);
+            setSelectedStudent(null);
+          }}
+          student={selectedStudent}
+          onSuccess={handleGraduateSuccess}
         />
       )}
     </div>

@@ -18,7 +18,8 @@ interface CreateGraduationRequest {
   studentId: string;
   graduationOptionId: string | null;
   graduationDate: Date | string;
-  isGraduated: boolean;
+  idCardNumber?: string;
+  idCardIssueDate?: string;
   president: string;
   secretary: string;
   vocal: string;
@@ -30,13 +31,17 @@ interface UpdateGraduationRequest {
   studentId?: string;
   graduationOptionId?: string | null;
   graduationDate?: Date | string;
-  isGraduated?: boolean;
+  idCardNumber?: string;
+  idCardIssueDate?: string;
   president?: string;
   secretary?: string;
   vocal?: string;
   substituteVocal?: string;
   notes?: string | null;
 }
+
+const toDate = (value: string | Date) =>
+  value instanceof Date ? value : new Date(value);
 
 export const graduationsHandlers = [
   // GET /graduations/student/:id (Detail by studentId)
@@ -58,9 +63,14 @@ export const graduationsHandlers = [
 
     return HttpResponse.json({
       ...graduation,
-      graduationDate: graduation.graduationDate.toISOString(),
-      createdAt: graduation.createdAt.toISOString(),
-      updatedAt: graduation.updatedAt.toISOString(),
+      graduationDate: graduation.graduationDate
+        ? toDate(graduation.graduationDate).toISOString()
+        : null,
+      scheduledDate: graduation.scheduledDate
+        ? toDate(graduation.scheduledDate).toISOString()
+        : null,
+      createdAt: toDate(graduation.createdAt).toISOString(),
+      updatedAt: toDate(graduation.updatedAt).toISOString(),
     });
   }),
 
@@ -159,55 +169,26 @@ export const graduationsHandlers = [
       );
     }
 
-    // Validar que solo estudiantes egresados pueden estar titulados
-    if (body.isGraduated === true && !student.isEgressed) {
-      return HttpResponse.json(
-        {
-          error: 'Solo los estudiantes egresados pueden estar titulados',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar que estudiantes pausados o cancelados no pueden estar graduados
-    if (
-      body.isGraduated === true &&
-      (student.status === StudentStatus.PAUSADO ||
-        student.status === StudentStatus.CANCELADO)
-    ) {
-      return HttpResponse.json(
-        {
-          error:
-            'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
-          code: 'INVALID_STUDENT_STATUS',
-        },
-        { status: 400 }
-      );
-    }
-
     const graduationDate =
       body.graduationDate instanceof Date
         ? body.graduationDate
         : new Date(body.graduationDate);
 
     // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
-    if (body.isGraduated === true) {
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-      const normalizedGraduationDate = new Date(graduationDate);
-      normalizedGraduationDate.setHours(0, 0, 0, 0);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    const normalizedGraduationDate = new Date(graduationDate);
+    normalizedGraduationDate.setHours(0, 0, 0, 0);
 
-      if (normalizedGraduationDate > currentDate) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
-            code: 'INVALID_GRADUATION_DATE',
-          },
-          { status: 400 }
-        );
-      }
+    if (normalizedGraduationDate > currentDate) {
+      return HttpResponse.json(
+        {
+          error:
+            'La fecha de titulación debe ser menor o igual a la fecha actual',
+          code: 'INVALID_GRADUATION_DATE',
+        },
+        { status: 400 }
+      );
     }
 
     // Verificar que no exista ya una titulación para este estudiante
@@ -227,7 +208,10 @@ export const graduationsHandlers = [
       studentId: body.studentId,
       graduationOptionId: body.graduationOptionId,
       graduationDate,
-      isGraduated: body.isGraduated ?? false,
+      idCardNumber: body.idCardNumber?.trim() || undefined,
+      idCardIssueDate: body.idCardIssueDate
+        ? new Date(body.idCardIssueDate)
+        : undefined,
       president: body.president.trim(),
       secretary: body.secretary.trim(),
       vocal: body.vocal.trim(),
@@ -242,9 +226,17 @@ export const graduationsHandlers = [
     return HttpResponse.json(
       {
         ...newGraduation,
-        graduationDate: newGraduation.graduationDate.toISOString(),
-        createdAt: newGraduation.createdAt.toISOString(),
-        updatedAt: newGraduation.updatedAt.toISOString(),
+        graduationDate: newGraduation.graduationDate
+          ? toDate(newGraduation.graduationDate).toISOString()
+          : null,
+        scheduledDate: newGraduation.scheduledDate
+          ? toDate(newGraduation.scheduledDate).toISOString()
+          : null,
+        idCardIssueDate: newGraduation.idCardIssueDate
+          ? toDate(newGraduation.idCardIssueDate).toISOString()
+          : null,
+        createdAt: toDate(newGraduation.createdAt).toISOString(),
+        updatedAt: toDate(newGraduation.updatedAt).toISOString(),
       },
       { status: 201 }
     );
@@ -354,35 +346,8 @@ export const graduationsHandlers = [
       }
 
       // Validar que solo estudiantes egresados pueden estar titulados
-      const newIsGraduated = body.isGraduated ?? graduation.isGraduated;
-      if (newIsGraduated === true && !currentStudent.isEgressed) {
-        return HttpResponse.json(
-          {
-            error: 'Solo los estudiantes egresados pueden estar titulados',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      // Validar que estudiantes pausados o cancelados no pueden estar graduados
-      if (
-        newIsGraduated === true &&
-        (currentStudent.status === StudentStatus.PAUSADO ||
-          currentStudent.status === StudentStatus.CANCELADO)
-      ) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
-            code: 'INVALID_STUDENT_STATUS',
-          },
-          { status: 400 }
-        );
-      }
-
-      // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
-      if (newIsGraduated === true) {
+      // Validar fecha de titulación si se proporciona
+      if (body.graduationDate !== undefined || graduation.graduationDate) {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
         const graduationDateToCheck =
@@ -391,18 +356,21 @@ export const graduationsHandlers = [
               ? body.graduationDate
               : new Date(body.graduationDate)
             : graduation.graduationDate;
-        const normalizedGraduationDate = new Date(graduationDateToCheck);
-        normalizedGraduationDate.setHours(0, 0, 0, 0);
 
-        if (normalizedGraduationDate > currentDate) {
-          return HttpResponse.json(
-            {
-              error:
-                'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
-              code: 'INVALID_GRADUATION_DATE',
-            },
-            { status: 400 }
-          );
+        if (graduationDateToCheck) {
+          const normalizedGraduationDate = new Date(graduationDateToCheck);
+          normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+          if (normalizedGraduationDate > currentDate) {
+            return HttpResponse.json(
+              {
+                error:
+                  'La fecha de titulación debe ser menor o igual a la fecha actual',
+                code: 'INVALID_GRADUATION_DATE',
+              },
+              { status: 400 }
+            );
+          }
         }
       }
 
@@ -428,13 +396,20 @@ export const graduationsHandlers = [
         body.graduationOptionId !== undefined
           ? body.graduationOptionId
           : graduation.graduationOptionId;
+      if (body.idCardNumber !== undefined) {
+        graduation.idCardNumber = body.idCardNumber?.trim() || undefined;
+      }
+      if (body.idCardIssueDate !== undefined) {
+        graduation.idCardIssueDate = body.idCardIssueDate
+          ? new Date(body.idCardIssueDate)
+          : undefined;
+      }
       if (body.graduationDate !== undefined) {
         graduation.graduationDate =
           body.graduationDate instanceof Date
             ? body.graduationDate
             : new Date(body.graduationDate);
       }
-      graduation.isGraduated = body.isGraduated ?? graduation.isGraduated;
       graduation.president = body.president?.trim() ?? graduation.president;
       graduation.secretary = body.secretary?.trim() ?? graduation.secretary;
       graduation.vocal = body.vocal?.trim() ?? graduation.vocal;
@@ -448,9 +423,17 @@ export const graduationsHandlers = [
 
       return HttpResponse.json({
         ...graduation,
-        graduationDate: graduation.graduationDate.toISOString(),
-        createdAt: graduation.createdAt.toISOString(),
-        updatedAt: graduation.updatedAt.toISOString(),
+        graduationDate: graduation.graduationDate
+          ? toDate(graduation.graduationDate).toISOString()
+          : null,
+        scheduledDate: graduation.scheduledDate
+          ? toDate(graduation.scheduledDate).toISOString()
+          : null,
+        idCardIssueDate: graduation.idCardIssueDate
+          ? toDate(graduation.idCardIssueDate).toISOString()
+          : null,
+        createdAt: toDate(graduation.createdAt).toISOString(),
+        updatedAt: toDate(graduation.updatedAt).toISOString(),
       });
     }
   ),
@@ -559,38 +542,8 @@ export const graduationsHandlers = [
       }
 
       // Validar que solo estudiantes egresados pueden estar titulados
-      const newIsGraduated =
-        body.isGraduated !== undefined
-          ? body.isGraduated
-          : graduation.isGraduated;
-      if (newIsGraduated === true && !currentStudent.isEgressed) {
-        return HttpResponse.json(
-          {
-            error: 'Solo los estudiantes egresados pueden estar titulados',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      // Validar que estudiantes pausados o cancelados no pueden estar graduados
-      if (
-        newIsGraduated === true &&
-        (currentStudent.status === StudentStatus.PAUSADO ||
-          currentStudent.status === StudentStatus.CANCELADO)
-      ) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se puede marcar como graduado: el estudiante debe estar activo (no puede estar pausado o cancelado)',
-            code: 'INVALID_STUDENT_STATUS',
-          },
-          { status: 400 }
-        );
-      }
-
-      // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
-      if (newIsGraduated === true) {
+      // Validar fecha de titulación si se proporciona
+      if (body.graduationDate !== undefined || graduation.graduationDate) {
         const currentDate = new Date();
         currentDate.setHours(0, 0, 0, 0);
         const graduationDateToCheck =
@@ -599,18 +552,21 @@ export const graduationsHandlers = [
               ? body.graduationDate
               : new Date(body.graduationDate)
             : graduation.graduationDate;
-        const normalizedGraduationDate = new Date(graduationDateToCheck);
-        normalizedGraduationDate.setHours(0, 0, 0, 0);
 
-        if (normalizedGraduationDate > currentDate) {
-          return HttpResponse.json(
-            {
-              error:
-                'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
-              code: 'INVALID_GRADUATION_DATE',
-            },
-            { status: 400 }
-          );
+        if (graduationDateToCheck) {
+          const normalizedGraduationDate = new Date(graduationDateToCheck);
+          normalizedGraduationDate.setHours(0, 0, 0, 0);
+
+          if (normalizedGraduationDate > currentDate) {
+            return HttpResponse.json(
+              {
+                error:
+                  'La fecha de titulación debe ser menor o igual a la fecha actual',
+                code: 'INVALID_GRADUATION_DATE',
+              },
+              { status: 400 }
+            );
+          }
         }
       }
 
@@ -643,9 +599,6 @@ export const graduationsHandlers = [
             ? body.graduationDate
             : new Date(body.graduationDate);
       }
-      if (body.isGraduated !== undefined) {
-        graduation.isGraduated = body.isGraduated;
-      }
       if (body.president !== undefined) {
         graduation.president = body.president.trim();
       }
@@ -665,9 +618,14 @@ export const graduationsHandlers = [
 
       return HttpResponse.json({
         ...graduation,
-        graduationDate: graduation.graduationDate.toISOString(),
-        createdAt: graduation.createdAt.toISOString(),
-        updatedAt: graduation.updatedAt.toISOString(),
+        graduationDate: graduation.graduationDate
+          ? toDate(graduation.graduationDate).toISOString()
+          : null,
+        scheduledDate: graduation.scheduledDate
+          ? toDate(graduation.scheduledDate).toISOString()
+          : null,
+        createdAt: toDate(graduation.createdAt).toISOString(),
+        updatedAt: toDate(graduation.updatedAt).toISOString(),
       });
     }
   ),
@@ -720,20 +678,22 @@ export const graduationsHandlers = [
       }
 
       // Validar que graduationDate sea menor o igual que la fecha actual
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0); // Normalizar a inicio del día para comparación
-      const graduationDate = new Date(graduation.graduationDate);
-      graduationDate.setHours(0, 0, 0, 0); // Normalizar a inicio del día para comparación
+      if (graduation.graduationDate) {
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0); // Normalizar a inicio del día para comparación
+        const graduationDate = new Date(graduation.graduationDate);
+        graduationDate.setHours(0, 0, 0, 0); // Normalizar a inicio del día para comparación
 
-      if (graduationDate > currentDate) {
-        return HttpResponse.json(
-          {
-            error:
-              'No se puede marcar como titulado: la fecha de titulación debe ser menor o igual a la fecha actual',
-            code: 'INVALID_GRADUATION_DATE',
-          },
-          { status: 400 }
-        );
+        if (graduationDate > currentDate) {
+          return HttpResponse.json(
+            {
+              error:
+                'La fecha de titulación debe ser menor o igual a la fecha actual',
+              code: 'INVALID_GRADUATION_DATE',
+            },
+            { status: 400 }
+          );
+        }
       }
 
       // Verificar que el estudiante existe y está egresado
@@ -773,14 +733,18 @@ export const graduationsHandlers = [
         );
       }
 
-      graduation.isGraduated = true;
       graduation.updatedAt = new Date();
 
       return HttpResponse.json({
         ...graduation,
-        graduationDate: graduation.graduationDate.toISOString(),
-        createdAt: graduation.createdAt.toISOString(),
-        updatedAt: graduation.updatedAt.toISOString(),
+        graduationDate: graduation.graduationDate
+          ? toDate(graduation.graduationDate).toISOString()
+          : null,
+        scheduledDate: graduation.scheduledDate
+          ? toDate(graduation.scheduledDate).toISOString()
+          : null,
+        createdAt: toDate(graduation.createdAt).toISOString(),
+        updatedAt: toDate(graduation.updatedAt).toISOString(),
       });
     }
   ),
@@ -804,14 +768,18 @@ export const graduationsHandlers = [
         );
       }
 
-      graduation.isGraduated = false;
       graduation.updatedAt = new Date();
 
       return HttpResponse.json({
         ...graduation,
-        graduationDate: graduation.graduationDate.toISOString(),
-        createdAt: graduation.createdAt.toISOString(),
-        updatedAt: graduation.updatedAt.toISOString(),
+        graduationDate: graduation.graduationDate
+          ? toDate(graduation.graduationDate).toISOString()
+          : null,
+        scheduledDate: graduation.scheduledDate
+          ? toDate(graduation.scheduledDate).toISOString()
+          : null,
+        createdAt: toDate(graduation.createdAt).toISOString(),
+        updatedAt: toDate(graduation.updatedAt).toISOString(),
       });
     }
   ),

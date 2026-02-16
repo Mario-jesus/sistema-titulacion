@@ -4,8 +4,7 @@ import { mockStudents } from '../data/students';
 import { mockQuotas } from '../data/quotas';
 import { mockGenerations } from '../data/generations';
 import { mockCareers } from '../data/careers';
-import { findGraduationByStudentId } from '../data/graduations';
-import { Sex } from '@entities/student';
+import { Sex, StudentProcessStatus } from '@entities/student';
 
 type ReportType = 'por-generaciones' | 'por-carreras';
 type GraduationRateDenominator = 'ingreso' | 'egreso';
@@ -243,8 +242,7 @@ const calculateMetricsForCombination = (
     ) {
       return false;
     }
-    const graduation = findGraduationByStudentId(student.id);
-    return graduation !== undefined && graduation.isGraduated === true;
+    return student.processStatus === StudentProcessStatus.GRADUATED;
   }).length;
 
   return { ingreso, egreso, titulados };

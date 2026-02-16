@@ -2,7 +2,8 @@ export interface CreateGraduationRequest {
   studentId: string;
   graduationOptionId: string | null;
   graduationDate: string | Date; // ISO string o Date
-  isGraduated: boolean;
+  idCardNumber?: string;
+  idCardIssueDate?: string | Date;
   president: string;
   secretary: string;
   vocal: string;
@@ -14,7 +15,8 @@ export interface UpdateGraduationRequest {
   studentId?: string;
   graduationOptionId?: string | null;
   graduationDate?: string | Date; // ISO string o Date
-  isGraduated?: boolean;
+  idCardNumber?: string;
+  idCardIssueDate?: string | Date;
   president?: string;
   secretary?: string;
   vocal?: string;
@@ -29,7 +31,8 @@ export interface GraduationError {
     studentId?: string;
     graduationOptionId?: string;
     graduationDate?: string;
-    isGraduated?: string;
+    idCardNumber?: string;
+    idCardIssueDate?: string;
     president?: string;
     secretary?: string;
     vocal?: string;

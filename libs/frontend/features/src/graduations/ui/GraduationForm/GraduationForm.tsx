@@ -32,7 +32,8 @@ export function GraduationForm({
   const [graduationOptionId, setGraduationOptionId] = useState<string>('');
   const [graduationDate, setGraduationDate] = useState('');
   const [graduationTime, setGraduationTime] = useState('');
-  const [isGraduated, setIsGraduated] = useState(false);
+  const [idCardNumber, setIdCardNumber] = useState('');
+  const [idCardIssueDate, setIdCardIssueDate] = useState('');
   const [president, setPresident] = useState('');
   const [secretary, setSecretary] = useState('');
   const [vocal, setVocal] = useState('');
@@ -85,7 +86,16 @@ export function GraduationForm({
         setGraduationTime('');
       }
       setGraduationOptionId(initialData.graduationOptionId || '');
-      setIsGraduated(initialData.isGraduated || false);
+      setIdCardNumber(initialData.idCardNumber || '');
+      if (initialData.idCardIssueDate) {
+        const idDate =
+          initialData.idCardIssueDate instanceof Date
+            ? initialData.idCardIssueDate
+            : new Date(initialData.idCardIssueDate);
+        setIdCardIssueDate(idDate.toISOString().split('T')[0]);
+      } else {
+        setIdCardIssueDate('');
+      }
       setPresident(initialData.president || '');
       setSecretary(initialData.secretary || '');
       setVocal(initialData.vocal || '');
@@ -96,7 +106,8 @@ export function GraduationForm({
       setGraduationOptionId('');
       setGraduationDate('');
       setGraduationTime('');
-      setIsGraduated(false);
+      setIdCardNumber('');
+      setIdCardIssueDate('');
       setPresident('');
       setSecretary('');
       setVocal('');
@@ -155,7 +166,8 @@ export function GraduationForm({
         studentId,
         graduationOptionId: graduationOptionId || null,
         graduationDate: dateTime.toISOString(),
-        isGraduated,
+        idCardNumber: idCardNumber.trim() || undefined,
+        idCardIssueDate: idCardIssueDate || undefined,
         president: president.trim(),
         secretary: secretary.trim(),
         vocal: vocal.trim(),
@@ -242,22 +254,24 @@ export function GraduationForm({
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="isGraduated"
-            checked={isGraduated}
-            onChange={(e) => setIsGraduated(e.target.checked)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label="Número de Cédula"
+            placeholder="Ej: CED-2024-001234"
+            value={idCardNumber}
+            onChange={(e) => setIdCardNumber(e.target.value)}
+            fullWidth
             disabled={isSubmitting}
-            className="w-4 h-4 rounded border-(--color-input-border) text-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 cursor-pointer"
           />
-          <label
-            htmlFor="isGraduated"
-            className="text-sm cursor-pointer"
-            style={{ color: 'var(--color-base-primary-typo)' }}
-          >
-            Estudiante titulado
-          </label>
+
+          <Input
+            label="Fecha de Emisión de Cédula"
+            variant="calendar"
+            value={idCardIssueDate}
+            onChange={(e) => setIdCardIssueDate(e.target.value)}
+            fullWidth
+            disabled={isSubmitting}
+          />
         </div>
 
         <Input

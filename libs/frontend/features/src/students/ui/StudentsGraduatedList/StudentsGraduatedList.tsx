@@ -130,18 +130,18 @@ export function StudentsGraduatedList() {
   // Helper para obtener nombre de opción de graduación
   const getGraduationOptionName = useCallback(
     (graduationOptionId: string | null) => {
-      if (!graduationOptionId) return '';
+      if (!graduationOptionId) return '—';
       const option = graduationOptions.find(
         (opt) => opt.id === graduationOptionId
       );
-      return option?.name || '';
+      return option?.name || graduationOptionId;
     },
     [graduationOptions]
   );
 
   // Formatear fecha de graduación (para UI)
-  const formatGraduationDate = useCallback((dateString: string) => {
-    if (!dateString) return '';
+  const formatGraduationDate = useCallback((dateString: string | null) => {
+    if (!dateString) return '—';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('es-MX', {
@@ -150,7 +150,7 @@ export function StudentsGraduatedList() {
         day: 'numeric',
       });
     } catch {
-      return '';
+      return '—';
     }
   }, []);
 
@@ -596,7 +596,7 @@ export function StudentsGraduatedList() {
           student.graduationOptionId
         ),
         sexLabel: student.sex === 'MASCULINO' ? 'Masculino' : 'Femenino',
-        graduationDate: formatDateForExport(student.graduationDate),
+        graduationDate: formatDateForExport(student.graduationDate || null),
       }));
 
       // Generar nombre de archivo con fecha
@@ -713,10 +713,16 @@ export function StudentsGraduatedList() {
         render: (value: string) => getGraduationOptionName(value),
       },
       {
+        key: 'hasIdCard',
+        label: 'Estatus de Cédula',
+        render: (value: boolean | undefined) =>
+          value ? 'Título y cédula' : 'Solo título',
+      },
+      {
         key: 'graduationDate',
         label: 'Fecha de Titulación',
         sortable: true,
-        render: (value: string) => formatGraduationDate(value),
+        render: (value: string | null) => formatGraduationDate(value),
       },
     ],
     [
@@ -953,17 +959,53 @@ export function StudentsGraduatedList() {
         },
       },
       {
-        key: '__graduation_isGraduated__',
-        label: 'Titulado',
+        key: '__graduation_hasIdCard__',
+        label: 'Cuenta con Cédula',
         render: () => (
           <span
             className={
-              selectedGraduation?.isGraduated
+              selectedStudent?.hasIdCard
                 ? 'text-(--color-green) font-medium'
                 : 'text-(--color-yellow)'
             }
           >
-            {selectedGraduation?.isGraduated ? 'Sí' : 'No'}
+            {selectedStudent?.hasIdCard ? 'Sí' : 'No'}
+          </span>
+        ),
+      },
+      {
+        key: '__graduation_idCardNumber__',
+        label: 'Número de Cédula',
+        render: () => selectedGraduation?.idCardNumber || '—',
+      },
+      {
+        key: '__graduation_idCardIssueDate__',
+        label: 'Fecha de Emisión de Cédula',
+        render: () => {
+          if (!selectedGraduation?.idCardIssueDate) return '—';
+          const date =
+            selectedGraduation.idCardIssueDate instanceof Date
+              ? selectedGraduation.idCardIssueDate
+              : new Date(selectedGraduation.idCardIssueDate);
+          return date.toLocaleDateString('es-MX', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        },
+      },
+      {
+        key: '__graduation_processStatus__',
+        label: 'Titulado',
+        render: () => (
+          <span
+            className={
+              selectedStudent?.processStatus === 'GRADUATED'
+                ? 'text-(--color-green) font-medium'
+                : 'text-(--color-yellow)'
+            }
+          >
+            {selectedStudent?.processStatus === 'GRADUATED' ? 'Sí' : 'No'}
           </span>
         ),
       },

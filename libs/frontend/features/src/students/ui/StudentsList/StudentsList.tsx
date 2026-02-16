@@ -753,17 +753,17 @@ export function StudentsList({
         },
       },
       {
-        key: '__graduation_isGraduated__',
+        key: '__graduation_processStatus__',
         label: 'Titulado',
         render: () => (
           <span
             className={
-              selectedGraduation?.isGraduated
+              selectedStudent?.processStatus === 'GRADUATED'
                 ? 'text-(--color-green) font-medium'
                 : 'text-(--color-yellow)'
             }
           >
-            {selectedGraduation?.isGraduated ? 'Sí' : 'No'}
+            {selectedStudent?.processStatus === 'GRADUATED' ? 'Sí' : 'No'}
           </span>
         ),
       },

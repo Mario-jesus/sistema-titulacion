@@ -12,6 +12,7 @@ import type {
   ListGraduatedStudentsResponse,
   CreateStudentRequest,
   UpdateStudentRequest,
+  UpdateProcessStatusRequest,
 } from '../model/types';
 
 /**
@@ -404,6 +405,42 @@ export const studentsService = {
       };
     } catch (error) {
       logger.error('Error al marcar estudiante como no egresado:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza el estado de proceso de un estudiante
+   */
+  async updateProcessStatus(
+    studentId: string,
+    data: UpdateProcessStatusRequest
+  ): Promise<Student> {
+    try {
+      logger.log('Actualizando estado de proceso del estudiante...', {
+        studentId,
+        data,
+      });
+
+      const response = await apiClient.post<Student>(
+        API_ENDPOINTS.STUDENTS.UPDATE_PROCESS_STATUS(studentId),
+        data
+      );
+
+      logger.log('Estado de proceso actualizado exitosamente', {
+        studentId,
+        processStatus: data.processStatus,
+      });
+
+      // Convertir fechas de string a Date
+      return {
+        ...response,
+        birthDate: new Date(response.birthDate),
+        createdAt: new Date(response.createdAt),
+        updatedAt: new Date(response.updatedAt),
+      };
+    } catch (error) {
+      logger.error('Error al actualizar estado de proceso:', error);
       throw error;
     }
   },
