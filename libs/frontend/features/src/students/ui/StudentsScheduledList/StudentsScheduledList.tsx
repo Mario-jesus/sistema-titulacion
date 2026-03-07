@@ -1140,6 +1140,7 @@ export function StudentsScheduledList() {
           onSubmit={handleEdit}
           mode="edit"
           initialData={selectedStudent}
+          onSuccess={handleGraduateSuccess}
         />
       )}
 

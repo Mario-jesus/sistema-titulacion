@@ -19,7 +19,7 @@ import { findCapturedFieldsByStudentId } from '@features/captured-fields/api/stu
 import { findGraduationByStudentId } from '@features/graduations/api/studentHelper';
 import { loadGraduationOptions } from '@features/graduations/api/graduationOptionsHelper';
 import type { Student } from '@entities/student';
-import { StudentStatus } from '@entities/student';
+import { StudentStatus, StudentProcessStatus } from '@entities/student';
 import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import type { TableColumn, DetailField } from '@shared/ui';
@@ -58,6 +58,7 @@ export function StudentsList({
     changeStudentStatus,
     egressStudent,
     unegressStudent,
+    listGraduatedStudents,
   } = useStudents();
 
   // Estados para relaciones
@@ -200,6 +201,9 @@ export function StudentsList({
           : filters.isEgressed === 'false'
           ? { isEgressed: false }
           : {}),
+        ...(filters.processStatus
+          ? { processStatus: filters.processStatus as StudentProcessStatus }
+          : {}),
       };
 
       await listStudents(params);
@@ -320,9 +324,18 @@ export function StudentsList({
         message: 'El estudiante se ha creado exitosamente',
       });
       loadStudents();
+      // Si el estudiante se creó como titulado, refrescar la lista de titulados
+      // para que aparezca al navegar a la ruta de estudiantes titulados
+      if (
+        result.data &&
+        result.data.processStatus === StudentProcessStatus.GRADUATED &&
+        result.data.isEgressed
+      ) {
+        await listGraduatedStudents({ page: 1, limit: 10 });
+      }
       return result.data;
     },
-    [createStudent, loadStudents, showToast]
+    [createStudent, loadStudents, listGraduatedStudents, showToast]
   );
 
   // Manejar editar
@@ -460,6 +473,58 @@ export function StudentsList({
       loadStudents();
     },
     [unegressStudent, loadStudents, showToast]
+  );
+
+  // Marcar como pendiente (estado del proceso: Sin iniciar)
+  const handleMarkAsPending = useCallback(
+    async (student: Student) => {
+      try {
+        await studentsService.updateProcessStatus(student.id, {
+          processStatus: StudentProcessStatus.NOT_STARTED,
+        });
+        showToast({
+          type: 'success',
+          title: 'Estado actualizado',
+          message: 'El estudiante se ha marcado como pendiente (sin iniciar)',
+        });
+        loadStudents();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Error al actualizar estado';
+        showToast({
+          type: 'error',
+          title: 'Error al marcar como pendiente',
+          message,
+        });
+      }
+    },
+    [loadStudents, showToast]
+  );
+
+  // Marcar como en progreso (solo para estudiantes NOT_STARTED)
+  const handleMarkAsInProgress = useCallback(
+    async (student: Student) => {
+      try {
+        await studentsService.updateProcessStatus(student.id, {
+          processStatus: StudentProcessStatus.IN_PROCESS,
+        });
+        showToast({
+          type: 'success',
+          title: 'Estado actualizado',
+          message: 'El estudiante se ha marcado como en progreso',
+        });
+        loadStudents();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Error al actualizar estado';
+        showToast({
+          type: 'error',
+          title: 'Error al marcar como en progreso',
+          message,
+        });
+      }
+    },
+    [loadStudents, showToast]
   );
 
   // Abrir modal de edición
@@ -809,12 +874,23 @@ export function StudentsList({
   const filterConfigs: FilterConfig[] = [
     {
       columnKey: 'status',
-      label: 'Estado',
+      label: 'Estado del estudiante',
       type: 'select',
       options: [
         { value: StudentStatus.ACTIVO, label: 'Activo' },
         { value: StudentStatus.PAUSADO, label: 'Pausado' },
         { value: StudentStatus.CANCELADO, label: 'Cancelado' },
+      ],
+    },
+    {
+      columnKey: 'processStatus',
+      label: 'Estado del proceso',
+      type: 'select',
+      options: [
+        { value: StudentProcessStatus.NOT_STARTED, label: 'Sin iniciar' },
+        { value: StudentProcessStatus.IN_PROCESS, label: 'En proceso' },
+        { value: StudentProcessStatus.SCHEDULED, label: 'Programado' },
+        { value: StudentProcessStatus.GRADUATED, label: 'Titulado' },
       ],
     },
     {
@@ -1104,6 +1180,29 @@ export function StudentsList({
         });
       }
 
+      // Marcar como pendiente: solo para quienes NO están sin iniciar
+      const pendingAction: DropdownMenuItem[] = [];
+      if (student.processStatus !== StudentProcessStatus.NOT_STARTED) {
+        pendingAction.push({
+          label: 'Marcar como pendiente',
+          onClick: () => handleMarkAsPending(student),
+        });
+      }
+
+      // Marcar como en progreso: solo para quienes están sin iniciar (NOT_STARTED),
+      // egresados y activos (el mock rechaza si no cumple)
+      const inProgressAction: DropdownMenuItem[] = [];
+      if (
+        student.processStatus === StudentProcessStatus.NOT_STARTED &&
+        student.isEgressed === true &&
+        student.status === StudentStatus.ACTIVO
+      ) {
+        inProgressAction.push({
+          label: 'Marcar como en progreso',
+          onClick: () => handleMarkAsInProgress(student),
+        });
+      }
+
       // Agregar "Ver detalles" al inicio del menú
       return [
         {
@@ -1118,6 +1217,18 @@ export function StudentsList({
               ...egressActions,
             ]
           : []),
+        ...(pendingAction.length > 0
+          ? [
+              { separator: true, label: 'separator3', onClick: () => {} },
+              ...pendingAction,
+            ]
+          : []),
+        ...(inProgressAction.length > 0
+          ? [
+              { separator: true, label: 'separator4', onClick: () => {} },
+              ...inProgressAction,
+            ]
+          : []),
       ];
     },
     [
@@ -1127,6 +1238,8 @@ export function StudentsList({
       handleStatusChange,
       handleEgress,
       handleUnegress,
+      handleMarkAsPending,
+      handleMarkAsInProgress,
       getStatusKey,
     ]
   );
@@ -1234,7 +1347,10 @@ export function StudentsList({
       {/* Modal de creación */}
       <StudentForm
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          loadStudents();
+        }}
         onSubmit={handleCreate}
         mode="create"
       />
@@ -1246,6 +1362,7 @@ export function StudentsList({
           onClose={() => {
             setIsEditModalOpen(false);
             setSelectedStudent(null);
+            loadStudents();
           }}
           onSubmit={handleEdit}
           mode="edit"

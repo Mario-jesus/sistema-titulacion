@@ -127,6 +127,11 @@ export const studentsHandlers = [
     const careerId = url.searchParams.get('careerId');
     const generationId = url.searchParams.get('generationId');
     const status = url.searchParams.get('status');
+    const processStatusParam = url.searchParams.get('processStatus');
+    const processStatus =
+      processStatusParam && processStatusParam.length > 0
+        ? processStatusParam
+        : null;
     const isEgressedParam = url.searchParams.get('isEgressed');
     const isEgressed =
       isEgressedParam !== null
@@ -183,6 +188,13 @@ export const studentsHandlers = [
     if (isEgressed !== null) {
       filteredData = filteredData.filter(
         (student: Student) => student.isEgressed === isEgressed
+      );
+    }
+
+    // Filtrar por processStatus si se especifica
+    if (processStatus) {
+      filteredData = filteredData.filter(
+        (student: Student) => student.processStatus === processStatus
       );
     }
 
@@ -578,10 +590,14 @@ export const studentsHandlers = [
         const graduationOptionId = graduation?.graduationOptionId || null;
         const hasIdCard = student.hasIdCard ?? false;
         const graduationDate = graduation?.graduationDate
-          ? graduation.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+          ? graduation.graduationDate instanceof Date
+            ? graduation.graduationDate.toISOString().split('T')[0]
+            : graduation.graduationDate.split('T')[0] // Formato YYYY-MM-DD
           : null;
         const scheduledDate = graduation?.scheduledDate
-          ? graduation.scheduledDate.toISOString().split('T')[0]
+          ? graduation.scheduledDate instanceof Date
+            ? graduation.scheduledDate.toISOString().split('T')[0]
+            : graduation.scheduledDate.split('T')[0]
           : null;
 
         return {
@@ -780,10 +796,14 @@ export const studentsHandlers = [
         // Obtener datos de Graduation
         const graduationOptionId = graduation?.graduationOptionId || null;
         const graduationDate = graduation?.graduationDate
-          ? graduation.graduationDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+          ? graduation.graduationDate instanceof Date
+            ? graduation.graduationDate.toISOString().split('T')[0]
+            : graduation.graduationDate.split('T')[0] // Formato YYYY-MM-DD
           : null;
         const scheduledDate = graduation?.scheduledDate
-          ? graduation.scheduledDate.toISOString().split('T')[0]
+          ? graduation.scheduledDate instanceof Date
+            ? graduation.scheduledDate.toISOString().split('T')[0]
+            : graduation.scheduledDate.split('T')[0]
           : null;
 
         return {
@@ -1040,7 +1060,12 @@ export const studentsHandlers = [
       isEgressed: body.isEgressed ?? false,
       status: body.status ?? StudentStatus.ACTIVO,
       processStatus: body.processStatus ?? StudentProcessStatus.NOT_STARTED,
-      hasIdCard: body.hasIdCard ?? false,
+      // Solo titulados pueden tener cédula activa
+      hasIdCard:
+        (body.processStatus ?? StudentProcessStatus.NOT_STARTED) ===
+        StudentProcessStatus.GRADUATED
+          ? body.hasIdCard ?? false
+          : false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -1248,6 +1273,16 @@ export const studentsHandlers = [
     student.isEgressed = body.isEgressed ?? student.isEgressed;
     if (body.status !== undefined) {
       student.status = body.status;
+    }
+    if (body.processStatus !== undefined) {
+      student.processStatus = body.processStatus;
+    }
+    if (body.hasIdCard !== undefined) {
+      student.hasIdCard = body.hasIdCard;
+    }
+    // Solo titulados pueden tener cédula activa; forzar false si no está titulado
+    if (student.processStatus !== StudentProcessStatus.GRADUATED) {
+      student.hasIdCard = false;
     }
     student.updatedAt = new Date();
 
@@ -1461,6 +1496,16 @@ export const studentsHandlers = [
     }
     if (body.status !== undefined) {
       student.status = body.status;
+    }
+    if (body.processStatus !== undefined) {
+      student.processStatus = body.processStatus;
+    }
+    if (body.hasIdCard !== undefined) {
+      student.hasIdCard = body.hasIdCard;
+    }
+    // Solo titulados pueden tener cédula activa; forzar false si no está titulado
+    if (student.processStatus !== StudentProcessStatus.GRADUATED) {
+      student.hasIdCard = false;
     }
     student.updatedAt = new Date();
 
@@ -1756,6 +1801,7 @@ export const studentsHandlers = [
       const newStatus = body.processStatus;
 
       // NOT_STARTED puede pasar a cualquier estado
+      // IN_PROCESS solo puede ser asignado desde NOT_STARTED (solo no iniciados pueden marcarse en progreso)
       // IN_PROCESS puede pasar a SCHEDULED o volver a NOT_STARTED
       // SCHEDULED puede pasar a GRADUATED o volver a IN_PROCESS
       // GRADUATED no puede cambiar de estado
@@ -1764,14 +1810,55 @@ export const studentsHandlers = [
         return HttpResponse.json(
           {
             error:
-              'Un estudiante graduado no puede cambiar su estado de proceso',
+              'Un estudiante titulado no puede cambiar su estado de proceso',
             code: 'INVALID_PROCESS_STATUS_TRANSITION',
           },
           { status: 400 }
         );
       }
 
-      // Validar que el estudiante esté ACTIVO para estados avanzados
+      // Solo estudiantes NOT_STARTED pueden pasar a IN_PROCESS (marcar como en progreso)
+      if (newStatus === StudentProcessStatus.IN_PROCESS) {
+        if (currentStatus !== StudentProcessStatus.NOT_STARTED) {
+          return HttpResponse.json(
+            {
+              error:
+                'Solo un estudiante sin iniciar puede marcarse como en progreso',
+              code: 'INVALID_PROCESS_STATUS_TRANSITION',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Solo estudiantes egresados y activos pueden salir de NOT_STARTED (pasar a cualquier otro estado)
+      if (
+        currentStatus === StudentProcessStatus.NOT_STARTED &&
+        newStatus !== StudentProcessStatus.NOT_STARTED
+      ) {
+        if (!student.isEgressed) {
+          return HttpResponse.json(
+            {
+              error:
+                'El estudiante debe estar egresado para iniciar su proceso de titulación',
+              code: 'STUDENT_NOT_EGRESSED',
+            },
+            { status: 400 }
+          );
+        }
+        if (student.status !== StudentStatus.ACTIVO) {
+          return HttpResponse.json(
+            {
+              error:
+                'El estudiante debe estar activo para iniciar su proceso de titulación',
+              code: 'INVALID_STATUS_FOR_PROCESS',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Validar que el estudiante esté ACTIVO para estados avanzados (SCHEDULED, GRADUATED)
       if (
         newStatus !== StudentProcessStatus.NOT_STARTED &&
         newStatus !== StudentProcessStatus.IN_PROCESS &&
@@ -1860,7 +1947,11 @@ export const studentsHandlers = [
 
       // Actualizar campos del estudiante
       student.processStatus = newStatus;
-      student.hasIdCard = body.hasIdCard ?? student.hasIdCard;
+      // Solo titulados pueden tener cédula activa; si no está titulado se fuerza false
+      student.hasIdCard =
+        newStatus === StudentProcessStatus.GRADUATED
+          ? body.hasIdCard ?? student.hasIdCard
+          : false;
       student.updatedAt = new Date();
 
       return HttpResponse.json({

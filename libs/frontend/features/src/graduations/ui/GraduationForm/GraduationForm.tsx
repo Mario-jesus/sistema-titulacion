@@ -10,6 +10,8 @@ import { loadGraduationOptions } from '../../api/graduationOptionsHelper';
 
 export interface GraduationFormProps {
   studentId: string;
+  /** Si false, fecha/hora de titulación y datos de cédula se deshabilitan (solo titulados) */
+  isStudentGraduated?: boolean;
   onSubmit: (
     data: CreateGraduationRequest | UpdateGraduationRequest
   ) => Promise<void>;
@@ -22,6 +24,7 @@ export interface GraduationFormProps {
 
 export function GraduationForm({
   studentId,
+  isStudentGraduated = false,
   onSubmit,
   mode,
   initialData,
@@ -120,12 +123,13 @@ export function GraduationForm({
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
 
-    if (!graduationDate) {
-      newErrors.graduationDate = 'La fecha de titulación es requerida';
-    }
-
-    if (!graduationTime) {
-      newErrors.graduationTime = 'La hora de titulación es requerida';
+    if (isStudentGraduated) {
+      if (!graduationDate) {
+        newErrors.graduationDate = 'La fecha de titulación es requerida';
+      }
+      if (!graduationTime) {
+        newErrors.graduationTime = 'La hora de titulación es requerida';
+      }
     }
 
     if (!president.trim()) {
@@ -156,24 +160,28 @@ export function GraduationForm({
     }
 
     try {
-      // Combinar fecha y hora en un ISO string
       const dateTime =
-        graduationDate && graduationTime
+        isStudentGraduated && graduationDate && graduationTime
           ? new Date(`${graduationDate}T${graduationTime}:00`)
-          : new Date();
+          : null;
 
       const formData: CreateGraduationRequest | UpdateGraduationRequest = {
         studentId,
         graduationOptionId: graduationOptionId || null,
-        graduationDate: dateTime.toISOString(),
-        idCardNumber: idCardNumber.trim() || undefined,
-        idCardIssueDate: idCardIssueDate || undefined,
         president: president.trim(),
         secretary: secretary.trim(),
         vocal: vocal.trim(),
         substituteVocal: substituteVocal.trim(),
         notes: notes.trim() || null,
       };
+
+      if (isStudentGraduated && dateTime) {
+        formData.graduationDate = dateTime.toISOString();
+        formData.idCardNumber = idCardNumber.trim() || undefined;
+        formData.idCardIssueDate = idCardIssueDate || undefined;
+      } else if (mode === 'create') {
+        (formData as CreateGraduationRequest).graduationDate = '';
+      }
 
       await onSubmit(formData);
       if (onSave) {
@@ -233,8 +241,11 @@ export function GraduationForm({
             }}
             error={errors.graduationDate}
             fullWidth
-            disabled={isSubmitting}
-            required
+            disabled={isSubmitting || !isStudentGraduated}
+            required={isStudentGraduated}
+            placeholder={
+              !isStudentGraduated ? 'Solo para titulados' : undefined
+            }
           />
 
           <Input
@@ -249,19 +260,24 @@ export function GraduationForm({
             }}
             error={errors.graduationTime}
             fullWidth
-            disabled={isSubmitting}
-            required
+            disabled={isSubmitting || !isStudentGraduated}
+            required={isStudentGraduated}
+            placeholder={
+              !isStudentGraduated ? 'Solo para titulados' : undefined
+            }
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Número de Cédula"
-            placeholder="Ej: CED-2024-001234"
+            placeholder={
+              isStudentGraduated ? 'Ej: CED-2024-001234' : 'Solo para titulados'
+            }
             value={idCardNumber}
             onChange={(e) => setIdCardNumber(e.target.value)}
             fullWidth
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isStudentGraduated}
           />
 
           <Input
@@ -270,7 +286,10 @@ export function GraduationForm({
             value={idCardIssueDate}
             onChange={(e) => setIdCardIssueDate(e.target.value)}
             fullWidth
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isStudentGraduated}
+            placeholder={
+              !isStudentGraduated ? 'Solo para titulados' : undefined
+            }
           />
         </div>
 

@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { Graduation } from '@entities/graduation';
-import { StudentStatus } from '@entities/student';
+import { StudentStatus, StudentProcessStatus } from '@entities/student';
 import { buildApiUrl, delay } from '../utils';
 import { findStudentById } from '../data/students';
 import { findGraduationOptionById } from '../data/graduation-options';
@@ -91,10 +91,45 @@ export const graduationsHandlers = [
       );
     }
 
-    if (!body.graduationDate) {
+    // Verificar que el estudiante existe (antes de validar fecha/cédula)
+    const student = findStudentById(body.studentId);
+    if (!student) {
       return HttpResponse.json(
         {
-          error: 'La fecha de titulación es requerida',
+          error: 'Estudiante no encontrado',
+          code: 'STUDENT_NOT_FOUND',
+        },
+        { status: 404 }
+      );
+    }
+
+    // Solo titulados pueden registrar fecha de titulación y datos de cédula
+    if (student.processStatus !== StudentProcessStatus.GRADUATED) {
+      const hasGraduationOrIdCardData =
+        (body.graduationDate &&
+          (typeof body.graduationDate === 'string'
+            ? body.graduationDate.trim()
+            : true)) ||
+        (body.idCardNumber && body.idCardNumber.trim()) ||
+        (body.idCardIssueDate &&
+          (typeof body.idCardIssueDate === 'string'
+            ? body.idCardIssueDate.trim()
+            : true));
+      if (hasGraduationOrIdCardData) {
+        return HttpResponse.json(
+          {
+            error:
+              'Solo estudiantes titulados pueden registrar fecha de titulación y datos de cédula',
+            code: 'VALIDATION_ERROR',
+          },
+          { status: 400 }
+        );
+      }
+    } else if (!body.graduationDate) {
+      return HttpResponse.json(
+        {
+          error:
+            'La fecha de titulación es requerida para estudiantes titulados',
           code: 'VALIDATION_ERROR',
         },
         { status: 400 }
@@ -157,38 +192,34 @@ export const graduationsHandlers = [
       );
     }
 
-    // Verificar que el estudiante existe
-    const student = findStudentById(body.studentId);
-    if (!student) {
-      return HttpResponse.json(
-        {
-          error: 'Estudiante no encontrado',
-          code: 'STUDENT_NOT_FOUND',
-        },
-        { status: 404 }
-      );
-    }
-
     const graduationDate =
-      body.graduationDate instanceof Date
-        ? body.graduationDate
-        : new Date(body.graduationDate);
+      student.processStatus === StudentProcessStatus.GRADUATED &&
+      body.graduationDate
+        ? body.graduationDate instanceof Date
+          ? body.graduationDate
+          : new Date(body.graduationDate)
+        : undefined;
 
-    // Validar que graduationDate sea menor o igual que la fecha actual cuando se marca como titulado
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    const normalizedGraduationDate = new Date(graduationDate);
-    normalizedGraduationDate.setHours(0, 0, 0, 0);
+    // Validar fecha de titulación solo cuando el estudiante está titulado
+    if (
+      student.processStatus === StudentProcessStatus.GRADUATED &&
+      graduationDate
+    ) {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      const normalizedGraduationDate = new Date(graduationDate);
+      normalizedGraduationDate.setHours(0, 0, 0, 0);
 
-    if (normalizedGraduationDate > currentDate) {
-      return HttpResponse.json(
-        {
-          error:
-            'La fecha de titulación debe ser menor o igual a la fecha actual',
-          code: 'INVALID_GRADUATION_DATE',
-        },
-        { status: 400 }
-      );
+      if (normalizedGraduationDate > currentDate) {
+        return HttpResponse.json(
+          {
+            error:
+              'La fecha de titulación debe ser menor o igual a la fecha actual',
+            code: 'INVALID_GRADUATION_DATE',
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Verificar que no exista ya una titulación para este estudiante
@@ -207,11 +238,19 @@ export const graduationsHandlers = [
       id: generateGraduationId(),
       studentId: body.studentId,
       graduationOptionId: body.graduationOptionId,
-      graduationDate,
-      idCardNumber: body.idCardNumber?.trim() || undefined,
-      idCardIssueDate: body.idCardIssueDate
-        ? new Date(body.idCardIssueDate)
-        : undefined,
+      graduationDate:
+        student.processStatus === StudentProcessStatus.GRADUATED
+          ? graduationDate
+          : undefined,
+      idCardNumber:
+        student.processStatus === StudentProcessStatus.GRADUATED
+          ? body.idCardNumber?.trim() || undefined
+          : undefined,
+      idCardIssueDate:
+        student.processStatus === StudentProcessStatus.GRADUATED &&
+        body.idCardIssueDate
+          ? new Date(body.idCardIssueDate)
+          : undefined,
       president: body.president.trim(),
       secretary: body.secretary.trim(),
       vocal: body.vocal.trim(),
@@ -329,6 +368,24 @@ export const graduationsHandlers = [
         );
       }
 
+      // Solo titulados pueden registrar fecha de titulación y datos de cédula (PUT)
+      if (currentStudent.processStatus !== StudentProcessStatus.GRADUATED) {
+        const hasGraduationOrIdCardData =
+          body.graduationDate !== undefined ||
+          (body.idCardNumber !== undefined && body.idCardNumber?.trim()) ||
+          body.idCardIssueDate !== undefined;
+        if (hasGraduationOrIdCardData) {
+          return HttpResponse.json(
+            {
+              error:
+                'Solo estudiantes titulados pueden registrar fecha de titulación y datos de cédula',
+              code: 'VALIDATION_ERROR',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
       if (body.studentId !== undefined) {
         // Verificar duplicados si se cambia el estudiante
         if (body.studentId !== graduation.studentId) {
@@ -396,19 +453,25 @@ export const graduationsHandlers = [
         body.graduationOptionId !== undefined
           ? body.graduationOptionId
           : graduation.graduationOptionId;
-      if (body.idCardNumber !== undefined) {
-        graduation.idCardNumber = body.idCardNumber?.trim() || undefined;
-      }
-      if (body.idCardIssueDate !== undefined) {
-        graduation.idCardIssueDate = body.idCardIssueDate
-          ? new Date(body.idCardIssueDate)
-          : undefined;
-      }
-      if (body.graduationDate !== undefined) {
-        graduation.graduationDate =
-          body.graduationDate instanceof Date
-            ? body.graduationDate
-            : new Date(body.graduationDate);
+      if (currentStudent.processStatus === StudentProcessStatus.GRADUATED) {
+        if (body.idCardNumber !== undefined) {
+          graduation.idCardNumber = body.idCardNumber?.trim() || undefined;
+        }
+        if (body.idCardIssueDate !== undefined) {
+          graduation.idCardIssueDate = body.idCardIssueDate
+            ? new Date(body.idCardIssueDate)
+            : undefined;
+        }
+        if (body.graduationDate !== undefined) {
+          graduation.graduationDate =
+            body.graduationDate instanceof Date
+              ? body.graduationDate
+              : new Date(body.graduationDate);
+        }
+      } else {
+        graduation.idCardNumber = undefined;
+        graduation.idCardIssueDate = undefined;
+        graduation.graduationDate = undefined;
       }
       graduation.president = body.president?.trim() ?? graduation.president;
       graduation.secretary = body.secretary?.trim() ?? graduation.secretary;
@@ -525,6 +588,24 @@ export const graduationsHandlers = [
         );
       }
 
+      // Solo titulados pueden registrar fecha de titulación y datos de cédula (PATCH)
+      if (currentStudent.processStatus !== StudentProcessStatus.GRADUATED) {
+        const hasGraduationOrIdCardData =
+          body.graduationDate !== undefined ||
+          (body.idCardNumber !== undefined && body.idCardNumber?.trim()) ||
+          body.idCardIssueDate !== undefined;
+        if (hasGraduationOrIdCardData) {
+          return HttpResponse.json(
+            {
+              error:
+                'Solo estudiantes titulados pueden registrar fecha de titulación y datos de cédula',
+              code: 'VALIDATION_ERROR',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
       if (body.studentId !== undefined) {
         // Verificar duplicados si se cambia el estudiante
         if (body.studentId !== graduation.studentId) {
@@ -593,11 +674,25 @@ export const graduationsHandlers = [
       if (body.graduationOptionId !== undefined) {
         graduation.graduationOptionId = body.graduationOptionId;
       }
-      if (body.graduationDate !== undefined) {
-        graduation.graduationDate =
-          body.graduationDate instanceof Date
-            ? body.graduationDate
-            : new Date(body.graduationDate);
+      if (currentStudent.processStatus === StudentProcessStatus.GRADUATED) {
+        if (body.graduationDate !== undefined) {
+          graduation.graduationDate =
+            body.graduationDate instanceof Date
+              ? body.graduationDate
+              : new Date(body.graduationDate);
+        }
+        if (body.idCardNumber !== undefined) {
+          graduation.idCardNumber = body.idCardNumber?.trim() || undefined;
+        }
+        if (body.idCardIssueDate !== undefined) {
+          graduation.idCardIssueDate = body.idCardIssueDate
+            ? new Date(body.idCardIssueDate)
+            : undefined;
+        }
+      } else {
+        graduation.graduationDate = undefined;
+        graduation.idCardNumber = undefined;
+        graduation.idCardIssueDate = undefined;
       }
       if (body.president !== undefined) {
         graduation.president = body.president.trim();
@@ -768,6 +863,19 @@ export const graduationsHandlers = [
         );
       }
 
+      // Revert student to IN_PROCESS so they no longer appear in graduated list.
+      // Graduation data is kept so GET /graduations/student/:id still returns it.
+      const student = findStudentById(studentId as string);
+      if (student && student.processStatus === StudentProcessStatus.GRADUATED) {
+        student.processStatus = StudentProcessStatus.IN_PROCESS;
+        student.hasIdCard = false; // Quitar "cuenta con cédula profesional"
+      }
+
+      // Remove graduation date/time so the record is back to "scheduled" state
+      graduation.graduationDate = undefined;
+      // Remove cédula (ID card) data
+      graduation.idCardNumber = undefined;
+      graduation.idCardIssueDate = undefined;
       graduation.updatedAt = new Date();
 
       return HttpResponse.json({
@@ -777,6 +885,9 @@ export const graduationsHandlers = [
           : null,
         scheduledDate: graduation.scheduledDate
           ? toDate(graduation.scheduledDate).toISOString()
+          : null,
+        idCardIssueDate: graduation.idCardIssueDate
+          ? toDate(graduation.idCardIssueDate).toISOString()
           : null,
         createdAt: toDate(graduation.createdAt).toISOString(),
         updatedAt: toDate(graduation.updatedAt).toISOString(),

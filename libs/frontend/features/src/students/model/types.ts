@@ -11,6 +11,7 @@ export interface ListStudentsParams extends SearchParams {
   generationId?: string;
   status?: StudentStatus;
   isEgressed?: boolean;
+  processStatus?: StudentProcessStatus;
 }
 
 export type ListStudentsResponse = ListResponse<Student>;

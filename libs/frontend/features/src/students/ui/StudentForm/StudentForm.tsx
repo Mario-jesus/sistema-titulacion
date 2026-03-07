@@ -1,8 +1,9 @@
 import { FormEvent, useState, useEffect } from 'react';
-import { Button, Input, Modal } from '@shared/ui';
+import { Button, Input, Modal, useToast } from '@shared/ui';
 import type {
   CreateStudentRequest,
   UpdateStudentRequest,
+  UpdateProcessStatusRequest,
 } from '../../model/types';
 import type { Student } from '@entities/student';
 import { Sex, StudentStatus, StudentProcessStatus } from '@entities/student';
@@ -14,7 +15,7 @@ import { CapturedFieldsForm } from '@features/captured-fields';
 import { GraduationForm } from '@features/graduations/ui/GraduationForm/GraduationForm';
 import { useCapturedFields } from '@features/captured-fields';
 import { useGraduations } from '@features/graduations';
-import { useStudents } from '../../lib/useStudents';
+import { studentsService } from '../../api/studentsService';
 import { findCapturedFieldsByStudentId } from '@features/captured-fields/api/studentHelper';
 import { findGraduationByStudentId } from '@features/graduations/api/studentHelper';
 import type { CapturedFields } from '@entities/captured-fields';
@@ -30,6 +31,8 @@ export interface StudentFormProps {
   ) => Promise<Student | void>;
   mode: 'create' | 'edit';
   initialData?: Student | null;
+  /** Called after a successful save from process or graduation tab (e.g. to refresh parent list) */
+  onSuccess?: () => void;
 }
 
 export function StudentForm({
@@ -38,6 +41,7 @@ export function StudentForm({
   onSubmit,
   mode,
   initialData,
+  onSuccess,
 }: StudentFormProps) {
   // Estado de pestañas
   const [activeTab, setActiveTab] = useState<TabType>('personal');
@@ -96,11 +100,13 @@ export function StudentForm({
   const {
     createGraduation,
     updateGraduation,
+    graduateStudent,
+    ungraduateStudent,
     isCreating: isCreatingGraduation,
     isUpdating: isUpdatingGraduation,
   } = useGraduations();
 
-  const { updateStudent: updateStudentRecord } = useStudents();
+  const { showToast } = useToast();
 
   // Cargar generaciones y carreras cuando se abre el modal
   useEffect(() => {
@@ -278,9 +284,8 @@ export function StudentForm({
         sex,
         isEgressed,
         status,
-        processStatus:
-          mode === 'create' ? StudentProcessStatus.NOT_STARTED : processStatus,
-        hasIdCard: mode === 'create' ? false : hasIdCard,
+        processStatus,
+        hasIdCard,
         generationId,
         careerId,
       };
@@ -360,46 +365,101 @@ export function StudentForm({
   const handleGraduationSubmit = async (data: any): Promise<void> => {
     if (!savedStudentId) return;
 
-    if (graduationData) {
-      const updateResult = await updateStudentRecord(savedStudentId, {
+    try {
+      if (graduationData) {
+        const result = await updateGraduation(savedStudentId, data);
+        if (!result.success) {
+          console.error('Error al actualizar titulación:', result.error);
+          showToast({
+            type: 'error',
+            title: 'Error al guardar titulación',
+            message: result.error,
+          });
+          throw new Error(result.error);
+        }
+      } else {
+        const result = await createGraduation(data);
+        if (!result.success) {
+          console.error('Error al crear titulación:', result.error);
+          showToast({
+            type: 'error',
+            title: 'Error al guardar titulación',
+            message: result.error,
+          });
+          throw new Error(result.error);
+        }
+      }
+
+      // Si se avanza en el proceso, asegurar egreso antes de actualizar processStatus.
+      if (!isEgressed && processStatus !== StudentProcessStatus.NOT_STARTED) {
+        const egressedStudent = await studentsService.egress(savedStudentId);
+        setIsEgressed(egressedStudent.isEgressed ?? true);
+      }
+
+      const processPayload: UpdateProcessStatusRequest = {
         processStatus,
         hasIdCard,
+      };
+
+      if (processStatus === StudentProcessStatus.GRADUATED) {
+        processPayload.graduationDate = data.graduationDate;
+        processPayload.idCardNumber = data.idCardNumber;
+        processPayload.idCardIssueDate = data.idCardIssueDate;
+      }
+
+      const updatedStudent = await studentsService.updateProcessStatus(
+        savedStudentId,
+        processPayload
+      );
+
+      if (processStatus === StudentProcessStatus.GRADUATED) {
+        const graduateResult = await graduateStudent(savedStudentId);
+        if (!graduateResult.success) {
+          console.error(
+            'Error al marcar titulación como graduada:',
+            graduateResult.error
+          );
+          showToast({
+            type: 'error',
+            title: 'Error al guardar titulación',
+            message: graduateResult.error,
+          });
+          throw new Error(graduateResult.error);
+        }
+      } else {
+        const ungraduateResult = await ungraduateStudent(savedStudentId);
+        if (!ungraduateResult.success) {
+          console.error(
+            'Error al desmarcar titulación como graduada:',
+            ungraduateResult.error
+          );
+          showToast({
+            type: 'error',
+            title: 'Error al guardar titulación',
+            message: ungraduateResult.error,
+          });
+          throw new Error(ungraduateResult.error);
+        }
+      }
+
+      setProcessStatus(updatedStudent.processStatus || processStatus);
+      setHasIdCard(updatedStudent.hasIdCard ?? hasIdCard);
+      setIsEgressed(updatedStudent.isEgressed ?? isEgressed);
+
+      // Recargar datos de titulación desde la fuente.
+      const updatedGraduation = await findGraduationByStudentId(savedStudentId);
+      setGraduationData(updatedGraduation);
+
+      onSuccess?.();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Error al guardar titulación';
+      showToast({
+        type: 'error',
+        title: 'Error al guardar titulación',
+        message,
       });
-      if (!updateResult.success) {
-        console.error(
-          'Error al actualizar estado del proceso:',
-          updateResult.error
-        );
-        throw new Error(updateResult.error);
-      }
-      const result = await updateGraduation(savedStudentId, data);
-      if (!result.success) {
-        console.error('Error al actualizar titulación:', result.error);
-        throw new Error(result.error);
-      }
-      // Recargar datos usando helper
-      const updated = await findGraduationByStudentId(savedStudentId);
-      setGraduationData(updated);
-    } else {
-      const updateResult = await updateStudentRecord(savedStudentId, {
-        processStatus,
-        hasIdCard,
-      });
-      if (!updateResult.success) {
-        console.error(
-          'Error al actualizar estado del proceso:',
-          updateResult.error
-        );
-        throw new Error(updateResult.error);
-      }
-      const result = await createGraduation(data);
-      if (!result.success) {
-        console.error('Error al crear titulación:', result.error);
-        throw new Error(result.error);
-      }
-      // Recargar datos usando helper (cuando se refactoricen los mocks)
-      const created = await findGraduationByStudentId(savedStudentId);
-      setGraduationData(created);
+      throw error;
     }
   };
 
@@ -579,12 +639,14 @@ export function StudentForm({
 
             <div>
               <label
+                htmlFor="student-form-sex"
                 className="block text-sm font-medium mb-2"
                 style={{ color: 'var(--color-base-primary-typo)' }}
               >
                 Sexo *
               </label>
               <select
+                id="student-form-sex"
                 className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
                 value={sex}
                 onChange={(e) => {
@@ -608,12 +670,14 @@ export function StudentForm({
 
             <div>
               <label
+                htmlFor="student-form-generation"
                 className="block text-sm font-medium mb-2"
                 style={{ color: 'var(--color-base-primary-typo)' }}
               >
                 Generación *
               </label>
               <select
+                id="student-form-generation"
                 className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
                 value={generationId}
                 onChange={(e) => {
@@ -641,12 +705,14 @@ export function StudentForm({
 
             <div>
               <label
+                htmlFor="student-form-career"
                 className="block text-sm font-medium mb-2"
                 style={{ color: 'var(--color-base-primary-typo)' }}
               >
                 Carrera *
               </label>
               <select
+                id="student-form-career"
                 className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
                 value={careerId}
                 onChange={(e) => {
@@ -674,12 +740,14 @@ export function StudentForm({
 
             <div>
               <label
+                htmlFor="student-form-status"
                 className="block text-sm font-medium mb-2"
                 style={{ color: 'var(--color-base-primary-typo)' }}
               >
                 Estado *
               </label>
               <select
+                id="student-form-status"
                 className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
                 value={status}
                 onChange={(e) => {
@@ -770,12 +838,14 @@ export function StudentForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
+                htmlFor="student-form-process-status-tab3"
                 className="block text-sm font-medium mb-2"
                 style={{ color: 'var(--color-base-primary-typo)' }}
               >
                 Estado del Proceso
               </label>
               <select
+                id="student-form-process-status-tab3"
                 className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
                 value={processStatus}
                 onChange={(e) => {
@@ -783,6 +853,8 @@ export function StudentForm({
                   setProcessStatus(nextStatus);
                   if (nextStatus !== StudentProcessStatus.GRADUATED) {
                     setHasIdCard(false);
+                  } else {
+                    setIsEgressed(true);
                   }
                 }}
                 disabled={isCreatingGraduation || isUpdatingGraduation}
@@ -790,12 +862,16 @@ export function StudentForm({
                 <option value={StudentProcessStatus.NOT_STARTED}>
                   Sin iniciar
                 </option>
-                <option value={StudentProcessStatus.IN_PROCESS}>
-                  En proceso
-                </option>
-                <option value={StudentProcessStatus.SCHEDULED}>
-                  Programado
-                </option>
+                {mode === 'edit' && (
+                  <>
+                    <option value={StudentProcessStatus.IN_PROCESS}>
+                      En proceso
+                    </option>
+                    <option value={StudentProcessStatus.SCHEDULED}>
+                      Programado
+                    </option>
+                  </>
+                )}
                 <option value={StudentProcessStatus.GRADUATED}>Titulado</option>
               </select>
             </div>
@@ -813,9 +889,14 @@ export function StudentForm({
                     processStatus !== StudentProcessStatus.GRADUATED
                   ) {
                     setProcessStatus(StudentProcessStatus.GRADUATED);
+                    setIsEgressed(true);
                   }
                 }}
-                disabled={isCreatingGraduation || isUpdatingGraduation}
+                disabled={
+                  isCreatingGraduation ||
+                  isUpdatingGraduation ||
+                  processStatus !== StudentProcessStatus.GRADUATED
+                }
                 className="w-4 h-4 rounded border-(--color-input-border) text-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 cursor-pointer"
               />
               <label
@@ -824,12 +905,20 @@ export function StudentForm({
                 style={{ color: 'var(--color-base-primary-typo)' }}
               >
                 Cuenta con cédula profesional
+                {processStatus !== StudentProcessStatus.GRADUATED && (
+                  <span className="text-(--color-base-secondary-typo) ml-1">
+                    (solo titulados)
+                  </span>
+                )}
               </label>
             </div>
           </div>
 
           <GraduationForm
             studentId={savedStudentId}
+            isStudentGraduated={
+              processStatus === StudentProcessStatus.GRADUATED
+            }
             onSubmit={handleGraduationSubmit}
             mode={graduationData ? 'edit' : 'create'}
             initialData={graduationData}

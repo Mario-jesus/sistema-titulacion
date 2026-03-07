@@ -1114,6 +1114,7 @@ export function StudentsInProgressList() {
           onSubmit={handleEdit}
           mode="edit"
           initialData={selectedStudent}
+          onSuccess={handleScheduleSuccess}
         />
       )}
 

@@ -53,6 +53,9 @@ export const studentsService = {
       if (params?.isEgressed !== undefined) {
         searchParams.append('isEgressed', params.isEgressed.toString());
       }
+      if (params?.processStatus) {
+        searchParams.append('processStatus', params.processStatus);
+      }
 
       const queryString = searchParams.toString();
       const url = queryString
