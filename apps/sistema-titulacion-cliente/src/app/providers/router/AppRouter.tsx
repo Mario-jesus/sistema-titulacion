@@ -1,7 +1,12 @@
 import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@features/auth';
-import { ProtectedRoute, PublicRoute, AdminRoute } from './guards';
+import {
+  ProtectedRoute,
+  PublicRoute,
+  AdminRoute,
+  ReportsRoute,
+} from './guards';
 import { LayoutWithSidebar } from './layouts';
 import { PageLoader } from './components';
 import {
@@ -187,13 +192,13 @@ export function AppRouter() {
         <Route
           path="/reports"
           element={
-            <ProtectedRoute>
+            <ReportsRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
                   <ReportsPage />
                 </Suspense>
               </LayoutWithSidebar>
-            </ProtectedRoute>
+            </ReportsRoute>
           }
         />
 

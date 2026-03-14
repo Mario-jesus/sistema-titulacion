@@ -1893,16 +1893,16 @@ export const studentsHandlers = [
 
       // Cédula profesional es opcional para graduados (hasIdCard puede ser false)
 
-      // Validar fecha programada para estado SCHEDULED
-      if (newStatus === StudentProcessStatus.SCHEDULED && !body.scheduledDate) {
-        return HttpResponse.json(
-          {
-            error:
-              'La fecha programada es requerida para estudiantes programados',
-            code: 'SCHEDULED_DATE_REQUIRED',
-          },
-          { status: 400 }
-        );
+      // Validar fecha programada para estado SCHEDULED (opcional; si se envía debe ser válida)
+      // La fecha programada ya no es obligatoria al marcar como programado.
+
+      // Persistir fecha programada en la titulación cuando el estado es SCHEDULED
+      if (newStatus === StudentProcessStatus.SCHEDULED && body.scheduledDate) {
+        const existingGraduation = findGraduationByStudentId(student.id);
+        if (existingGraduation) {
+          existingGraduation.scheduledDate = new Date(body.scheduledDate);
+          existingGraduation.updatedAt = new Date();
+        }
       }
 
       if (newStatus === StudentProcessStatus.GRADUATED) {

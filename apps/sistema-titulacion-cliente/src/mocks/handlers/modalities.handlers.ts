@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { Modality } from '@entities/modality';
 import { buildApiUrl, delay } from '../utils';
+import { forbidStaffWrite } from '../utils/staffGuard';
 import { mockModalities, findModalityById, generateModalityId } from '../data';
 
 /**
@@ -166,6 +167,8 @@ export const modalitiesHandlers = [
   // POST /modalities (Create)
   http.post(buildApiUrl('/modalities'), async ({ request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const body = (await request.json()) as CreateModalityRequest;
 
@@ -218,6 +221,8 @@ export const modalitiesHandlers = [
   // PUT /modalities/:id (Update)
   http.put(buildApiUrl('/modalities/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const modality = findModalityById(id as string);
@@ -282,6 +287,8 @@ export const modalitiesHandlers = [
   // PATCH /modalities/:id (Partial Update)
   http.patch(buildApiUrl('/modalities/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const modality = findModalityById(id as string);
@@ -349,8 +356,10 @@ export const modalitiesHandlers = [
   }),
 
   // DELETE /modalities/:id
-  http.delete(buildApiUrl('/modalities/:id'), async ({ params }) => {
+  http.delete(buildApiUrl('/modalities/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const index = mockModalities.findIndex((mod: Modality) => mod.id === id);
@@ -373,56 +382,66 @@ export const modalitiesHandlers = [
   }),
 
   // POST /modalities/:id/activate
-  http.post(buildApiUrl('/modalities/:id/activate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/modalities/:id/activate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const modality = findModalityById(id as string);
+      const { id } = params;
+      const modality = findModalityById(id as string);
 
-    if (!modality) {
-      return HttpResponse.json(
-        {
-          error: 'Modalidad no encontrada',
-          code: 'MODALITY_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!modality) {
+        return HttpResponse.json(
+          {
+            error: 'Modalidad no encontrada',
+            code: 'MODALITY_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      modality.isActive = true;
+      modality.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...modality,
+        createdAt: modality.createdAt.toISOString(),
+        updatedAt: modality.updatedAt.toISOString(),
+      });
     }
-
-    modality.isActive = true;
-    modality.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...modality,
-      createdAt: modality.createdAt.toISOString(),
-      updatedAt: modality.updatedAt.toISOString(),
-    });
-  }),
+  ),
 
   // POST /modalities/:id/deactivate
-  http.post(buildApiUrl('/modalities/:id/deactivate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/modalities/:id/deactivate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const modality = findModalityById(id as string);
+      const { id } = params;
+      const modality = findModalityById(id as string);
 
-    if (!modality) {
-      return HttpResponse.json(
-        {
-          error: 'Modalidad no encontrada',
-          code: 'MODALITY_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!modality) {
+        return HttpResponse.json(
+          {
+            error: 'Modalidad no encontrada',
+            code: 'MODALITY_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      modality.isActive = false;
+      modality.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...modality,
+        createdAt: modality.createdAt.toISOString(),
+        updatedAt: modality.updatedAt.toISOString(),
+      });
     }
-
-    modality.isActive = false;
-    modality.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...modality,
-      createdAt: modality.createdAt.toISOString(),
-      updatedAt: modality.updatedAt.toISOString(),
-    });
-  }),
+  ),
 ];

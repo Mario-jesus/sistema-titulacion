@@ -341,6 +341,33 @@ export function StudentsInProgressList() {
     [selectedStudent, updateStudent, showToast, loadStudents]
   );
 
+  /** Guardar datos personales sin cerrar el modal (para "Guardar y continuar"). Retorna el estudiante actualizado. */
+  const handleSaveAndContinueEdit = useCallback(
+    async (data: any) => {
+      if (!selectedStudent) return;
+
+      const result = await updateStudent(selectedStudent.id, data);
+
+      if (!result.success) {
+        showToast({
+          type: 'error',
+          title: 'Error al actualizar estudiante',
+          message: result.error,
+        });
+        throw new Error(result.error);
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Datos guardados',
+        message: 'Los datos personales se han guardado',
+      });
+
+      return result.data ?? undefined;
+    },
+    [selectedStudent, updateStudent, showToast]
+  );
+
   // Manejar eliminación
   const handleDelete = useCallback(
     async (inProgressStudent: InProgressStudent) => {
@@ -826,19 +853,10 @@ export function StudentsInProgressList() {
     return false;
   });
 
-  // Función para actualizar datos después de programar
+  // Función para actualizar datos después de programar o después de guardar desde el modal de edición
   const handleScheduleSuccess = useCallback(() => {
-    // Actualizar la lista de estudiantes en proceso
-    listInProgressStudents({
-      page,
-      search: searchTerm || undefined,
-      sortBy: sortBy || undefined,
-      sortOrder: sortOrder || undefined,
-      careerId: filters.careerId as string,
-      generationId: filters.generationId as string,
-      sex: filters.sex as string,
-    });
-  }, [listInProgressStudents, page, searchTerm, sortBy, sortOrder, filters]);
+    loadStudents();
+  }, [loadStudents]);
 
   // Estado para exportación
   const [isExporting, setIsExporting] = useState(false);
@@ -1115,6 +1133,7 @@ export function StudentsInProgressList() {
           mode="edit"
           initialData={selectedStudent}
           onSuccess={handleScheduleSuccess}
+          onSaveAndContinue={handleSaveAndContinueEdit}
         />
       )}
 

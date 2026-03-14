@@ -10,3 +10,4 @@
 export { ProtectedRoute } from './ProtectedRoute';
 export { PublicRoute } from './PublicRoute';
 export { AdminRoute } from './AdminRoute';
+export { ReportsRoute } from './ReportsRoute';

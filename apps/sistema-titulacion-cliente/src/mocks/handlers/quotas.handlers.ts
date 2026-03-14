@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { Quota } from '@entities/quota';
 import { buildApiUrl, delay } from '../utils';
+import { forbidStaffWrite } from '../utils/staffGuard';
 import { findCareerById } from '../data/careers';
 import { findGenerationById } from '../data/generations';
 import {
@@ -204,6 +205,8 @@ export const quotasHandlers = [
   // POST /quotas (Create)
   http.post(buildApiUrl('/quotas'), async ({ request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const body = (await request.json()) as CreateQuotaRequest;
 
@@ -320,6 +323,8 @@ export const quotasHandlers = [
   // PUT /quotas/:id (Update)
   http.put(buildApiUrl('/quotas/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const quota = findQuotaById(id as string);
@@ -434,6 +439,8 @@ export const quotasHandlers = [
   // PATCH /quotas/:id (Partial Update)
   http.patch(buildApiUrl('/quotas/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const quota = findQuotaById(id as string);
@@ -555,8 +562,10 @@ export const quotasHandlers = [
   }),
 
   // DELETE /quotas/:id
-  http.delete(buildApiUrl('/quotas/:id'), async ({ params }) => {
+  http.delete(buildApiUrl('/quotas/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const index = mockQuotas.findIndex((quota: Quota) => quota.id === id);
@@ -579,56 +588,66 @@ export const quotasHandlers = [
   }),
 
   // POST /quotas/:id/activate
-  http.post(buildApiUrl('/quotas/:id/activate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/quotas/:id/activate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const quota = findQuotaById(id as string);
+      const { id } = params;
+      const quota = findQuotaById(id as string);
 
-    if (!quota) {
-      return HttpResponse.json(
-        {
-          error: 'Cupo no encontrado',
-          code: 'QUOTA_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!quota) {
+        return HttpResponse.json(
+          {
+            error: 'Cupo no encontrado',
+            code: 'QUOTA_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      quota.isActive = true;
+      quota.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...quota,
+        createdAt: quota.createdAt.toISOString(),
+        updatedAt: quota.updatedAt.toISOString(),
+      });
     }
-
-    quota.isActive = true;
-    quota.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...quota,
-      createdAt: quota.createdAt.toISOString(),
-      updatedAt: quota.updatedAt.toISOString(),
-    });
-  }),
+  ),
 
   // POST /quotas/:id/deactivate
-  http.post(buildApiUrl('/quotas/:id/deactivate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/quotas/:id/deactivate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const quota = findQuotaById(id as string);
+      const { id } = params;
+      const quota = findQuotaById(id as string);
 
-    if (!quota) {
-      return HttpResponse.json(
-        {
-          error: 'Cupo no encontrado',
-          code: 'QUOTA_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!quota) {
+        return HttpResponse.json(
+          {
+            error: 'Cupo no encontrado',
+            code: 'QUOTA_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      quota.isActive = false;
+      quota.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...quota,
+        createdAt: quota.createdAt.toISOString(),
+        updatedAt: quota.updatedAt.toISOString(),
+      });
     }
-
-    quota.isActive = false;
-    quota.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...quota,
-      createdAt: quota.createdAt.toISOString(),
-      updatedAt: quota.updatedAt.toISOString(),
-    });
-  }),
+  ),
 ];

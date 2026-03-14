@@ -1,4 +1,4 @@
-import { FormEvent, useState, useEffect } from 'react';
+import { FormEvent, useState, useEffect, useCallback } from 'react';
 import { Button, Input, Modal, useToast } from '@shared/ui';
 import type {
   CreateStudentRequest,
@@ -33,6 +33,10 @@ export interface StudentFormProps {
   initialData?: Student | null;
   /** Called after a successful save from process or graduation tab (e.g. to refresh parent list) */
   onSuccess?: () => void;
+  /** Save personal data without closing the modal; used by "Guardar y continuar". Should return the updated student. */
+  onSaveAndContinue?: (
+    data: CreateStudentRequest | UpdateStudentRequest
+  ) => Promise<Student | void>;
 }
 
 export function StudentForm({
@@ -42,6 +46,7 @@ export function StudentForm({
   mode,
   initialData,
   onSuccess,
+  onSaveAndContinue,
 }: StudentFormProps) {
   // Estado de pestañas
   const [activeTab, setActiveTab] = useState<TabType>('personal');
@@ -65,6 +70,9 @@ export function StudentForm({
   const [hasIdCard, setHasIdCard] = useState(false);
   const [generationId, setGenerationId] = useState('');
   const [careerId, setCareerId] = useState('');
+
+  /** Fecha programada (solo cuando estado del proceso es Programado) */
+  const [scheduledDate, setScheduledDate] = useState('');
 
   // Estados para CapturedFields y Graduation
   const [capturedFieldsData, setCapturedFieldsData] =
@@ -180,6 +188,15 @@ export function StudentForm({
         .then(([capturedFields, graduation]) => {
           setCapturedFieldsData(capturedFields);
           setGraduationData(graduation);
+          if (graduation?.scheduledDate) {
+            const d =
+              graduation.scheduledDate instanceof Date
+                ? graduation.scheduledDate
+                : new Date(graduation.scheduledDate);
+            setScheduledDate(d.toISOString().split('T')[0]);
+          } else {
+            setScheduledDate('');
+          }
         })
         .catch((error) => {
           console.error('Error al cargar datos relacionados:', error);
@@ -202,6 +219,7 @@ export function StudentForm({
       setHasIdCard(false);
       setGenerationId('');
       setCareerId('');
+      setScheduledDate('');
       setIsStudentSaved(false);
       setSavedStudentId(null);
       setCapturedFieldsData(null);
@@ -210,6 +228,32 @@ export function StudentForm({
     }
     setErrors({});
   }, [isOpen, mode, initialData]);
+
+  /** Actualiza el estado del formulario con los datos del estudiante (p. ej. tras guardar) */
+  const syncFormStateFromStudent = useCallback((student: Student) => {
+    setControlNumber((student.controlNumber || '').toUpperCase());
+    setFirstName(student.firstName || '');
+    setPaternalLastName(student.paternalLastName || '');
+    setMaternalLastName(student.maternalLastName || '');
+    setPhoneNumber(student.phoneNumber || '');
+    setEmail(student.email || '');
+    if (student.birthDate) {
+      const date =
+        student.birthDate instanceof Date
+          ? student.birthDate
+          : new Date(student.birthDate);
+      setBirthDate(date.toISOString().split('T')[0]);
+    } else {
+      setBirthDate('');
+    }
+    setSex(student.sex || Sex.MASCULINO);
+    setIsEgressed(student.isEgressed ?? false);
+    setStatus(student.status || StudentStatus.ACTIVO);
+    setProcessStatus(student.processStatus || StudentProcessStatus.NOT_STARTED);
+    setHasIdCard(student.hasIdCard ?? false);
+    setGenerationId(student.generationId || '');
+    setCareerId(student.careerId || '');
+  }, []);
 
   // Resetear cuando se cierra el modal
   useEffect(() => {
@@ -317,23 +361,54 @@ export function StudentForm({
       e.stopPropagation();
     }
 
-    // Guardar estudiante y continuar a la siguiente pestaña
-    if (!isStudentSaved) {
+    // En modo edición siempre persistimos antes de avanzar de tab.
+    // En modo creación solo persistimos la primera vez.
+    const shouldPersistBeforeContinue = mode === 'edit' || !isStudentSaved;
+
+    if (shouldPersistBeforeContinue) {
+      if (!validateForm()) {
+        return;
+      }
+
+      const formData: CreateStudentRequest | UpdateStudentRequest = {
+        controlNumber: controlNumber.trim().toUpperCase(),
+        firstName: firstName.trim(),
+        paternalLastName: paternalLastName.trim(),
+        maternalLastName: maternalLastName.trim(),
+        phoneNumber: phoneNumber.trim(),
+        email: email.trim(),
+        birthDate,
+        sex,
+        isEgressed,
+        status,
+        processStatus,
+        hasIdCard,
+        generationId,
+        careerId,
+      };
+
+      setIsSubmitting(true);
       try {
-        const fakeEvent = {
-          preventDefault: () => {},
-        } as FormEvent;
-        await handleStudentSubmit(fakeEvent);
-        // Después de guardar exitosamente, cambiar a la pestaña de proceso
-        // El estado se actualiza dentro de handleStudentSubmit
-        setActiveTab('process');
+        if (onSaveAndContinue) {
+          const savedStudent = await onSaveAndContinue(formData);
+          if (savedStudent) {
+            syncFormStateFromStudent(savedStudent);
+          }
+          setIsStudentSaved(true);
+          setSavedStudentId(initialData?.id ?? savedStudent?.id ?? null);
+          setActiveTab('process');
+        } else {
+          await handleStudentSubmit({
+            preventDefault: () => {},
+          } as FormEvent);
+          setActiveTab('process');
+        }
       } catch (error) {
-        // Error ya manejado en handleStudentSubmit
         console.error('Error al guardar estudiante:', error);
-        // No cambiar de tab si hay error
+      } finally {
+        setIsSubmitting(false);
       }
     } else {
-      // Si ya está guardado, solo cambiar de tab
       setActiveTab('process');
     }
   };
@@ -401,6 +476,13 @@ export function StudentForm({
         hasIdCard,
       };
 
+      if (
+        processStatus === StudentProcessStatus.SCHEDULED &&
+        scheduledDate.trim()
+      ) {
+        processPayload.scheduledDate = new Date(scheduledDate).toISOString();
+      }
+
       if (processStatus === StudentProcessStatus.GRADUATED) {
         processPayload.graduationDate = data.graduationDate;
         processPayload.idCardNumber = data.idCardNumber;
@@ -451,6 +533,11 @@ export function StudentForm({
       setGraduationData(updatedGraduation);
 
       onSuccess?.();
+
+      // Cerrar el modal al marcar como titulado para que se vea la lista actualizada
+      if (processStatus === StudentProcessStatus.GRADUATED) {
+        onClose();
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Error al guardar titulación';
@@ -913,6 +1000,26 @@ export function StudentForm({
               </label>
             </div>
           </div>
+
+          {processStatus === StudentProcessStatus.SCHEDULED && (
+            <div>
+              <label
+                htmlFor="student-form-scheduled-date"
+                className="block text-sm font-medium mb-2"
+                style={{ color: 'var(--color-base-primary-typo)' }}
+              >
+                Fecha Programada (opcional)
+              </label>
+              <input
+                id="student-form-scheduled-date"
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                disabled={isCreatingGraduation || isUpdatingGraduation}
+                className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </div>
+          )}
 
           <GraduationForm
             studentId={savedStudentId}

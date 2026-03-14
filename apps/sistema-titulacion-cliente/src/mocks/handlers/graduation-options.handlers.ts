@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { GraduationOption } from '@entities/graduation-option';
 import { buildApiUrl, delay } from '../utils';
+import { forbidStaffWrite } from '../utils/staffGuard';
 import {
   mockGraduationOptions,
   findGraduationOptionById,
@@ -170,6 +171,8 @@ export const graduationOptionsHandlers = [
   // POST /graduation-options (Create)
   http.post(buildApiUrl('/graduation-options'), async ({ request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const body = (await request.json()) as CreateGraduationOptionRequest;
 
@@ -225,6 +228,8 @@ export const graduationOptionsHandlers = [
     buildApiUrl('/graduation-options/:id'),
     async ({ params, request }) => {
       await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);
@@ -292,6 +297,8 @@ export const graduationOptionsHandlers = [
     buildApiUrl('/graduation-options/:id'),
     async ({ params, request }) => {
       await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);
@@ -361,34 +368,41 @@ export const graduationOptionsHandlers = [
   ),
 
   // DELETE /graduation-options/:id
-  http.delete(buildApiUrl('/graduation-options/:id'), async ({ params }) => {
-    await delay();
+  http.delete(
+    buildApiUrl('/graduation-options/:id'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const index = mockGraduationOptions.findIndex((opt) => opt.id === id);
+      const { id } = params;
+      const index = mockGraduationOptions.findIndex((opt) => opt.id === id);
 
-    if (index === -1) {
-      return HttpResponse.json(
-        {
-          error: 'Opcion de titulacion no encontrada',
-          code: 'GRADUATION_OPTION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (index === -1) {
+        return HttpResponse.json(
+          {
+            error: 'Opcion de titulacion no encontrada',
+            code: 'GRADUATION_OPTION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      mockGraduationOptions.splice(index, 1);
+
+      return HttpResponse.json({
+        message: 'Opcion de titulacion eliminada exitosamente',
+      });
     }
-
-    mockGraduationOptions.splice(index, 1);
-
-    return HttpResponse.json({
-      message: 'Opcion de titulacion eliminada exitosamente',
-    });
-  }),
+  ),
 
   // POST /graduation-options/:id/activate
   http.post(
     buildApiUrl('/graduation-options/:id/activate'),
-    async ({ params }) => {
+    async ({ params, request }) => {
       await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);
@@ -417,8 +431,10 @@ export const graduationOptionsHandlers = [
   // POST /graduation-options/:id/deactivate
   http.post(
     buildApiUrl('/graduation-options/:id/deactivate'),
-    async ({ params }) => {
+    async ({ params, request }) => {
       await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
       const { id } = params;
       const option = findGraduationOptionById(id as string);

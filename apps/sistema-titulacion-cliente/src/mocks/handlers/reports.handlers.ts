@@ -1,5 +1,7 @@
 import { http, HttpResponse } from 'msw';
-import { buildApiUrl, delay } from '../utils';
+import { buildApiUrl, delay, extractUserIdFromToken } from '../utils';
+import { findUserById } from '../data';
+import { UserRole } from '@entities/user';
 import { mockStudents } from '../data/students';
 import { mockQuotas } from '../data/quotas';
 import { mockGenerations } from '../data/generations';
@@ -336,6 +338,21 @@ const calculateOverallGrandTotal = (sexFilter?: SexFilter): ReportMetrics => {
 export const reportsHandlers = [
   http.post(buildApiUrl('/reports/generate'), async ({ request }) => {
     await delay();
+
+    // Staff has no permission to access reports
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '') || '';
+    const userId = extractUserIdFromToken(token);
+    const user = userId ? findUserById(userId) : null;
+    if (user?.role === UserRole.STAFF) {
+      return HttpResponse.json(
+        {
+          error: 'No tiene permisos para acceder a reportes',
+          code: 'FORBIDDEN_REPORTS',
+        },
+        { status: 403 }
+      );
+    }
 
     const body = (await request.json()) as GenerateReportRequest;
 

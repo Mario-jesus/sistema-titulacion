@@ -10,6 +10,8 @@ import {
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
+import { useAuth } from '@features/auth';
+import { UserRole } from '@entities/user';
 import { useCareers } from '../../lib/useCareers';
 import { careersService } from '../../api/careersService';
 import { CareerForm } from '../CareerForm/CareerForm';
@@ -22,6 +24,8 @@ import type { TableColumn, DetailField } from '@shared/ui';
  */
 export function CareersList() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isStaff = user?.role === UserRole.STAFF;
   const {
     careers,
     pagination,
@@ -453,6 +457,14 @@ export function CareersList() {
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (career: Career): DropdownMenuItem[] => {
+      if (isStaff) {
+        return [
+          {
+            label: 'Ver detalles',
+            onClick: () => handleOpenDetail(career),
+          },
+        ];
+      }
       // Obtener acciones basadas en el estado usando createStatusActions
       const statusActions = createStatusActions(career, {
         currentStatus: career.isActive ? 'active' : 'inactive',
@@ -507,7 +519,13 @@ export function CareersList() {
         ...statusActions,
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleToggleActive, handleDelete]
+    [
+      isStaff,
+      handleOpenDetail,
+      handleOpenEdit,
+      handleToggleActive,
+      handleDelete,
+    ]
   );
 
   return (
@@ -520,16 +538,24 @@ export function CareersList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
-          primaryAction={{
-            label: 'Añadir',
-            onClick: () => setIsCreateModalOpen(true),
-          }}
-          exportAction={{
-            label: 'Exportar a Excel',
-            onClick: handleExportToExcel,
-            isLoading: isExporting,
-            disabled: isLoadingList || careers.length === 0,
-          }}
+          primaryAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Añadir',
+                  onClick: () => setIsCreateModalOpen(true),
+                }
+          }
+          exportAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Exportar a Excel',
+                  onClick: handleExportToExcel,
+                  isLoading: isExporting,
+                  disabled: isLoadingList || careers.length === 0,
+                }
+          }
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),

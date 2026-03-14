@@ -10,6 +10,8 @@ import {
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
+import { useAuth } from '@features/auth';
+import { UserRole } from '@entities/user';
 import { useQuotas } from '../../lib/useQuotas';
 import { quotasService } from '../../api/quotasService';
 import { QuotaForm } from '../QuotaForm/QuotaForm';
@@ -26,6 +28,8 @@ import type { TableColumn, DetailField } from '@shared/ui';
  */
 export function QuotasList() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isStaff = user?.role === UserRole.STAFF;
   const {
     quotas,
     pagination,
@@ -546,6 +550,14 @@ export function QuotasList() {
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (quota: Quota): DropdownMenuItem[] => {
+      if (isStaff) {
+        return [
+          {
+            label: 'Ver detalles',
+            onClick: () => handleOpenDetail(quota),
+          },
+        ];
+      }
       const statusActions = createStatusActions(quota, {
         currentStatus: quota.isActive ? 'active' : 'inactive',
         getStatus: (row) => (row.isActive ? 'active' : 'inactive'),
@@ -598,7 +610,13 @@ export function QuotasList() {
         ...statusActions,
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleToggleActive, handleDelete]
+    [
+      isStaff,
+      handleOpenDetail,
+      handleOpenEdit,
+      handleToggleActive,
+      handleDelete,
+    ]
   );
 
   return (
@@ -611,16 +629,24 @@ export function QuotasList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
-          primaryAction={{
-            label: 'Añadir',
-            onClick: () => setIsCreateModalOpen(true),
-          }}
-          exportAction={{
-            label: 'Exportar a Excel',
-            onClick: handleExportToExcel,
-            isLoading: isExporting,
-            disabled: isLoadingList || quotas.length === 0,
-          }}
+          primaryAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Añadir',
+                  onClick: () => setIsCreateModalOpen(true),
+                }
+          }
+          exportAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Exportar a Excel',
+                  onClick: handleExportToExcel,
+                  isLoading: isExporting,
+                  disabled: isLoadingList || quotas.length === 0,
+                }
+          }
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),

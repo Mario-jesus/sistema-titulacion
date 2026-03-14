@@ -100,6 +100,7 @@ export const createDefaultNavigationItems = (): SidebarItem[] => [
     label: 'Reportes',
     icon: <ReportsIcon size={20} />,
     path: '/reports',
+    requiredRole: UserRole.ADMIN,
   },
   {
     id: 'accesos',

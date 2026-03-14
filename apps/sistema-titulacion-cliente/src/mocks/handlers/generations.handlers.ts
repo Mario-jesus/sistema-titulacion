@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { Generation } from '@entities/generation';
 import { buildApiUrl, delay } from '../utils';
+import { forbidStaffWrite } from '../utils/staffGuard';
 import {
   mockGenerations,
   findGenerationById,
@@ -195,6 +196,8 @@ export const generationsHandlers = [
   // POST /generations (Create)
   http.post(buildApiUrl('/generations'), async ({ request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const body = (await request.json()) as CreateGenerationRequest;
 
@@ -275,6 +278,8 @@ export const generationsHandlers = [
   // PUT /generations/:id (Update)
   http.put(buildApiUrl('/generations/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const generation = findGenerationById(id as string);
@@ -381,6 +386,8 @@ export const generationsHandlers = [
   // PATCH /generations/:id (Partial Update)
   http.patch(buildApiUrl('/generations/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const generation = findGenerationById(id as string);
@@ -479,8 +486,10 @@ export const generationsHandlers = [
   }),
 
   // DELETE /generations/:id
-  http.delete(buildApiUrl('/generations/:id'), async ({ params }) => {
+  http.delete(buildApiUrl('/generations/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const index = mockGenerations.findIndex((gen: Generation) => gen.id === id);
@@ -503,60 +512,70 @@ export const generationsHandlers = [
   }),
 
   // POST /generations/:id/activate
-  http.post(buildApiUrl('/generations/:id/activate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/generations/:id/activate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const generation = findGenerationById(id as string);
+      const { id } = params;
+      const generation = findGenerationById(id as string);
 
-    if (!generation) {
-      return HttpResponse.json(
-        {
-          error: 'Generacion no encontrada',
-          code: 'GENERATION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!generation) {
+        return HttpResponse.json(
+          {
+            error: 'Generacion no encontrada',
+            code: 'GENERATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      generation.isActive = true;
+      generation.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...generation,
+        startYear: generation.startYear.toISOString(),
+        endYear: generation.endYear.toISOString(),
+        createdAt: generation.createdAt.toISOString(),
+        updatedAt: generation.updatedAt.toISOString(),
+      });
     }
-
-    generation.isActive = true;
-    generation.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...generation,
-      startYear: generation.startYear.toISOString(),
-      endYear: generation.endYear.toISOString(),
-      createdAt: generation.createdAt.toISOString(),
-      updatedAt: generation.updatedAt.toISOString(),
-    });
-  }),
+  ),
 
   // POST /generations/:id/deactivate
-  http.post(buildApiUrl('/generations/:id/deactivate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/generations/:id/deactivate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const generation = findGenerationById(id as string);
+      const { id } = params;
+      const generation = findGenerationById(id as string);
 
-    if (!generation) {
-      return HttpResponse.json(
-        {
-          error: 'Generacion no encontrada',
-          code: 'GENERATION_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!generation) {
+        return HttpResponse.json(
+          {
+            error: 'Generacion no encontrada',
+            code: 'GENERATION_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      generation.isActive = false;
+      generation.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...generation,
+        startYear: generation.startYear.toISOString(),
+        endYear: generation.endYear.toISOString(),
+        createdAt: generation.createdAt.toISOString(),
+        updatedAt: generation.updatedAt.toISOString(),
+      });
     }
-
-    generation.isActive = false;
-    generation.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...generation,
-      startYear: generation.startYear.toISOString(),
-      endYear: generation.endYear.toISOString(),
-      createdAt: generation.createdAt.toISOString(),
-      updatedAt: generation.updatedAt.toISOString(),
-    });
-  }),
+  ),
 ];

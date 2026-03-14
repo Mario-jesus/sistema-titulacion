@@ -10,6 +10,8 @@ import {
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
+import { useAuth } from '@features/auth';
+import { UserRole } from '@entities/user';
 import { useGenerations } from '../../lib/useGenerations';
 import { generationsService } from '../../api/generationsService';
 import { GenerationForm } from '../GenerationForm/GenerationForm';
@@ -22,6 +24,8 @@ import type { TableColumn, DetailField } from '@shared/ui';
  */
 export function GenerationsList() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isStaff = user?.role === UserRole.STAFF;
   const {
     generations,
     pagination,
@@ -491,6 +495,14 @@ export function GenerationsList() {
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (generation: Generation): DropdownMenuItem[] => {
+      if (isStaff) {
+        return [
+          {
+            label: 'Ver detalles',
+            onClick: () => handleOpenDetail(generation),
+          },
+        ];
+      }
       // Obtener acciones basadas en el estado usando createStatusActions
       const statusActions = createStatusActions(generation, {
         currentStatus: generation.isActive ? 'active' : 'inactive',
@@ -542,7 +554,13 @@ export function GenerationsList() {
         ...statusActions,
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleToggleActive, handleDelete]
+    [
+      isStaff,
+      handleOpenDetail,
+      handleOpenEdit,
+      handleToggleActive,
+      handleDelete,
+    ]
   );
 
   return (
@@ -555,16 +573,24 @@ export function GenerationsList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
-          primaryAction={{
-            label: 'Añadir',
-            onClick: () => setIsCreateModalOpen(true),
-          }}
-          exportAction={{
-            label: 'Exportar a Excel',
-            onClick: handleExportToExcel,
-            isLoading: isExporting,
-            disabled: isLoadingList || generations.length === 0,
-          }}
+          primaryAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Añadir',
+                  onClick: () => setIsCreateModalOpen(true),
+                }
+          }
+          exportAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Exportar a Excel',
+                  onClick: handleExportToExcel,
+                  isLoading: isExporting,
+                  disabled: isLoadingList || generations.length === 0,
+                }
+          }
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),

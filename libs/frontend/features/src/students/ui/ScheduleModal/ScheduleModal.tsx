@@ -41,22 +41,14 @@ export function ScheduleModal({
   const handleSubmit = useCallback(async () => {
     if (!student) return;
 
-    // Validar que se haya seleccionado una fecha
-    if (!scheduledDate) {
-      showToast({
-        type: 'error',
-        title: 'Error de validación',
-        message: 'Debe seleccionar una fecha de programación',
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
       const requestData: UpdateProcessStatusRequest = {
         processStatus: 'SCHEDULED' as any,
-        scheduledDate: new Date(scheduledDate).toISOString(),
+        ...(scheduledDate && {
+          scheduledDate: new Date(scheduledDate).toISOString(),
+        }),
       };
 
       await studentsService.updateProcessStatus(student.id, requestData);
@@ -145,12 +137,11 @@ export function ScheduleModal({
           </h3>
 
           <Input
-            label="Fecha Programada"
+            label="Fecha Programada (opcional)"
             type="date"
             value={scheduledDate}
             onChange={handleDateChange}
             min={today}
-            required
             disabled={isSubmitting}
             placeholder="Seleccione la fecha de programación"
           />
@@ -176,7 +167,7 @@ export function ScheduleModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !scheduledDate}
+            disabled={isSubmitting}
             isLoading={isSubmitting}
             size="small"
           >

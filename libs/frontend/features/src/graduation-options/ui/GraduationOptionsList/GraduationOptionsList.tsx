@@ -10,6 +10,8 @@ import {
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
+import { useAuth } from '@features/auth';
+import { UserRole } from '@entities/user';
 import { useGraduationOptions } from '../../lib/useGraduationOptions';
 import { graduationOptionsService } from '../../api/graduationOptionsService';
 import { GraduationOptionForm } from '../GraduationOptionForm/GraduationOptionForm';
@@ -22,6 +24,8 @@ import type { TableColumn, DetailField } from '@shared/ui';
  */
 export function GraduationOptionsList() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isStaff = user?.role === UserRole.STAFF;
   const {
     graduationOptions,
     pagination,
@@ -440,6 +444,14 @@ export function GraduationOptionsList() {
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (option: GraduationOption): DropdownMenuItem[] => {
+      if (isStaff) {
+        return [
+          {
+            label: 'Ver detalles',
+            onClick: () => handleOpenDetail(option),
+          },
+        ];
+      }
       // Obtener acciones basadas en el estado usando createStatusActions
       const statusActions = createStatusActions(option, {
         currentStatus: option.isActive ? 'active' : 'inactive',
@@ -494,7 +506,13 @@ export function GraduationOptionsList() {
         ...statusActions,
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleToggleActive, handleDelete]
+    [
+      isStaff,
+      handleOpenDetail,
+      handleOpenEdit,
+      handleToggleActive,
+      handleDelete,
+    ]
   );
 
   return (
@@ -507,16 +525,24 @@ export function GraduationOptionsList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
-          primaryAction={{
-            label: 'Añadir',
-            onClick: () => setIsCreateModalOpen(true),
-          }}
-          exportAction={{
-            label: 'Exportar a Excel',
-            onClick: handleExportToExcel,
-            isLoading: isExporting,
-            disabled: isLoadingList || graduationOptions.length === 0,
-          }}
+          primaryAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Añadir',
+                  onClick: () => setIsCreateModalOpen(true),
+                }
+          }
+          exportAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Exportar a Excel',
+                  onClick: handleExportToExcel,
+                  isLoading: isExporting,
+                  disabled: isLoadingList || graduationOptions.length === 0,
+                }
+          }
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),

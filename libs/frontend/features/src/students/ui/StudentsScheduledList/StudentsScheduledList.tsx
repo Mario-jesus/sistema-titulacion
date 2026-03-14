@@ -344,6 +344,33 @@ export function StudentsScheduledList() {
     [selectedStudent, updateStudent, showToast, loadStudents]
   );
 
+  /** Guardar datos personales sin cerrar el modal (para "Guardar y continuar"). Retorna el estudiante actualizado. */
+  const handleSaveAndContinueEdit = useCallback(
+    async (data: any) => {
+      if (!selectedStudent) return;
+
+      const result = await updateStudent(selectedStudent.id, data);
+
+      if (!result.success) {
+        showToast({
+          type: 'error',
+          title: 'Error al actualizar estudiante',
+          message: result.error,
+        });
+        throw new Error(result.error);
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Datos guardados',
+        message: 'Los datos personales se han guardado',
+      });
+
+      return result.data ?? undefined;
+    },
+    [selectedStudent, updateStudent, showToast]
+  );
+
   // Manejar eliminación
   const handleDelete = useCallback(
     async (scheduledStudent: ScheduledStudent) => {
@@ -1141,6 +1168,7 @@ export function StudentsScheduledList() {
           mode="edit"
           initialData={selectedStudent}
           onSuccess={handleGraduateSuccess}
+          onSaveAndContinue={handleSaveAndContinueEdit}
         />
       )}
 

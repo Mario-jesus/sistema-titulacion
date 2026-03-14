@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { Career } from '@entities/career';
 import { buildApiUrl, delay } from '../utils';
+import { forbidStaffWrite } from '../utils/staffGuard';
 import { findModalityById } from '../data/modalities';
 import { mockCareers, findCareerById, generateCareerId } from '../data';
 
@@ -200,6 +201,8 @@ export const careersHandlers = [
   // POST /careers (Create)
   http.post(buildApiUrl('/careers'), async ({ request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const body = (await request.json()) as CreateCareerRequest;
 
@@ -309,6 +312,8 @@ export const careersHandlers = [
   // PUT /careers/:id (Update)
   http.put(buildApiUrl('/careers/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const career = findCareerById(id as string);
@@ -432,6 +437,8 @@ export const careersHandlers = [
   // PATCH /careers/:id (Partial Update)
   http.patch(buildApiUrl('/careers/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const career = findCareerById(id as string);
@@ -560,8 +567,10 @@ export const careersHandlers = [
   }),
 
   // DELETE /careers/:id
-  http.delete(buildApiUrl('/careers/:id'), async ({ params }) => {
+  http.delete(buildApiUrl('/careers/:id'), async ({ params, request }) => {
     await delay();
+    const forbidden = forbidStaffWrite(request);
+    if (forbidden) return forbidden;
 
     const { id } = params;
     const index = mockCareers.findIndex((career: Career) => career.id === id);
@@ -584,70 +593,80 @@ export const careersHandlers = [
   }),
 
   // POST /careers/:id/activate
-  http.post(buildApiUrl('/careers/:id/activate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/careers/:id/activate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const career = findCareerById(id as string);
+      const { id } = params;
+      const career = findCareerById(id as string);
 
-    if (!career) {
-      return HttpResponse.json(
-        {
-          error: 'Carrera no encontrada',
-          code: 'CAREER_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!career) {
+        return HttpResponse.json(
+          {
+            error: 'Carrera no encontrada',
+            code: 'CAREER_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      career.isActive = true;
+      career.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...career,
+        modality: career.modality
+          ? {
+              ...career.modality,
+              createdAt: career.modality.createdAt.toISOString(),
+              updatedAt: career.modality.updatedAt.toISOString(),
+            }
+          : undefined,
+        createdAt: career.createdAt.toISOString(),
+        updatedAt: career.updatedAt.toISOString(),
+      });
     }
-
-    career.isActive = true;
-    career.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...career,
-      modality: career.modality
-        ? {
-            ...career.modality,
-            createdAt: career.modality.createdAt.toISOString(),
-            updatedAt: career.modality.updatedAt.toISOString(),
-          }
-        : undefined,
-      createdAt: career.createdAt.toISOString(),
-      updatedAt: career.updatedAt.toISOString(),
-    });
-  }),
+  ),
 
   // POST /careers/:id/deactivate
-  http.post(buildApiUrl('/careers/:id/deactivate'), async ({ params }) => {
-    await delay();
+  http.post(
+    buildApiUrl('/careers/:id/deactivate'),
+    async ({ params, request }) => {
+      await delay();
+      const forbidden = forbidStaffWrite(request);
+      if (forbidden) return forbidden;
 
-    const { id } = params;
-    const career = findCareerById(id as string);
+      const { id } = params;
+      const career = findCareerById(id as string);
 
-    if (!career) {
-      return HttpResponse.json(
-        {
-          error: 'Carrera no encontrada',
-          code: 'CAREER_NOT_FOUND',
-        },
-        { status: 404 }
-      );
+      if (!career) {
+        return HttpResponse.json(
+          {
+            error: 'Carrera no encontrada',
+            code: 'CAREER_NOT_FOUND',
+          },
+          { status: 404 }
+        );
+      }
+
+      career.isActive = false;
+      career.updatedAt = new Date();
+
+      return HttpResponse.json({
+        ...career,
+        modality: career.modality
+          ? {
+              ...career.modality,
+              createdAt: career.modality.createdAt.toISOString(),
+              updatedAt: career.modality.updatedAt.toISOString(),
+            }
+          : undefined,
+        createdAt: career.createdAt.toISOString(),
+        updatedAt: career.updatedAt.toISOString(),
+      });
     }
-
-    career.isActive = false;
-    career.updatedAt = new Date();
-
-    return HttpResponse.json({
-      ...career,
-      modality: career.modality
-        ? {
-            ...career.modality,
-            createdAt: career.modality.createdAt.toISOString(),
-            updatedAt: career.modality.updatedAt.toISOString(),
-          }
-        : undefined,
-      createdAt: career.createdAt.toISOString(),
-      updatedAt: career.updatedAt.toISOString(),
-    });
-  }),
+  ),
 ];

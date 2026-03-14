@@ -103,29 +103,13 @@ export const graduationsHandlers = [
       );
     }
 
-    // Solo titulados pueden registrar fecha de titulación y datos de cédula
-    if (student.processStatus !== StudentProcessStatus.GRADUATED) {
-      const hasGraduationOrIdCardData =
-        (body.graduationDate &&
-          (typeof body.graduationDate === 'string'
-            ? body.graduationDate.trim()
-            : true)) ||
-        (body.idCardNumber && body.idCardNumber.trim()) ||
-        (body.idCardIssueDate &&
-          (typeof body.idCardIssueDate === 'string'
-            ? body.idCardIssueDate.trim()
-            : true));
-      if (hasGraduationOrIdCardData) {
-        return HttpResponse.json(
-          {
-            error:
-              'Solo estudiantes titulados pueden registrar fecha de titulación y datos de cédula',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-    } else if (!body.graduationDate) {
+    // En el flujo de edición, primero se guarda Graduation y después se actualiza
+    // processStatus a GRADUATED. Por eso permitimos recibir datos de titulación
+    // aunque el estado actual todavía no sea GRADUATED.
+    if (
+      student.processStatus === StudentProcessStatus.GRADUATED &&
+      !body.graduationDate
+    ) {
       return HttpResponse.json(
         {
           error:
@@ -192,19 +176,14 @@ export const graduationsHandlers = [
       );
     }
 
-    const graduationDate =
-      student.processStatus === StudentProcessStatus.GRADUATED &&
-      body.graduationDate
-        ? body.graduationDate instanceof Date
-          ? body.graduationDate
-          : new Date(body.graduationDate)
-        : undefined;
+    const graduationDate = body.graduationDate
+      ? body.graduationDate instanceof Date
+        ? body.graduationDate
+        : new Date(body.graduationDate)
+      : undefined;
 
-    // Validar fecha de titulación solo cuando el estudiante está titulado
-    if (
-      student.processStatus === StudentProcessStatus.GRADUATED &&
-      graduationDate
-    ) {
+    // Validar fecha de titulación cuando se proporciona
+    if (graduationDate) {
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0);
       const normalizedGraduationDate = new Date(graduationDate);
@@ -238,19 +217,11 @@ export const graduationsHandlers = [
       id: generateGraduationId(),
       studentId: body.studentId,
       graduationOptionId: body.graduationOptionId,
-      graduationDate:
-        student.processStatus === StudentProcessStatus.GRADUATED
-          ? graduationDate
-          : undefined,
-      idCardNumber:
-        student.processStatus === StudentProcessStatus.GRADUATED
-          ? body.idCardNumber?.trim() || undefined
-          : undefined,
-      idCardIssueDate:
-        student.processStatus === StudentProcessStatus.GRADUATED &&
-        body.idCardIssueDate
-          ? new Date(body.idCardIssueDate)
-          : undefined,
+      graduationDate,
+      idCardNumber: body.idCardNumber?.trim() || undefined,
+      idCardIssueDate: body.idCardIssueDate
+        ? new Date(body.idCardIssueDate)
+        : undefined,
       president: body.president.trim(),
       secretary: body.secretary.trim(),
       vocal: body.vocal.trim(),
@@ -366,24 +337,6 @@ export const graduationsHandlers = [
           },
           { status: 404 }
         );
-      }
-
-      // Solo titulados pueden registrar fecha de titulación y datos de cédula (PUT)
-      if (currentStudent.processStatus !== StudentProcessStatus.GRADUATED) {
-        const hasGraduationOrIdCardData =
-          body.graduationDate !== undefined ||
-          (body.idCardNumber !== undefined && body.idCardNumber?.trim()) ||
-          body.idCardIssueDate !== undefined;
-        if (hasGraduationOrIdCardData) {
-          return HttpResponse.json(
-            {
-              error:
-                'Solo estudiantes titulados pueden registrar fecha de titulación y datos de cédula',
-              code: 'VALIDATION_ERROR',
-            },
-            { status: 400 }
-          );
-        }
       }
 
       if (body.studentId !== undefined) {
@@ -586,24 +539,6 @@ export const graduationsHandlers = [
           },
           { status: 404 }
         );
-      }
-
-      // Solo titulados pueden registrar fecha de titulación y datos de cédula (PATCH)
-      if (currentStudent.processStatus !== StudentProcessStatus.GRADUATED) {
-        const hasGraduationOrIdCardData =
-          body.graduationDate !== undefined ||
-          (body.idCardNumber !== undefined && body.idCardNumber?.trim()) ||
-          body.idCardIssueDate !== undefined;
-        if (hasGraduationOrIdCardData) {
-          return HttpResponse.json(
-            {
-              error:
-                'Solo estudiantes titulados pueden registrar fecha de titulación y datos de cédula',
-              code: 'VALIDATION_ERROR',
-            },
-            { status: 400 }
-          );
-        }
       }
 
       if (body.studentId !== undefined) {

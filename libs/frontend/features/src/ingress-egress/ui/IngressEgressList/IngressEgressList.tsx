@@ -4,6 +4,8 @@ import { Table, useToast, FilterDropdown, Pagination } from '@shared/ui';
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
+import { useAuth } from '@features/auth';
+import { UserRole } from '@entities/user';
 import { useIngressEgress } from '../../lib/useIngressEgress';
 import { ingressEgressService } from '../../api/ingressEgressService';
 import type { IngressEgress } from '@entities/ingress-egress';
@@ -16,6 +18,8 @@ import type { TableColumn, DetailField } from '@shared/ui';
  */
 export function IngressEgressList() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isStaff = user?.role === UserRole.STAFF;
   const {
     ingressEgressList,
     pagination,
@@ -328,12 +332,16 @@ export function IngressEgressList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
-          exportAction={{
-            label: 'Exportar a Excel',
-            onClick: handleExportToExcel,
-            isLoading: isExporting,
-            disabled: isLoadingList || ingressEgressList.length === 0,
-          }}
+          exportAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Exportar a Excel',
+                  onClick: handleExportToExcel,
+                  isLoading: isExporting,
+                  disabled: isLoadingList || ingressEgressList.length === 0,
+                }
+          }
           filters={
             filterConfigs.length > 0
               ? {

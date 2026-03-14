@@ -10,6 +10,8 @@ import {
 import { DetailModal } from '@shared/ui';
 import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
+import { useAuth } from '@features/auth';
+import { UserRole } from '@entities/user';
 import { useModalities } from '../../lib/useModalities';
 import { modalitiesService } from '../../api/modalitiesService';
 import { ModalityForm } from '../ModalityForm/ModalityForm';
@@ -22,6 +24,8 @@ import type { TableColumn, DetailField } from '@shared/ui';
  */
 export function ModalitiesList() {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isStaff = user?.role === UserRole.STAFF;
   const {
     modalities,
     pagination,
@@ -433,6 +437,14 @@ export function ModalitiesList() {
   // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
     (modality: Modality): DropdownMenuItem[] => {
+      if (isStaff) {
+        return [
+          {
+            label: 'Ver detalles',
+            onClick: () => handleOpenDetail(modality),
+          },
+        ];
+      }
       // Obtener acciones basadas en el estado usando createStatusActions
       const statusActions = createStatusActions(modality, {
         currentStatus: modality.isActive ? 'active' : 'inactive',
@@ -487,7 +499,13 @@ export function ModalitiesList() {
         ...statusActions,
       ];
     },
-    [handleOpenDetail, handleOpenEdit, handleToggleActive, handleDelete]
+    [
+      isStaff,
+      handleOpenDetail,
+      handleOpenEdit,
+      handleToggleActive,
+      handleDelete,
+    ]
   );
 
   return (
@@ -500,16 +518,24 @@ export function ModalitiesList() {
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
-          primaryAction={{
-            label: 'Añadir',
-            onClick: () => setIsCreateModalOpen(true),
-          }}
-          exportAction={{
-            label: 'Exportar a Excel',
-            onClick: handleExportToExcel,
-            isLoading: isExporting,
-            disabled: isLoadingList || modalities.length === 0,
-          }}
+          primaryAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Añadir',
+                  onClick: () => setIsCreateModalOpen(true),
+                }
+          }
+          exportAction={
+            isStaff
+              ? undefined
+              : {
+                  label: 'Exportar a Excel',
+                  onClick: handleExportToExcel,
+                  isLoading: isExporting,
+                  disabled: isLoadingList || modalities.length === 0,
+                }
+          }
           filters={{
             label: 'Filtros',
             onClick: () => setIsFiltersOpen(!isFiltersOpen),
