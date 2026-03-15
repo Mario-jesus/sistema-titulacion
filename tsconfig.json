@@ -13,6 +13,18 @@
       "path": "./apps/sistema-titulacion-cliente"
     },
     {
+      "path": "./libs/backend/core"
+    },
+    {
+      "path": "./libs/backend/shared"
+    },
+    {
+      "path": "./libs/backend/seeds"
+    },
+    {
+      "path": "./libs/backend/users"
+    },
+    {
       "path": "./libs/frontend/pages"
     },
     {

@@ -23,7 +23,15 @@
       "@entities/*": ["libs/frontend/entities/src/*"],
       "@pages/*": ["libs/frontend/pages/src/*"],
       "@shared/*": ["libs/frontend/shared/src/*"],
-      "@widgets/*": ["libs/frontend/widgets/src/*"]
+      "@widgets/*": ["libs/frontend/widgets/src/*"],
+      "@backend/core": ["libs/backend/core/src/index.ts"],
+      "@backend/core/*": ["libs/backend/core/src/*"],
+      "@backend/shared": ["libs/backend/shared/src/index.ts"],
+      "@backend/shared/*": ["libs/backend/shared/src/*"],
+      "@backend/users": ["libs/backend/users/src/index.ts"],
+      "@backend/users/*": ["libs/backend/users/src/*"],
+      "@backend/seeds": ["libs/backend/seeds/src/index.ts"],
+      "@backend/seeds/*": ["libs/backend/seeds/src/*"]
     }
   }
 }

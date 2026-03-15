@@ -3,10 +3,17 @@
   "compilerOptions": {
     "outDir": "dist",
     "types": ["node"],
-    "rootDir": "src",
+    "rootDir": "../../",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "scripts/**/*.ts",
+    "../../libs/backend/core/src/**/*.ts",
+    "../../libs/backend/shared/src/**/*.ts",
+    "../../libs/backend/seeds/src/**/*.ts",
+    "../../libs/backend/users/src/**/*.ts"
+  ],
   "exclude": [
     "out-tsc",
     "dist",

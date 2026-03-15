@@ -1,0 +1,26 @@
+{
+  "name": "@backend/seeds",
+  "version": "0.0.1",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "nx": {
+    "name": "backend-seeds",
+    "tags": [
+      "scope:backend",
+      "type:seeds"
+    ]
+  },
+  "dependencies": {
+    "@backend/users": "*",
+    "bcrypt": "^5.1.1",
+    "mongoose": "^9.3.0"
+  }
+}

@@ -110,6 +110,7 @@
     }
   },
   "dependencies": {
+    "@backend/core": "*",
     "express": "^4.21.2"
   }
 }
