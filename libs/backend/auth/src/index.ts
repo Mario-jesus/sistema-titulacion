@@ -10,3 +10,4 @@ export {
 } from './refresh-token-store.js';
 export type { RefreshTokenStore } from './refresh-token-store.js';
 export { RefreshTokenModel } from './models/RefreshToken.model.js';
+export { ensureRefreshTokenTTLIndex } from './refresh-token-ttl.js';

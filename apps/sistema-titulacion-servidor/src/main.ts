@@ -7,7 +7,12 @@ import {
   env,
   logger,
 } from '@backend/core';
-import { createAuthRouter, createRequireAuth } from '@backend/auth';
+import {
+  createAuthRouter,
+  createRequireAuth,
+  ensureRefreshTokenTTLIndex,
+  RefreshTokenModel,
+} from '@backend/auth';
 import { createUsersRouter } from '@backend/users';
 import { createAppContainer } from './container.js';
 
@@ -47,6 +52,12 @@ const app = createApp(
 const start = async () => {
   try {
     await connectToDatabase();
+
+    // TTL on refreshtokens: delete docs older than refresh expiry + 1 day
+    await ensureRefreshTokenTTLIndex(
+      RefreshTokenModel,
+      env.JWT_REFRESH_EXPIRES + 86400
+    );
 
     const server = app.listen(env.PORT, env.HOST, () => {
       logger.info(
