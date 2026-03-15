@@ -50,3 +50,84 @@ export function createOptionalAuth(getAuthService: () => AuthService) {
     next();
   };
 }
+
+/**
+ * Middleware factory that allows only requests from users whose role is in allowedRoles.
+ * Must run after requireAuth (req.userId set).
+ * Returns 403 FORBIDDEN if role is not allowed.
+ */
+export function createRequireRole(
+  getAuthService: () => AuthService,
+  allowedRoles: string[]
+) {
+  return async (
+    req: RequestWithUserId,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({
+        error: 'No autenticado',
+        code: 'UNAUTHORIZED',
+      });
+      return;
+    }
+    try {
+      const user = await getAuthService().getMe(userId);
+      if (!allowedRoles.includes(user.role)) {
+        res.status(403).json({
+          error: 'Sin permisos para esta acción',
+          code: 'FORBIDDEN',
+        });
+        return;
+      }
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
+/**
+ * Middleware factory that allows requests if user's role is in allowedRoles OR req.params.id === req.userId.
+ * Use for GET /users/:id so ADMIN can see anyone and STAFF can see only themselves.
+ * Must run after requireAuth.
+ */
+export function createRequireRoleOrSelf(
+  getAuthService: () => AuthService,
+  allowedRoles: string[]
+) {
+  return async (
+    req: RequestWithUserId,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({
+        error: 'No autenticado',
+        code: 'UNAUTHORIZED',
+      });
+      return;
+    }
+    const resourceId = req.params?.id;
+    if (resourceId === userId) {
+      next();
+      return;
+    }
+    try {
+      const user = await getAuthService().getMe(userId);
+      if (!allowedRoles.includes(user.role)) {
+        res.status(403).json({
+          error: 'Sin permisos para esta acción',
+          code: 'FORBIDDEN',
+        });
+        return;
+      }
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+}

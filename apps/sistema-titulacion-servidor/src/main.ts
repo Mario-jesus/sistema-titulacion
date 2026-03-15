@@ -10,6 +10,8 @@ import {
 import {
   createAuthRouter,
   createRequireAuth,
+  createRequireRole,
+  createRequireRoleOrSelf,
   ensureRefreshTokenTTLIndex,
   RefreshTokenModel,
 } from '@backend/auth';
@@ -17,6 +19,9 @@ import { createUsersRouter } from '@backend/users';
 import { createAppContainer } from './container.js';
 
 const container = createAppContainer();
+const getAuthService = () => container.resolve('authService');
+const requireAdmin = createRequireRole(getAuthService, ['ADMIN']);
+const requireAdminOrSelf = createRequireRoleOrSelf(getAuthService, ['ADMIN']);
 
 const usersApiDocPath = path.join(
   process.cwd(),
@@ -38,9 +43,11 @@ const app = createApp(
     );
     a.use(
       `${env.API_PREFIX}/users`,
-      createRequireAuth(() => container.resolve('authService')),
+      createRequireAuth(getAuthService),
       createUsersRouter({
         getUsersController: () => container.resolve('usersController'),
+        requireAdmin,
+        requireAdminOrSelf,
       })
     );
   },
