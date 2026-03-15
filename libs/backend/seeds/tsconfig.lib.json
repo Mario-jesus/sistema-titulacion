@@ -17,12 +17,16 @@
     "../users/src/**/*.ts",
     "../modalities/src/**/*.ts",
     "../generations/src/**/*.ts",
-    "../careers/src/**/*.ts"
+    "../careers/src/**/*.ts",
+    "../graduation-options/src/**/*.ts",
+    "../new-admissions/src/**/*.ts"
   ],
   "references": [
     { "path": "../users/tsconfig.lib.json" },
     { "path": "../modalities/tsconfig.lib.json" },
     { "path": "../generations/tsconfig.lib.json" },
-    { "path": "../careers/tsconfig.lib.json" }
+    { "path": "../careers/tsconfig.lib.json" },
+    { "path": "../graduation-options/tsconfig.lib.json" },
+    { "path": "../new-admissions/tsconfig.lib.json" }
   ]
 }

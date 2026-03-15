@@ -23,6 +23,8 @@
     "@backend/modalities": "*",
     "@backend/generations": "*",
     "@backend/careers": "*",
+    "@backend/graduation-options": "*",
+    "@backend/new-admissions": "*",
     "bcrypt": "^5.1.1",
     "mongoose": "^9.3.0"
   }

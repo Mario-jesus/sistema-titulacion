@@ -6,7 +6,9 @@
     { "path": "../users" },
     { "path": "../modalities" },
     { "path": "../generations" },
-    { "path": "../careers" }
+    { "path": "../careers" },
+    { "path": "../graduation-options" },
+    { "path": "../new-admissions" }
   ],
   "extends": "../../../tsconfig.base.json"
 }

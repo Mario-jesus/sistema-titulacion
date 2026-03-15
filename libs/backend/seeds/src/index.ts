@@ -2,17 +2,30 @@ import { seedUsers } from './users.seed';
 import { seedModalities } from './modalities.seed';
 import { seedGenerations } from './generations.seed';
 import { seedCareers } from './careers.seed';
+import { seedGraduationOptions } from './graduation-options.seed';
+import { seedNewAdmissions } from './new-admissions.seed';
 
-export { seedUsers, seedModalities, seedGenerations, seedCareers };
+export {
+  seedUsers,
+  seedModalities,
+  seedGenerations,
+  seedCareers,
+  seedGraduationOptions,
+  seedNewAdmissions,
+};
 
 /**
  * Ejecuta todos los seeds en orden.
  * Modalidades y generaciones primero (sin dependencias).
  * Carreras después (depende de modalidades).
+ * Opciones de titulación (sin dependencias cruzadas).
+ * Nuevo ingreso (depende de generaciones y carreras).
  */
 export async function runAllSeeds(mongoUri: string): Promise<void> {
   await seedUsers(mongoUri);
   await seedModalities(mongoUri);
   await seedGenerations(mongoUri);
   await seedCareers(mongoUri);
+  await seedGraduationOptions(mongoUri);
+  await seedNewAdmissions(mongoUri);
 }
