@@ -71,16 +71,16 @@ export const API_ENDPOINTS = {
     ACTIVATE: (id: string) => `/careers/${id}/activate`,
     DEACTIVATE: (id: string) => `/careers/${id}/deactivate`,
   },
-  // Cupos
-  QUOTAS: {
-    LIST: '/quotas',
-    DETAIL: (id: string) => `/quotas/${id}`,
-    CREATE: '/quotas',
-    UPDATE: (id: string) => `/quotas/${id}`,
-    PATCH: (id: string) => `/quotas/${id}`,
-    DELETE: (id: string) => `/quotas/${id}`,
-    ACTIVATE: (id: string) => `/quotas/${id}/activate`,
-    DEACTIVATE: (id: string) => `/quotas/${id}/deactivate`,
+  // Nuevo Ingreso
+  NEW_ADMISSIONS: {
+    LIST: '/new-admissions',
+    DETAIL: (id: string) => `/new-admissions/${id}`,
+    CREATE: '/new-admissions',
+    UPDATE: (id: string) => `/new-admissions/${id}`,
+    PATCH: (id: string) => `/new-admissions/${id}`,
+    DELETE: (id: string) => `/new-admissions/${id}`,
+    ACTIVATE: (id: string) => `/new-admissions/${id}/activate`,
+    DEACTIVATE: (id: string) => `/new-admissions/${id}/deactivate`,
   },
   // Estudiantes
   STUDENTS: {

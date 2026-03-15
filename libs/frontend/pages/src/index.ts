@@ -5,7 +5,7 @@ export * from './GenerationsPage';
 export * from './GraduationOptionsPage';
 export * from './CareersPage';
 export * from './ModalitiesPage';
-export * from './QuotasPage';
+export * from './NewAdmissionsPage';
 export * from './IngressEgressPage';
 export * from './StudentsPage';
 export * from './StudentsInProgressPage';

@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { IngressEgress } from '@entities/ingress-egress';
 import { buildApiUrl, delay } from '../utils';
-import { mockQuotas } from '../data/quotas';
+import { mockNewAdmissions } from '../data/new-admissions';
 import { mockStudents } from '../data/students';
 import { mockGenerations } from '../data/generations';
 import { mockCareers } from '../data/careers';
@@ -34,45 +34,42 @@ function calculateIngressEgressData(): IngressEgress[] {
   const result: IngressEgress[] = [];
   const processedKeys = new Set<string>();
 
-  // Agrupar cuotas por generación y carrera
-  mockQuotas.forEach((quota) => {
-    const key = `${quota.generationId}-${quota.careerId}`;
+  // Agrupar registros de ingreso por generación y carrera
+  mockNewAdmissions.forEach((entry) => {
+    const key = `${entry.generationId}-${entry.careerId}`;
     if (processedKeys.has(key)) {
       return;
     }
     processedKeys.add(key);
 
     // Obtener información de generación y carrera
-    const generation = mockGenerations.find((g) => g.id === quota.generationId);
-    const career = mockCareers.find((c) => c.id === quota.careerId);
+    const generation = mockGenerations.find((g) => g.id === entry.generationId);
+    const career = mockCareers.find((c) => c.id === entry.careerId);
 
     if (!generation || !career) {
       return;
     }
 
-    // Calcular número de ingreso (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale para esta generación y carrera)
-    const admissionNumber = mockQuotas
+    // Calcular número de ingreso (suma de maleCount + femaleCount para esta generación y carrera)
+    const admissionNumber = mockNewAdmissions
       .filter(
-        (q) =>
-          q.generationId === quota.generationId && q.careerId === quota.careerId
+        (e) =>
+          e.generationId === entry.generationId && e.careerId === entry.careerId
       )
-      .reduce(
-        (sum, q) => sum + q.newAdmissionQuotasMale + q.newAdmissionQuotasFemale,
-        0
-      );
+      .reduce((sum, e) => sum + e.maleCount + e.femaleCount, 0);
 
     // Calcular número de egreso (estudiantes con isEgressed = true)
     const egressNumber = mockStudents.filter(
       (student) =>
-        student.generationId === quota.generationId &&
-        student.careerId === quota.careerId &&
+        student.generationId === entry.generationId &&
+        student.careerId === entry.careerId &&
         student.isEgressed === true
     ).length;
 
     result.push({
       id: key,
-      generationId: quota.generationId,
-      careerId: quota.careerId,
+      generationId: entry.generationId,
+      careerId: entry.careerId,
       generationName: generation.name,
       careerName: career.name,
       admissionNumber,
@@ -80,7 +77,7 @@ function calculateIngressEgressData(): IngressEgress[] {
     });
   });
 
-  // También incluir combinaciones que existan en estudiantes pero no en cuotas
+  // También incluir combinaciones que existan en estudiantes pero no en registros de ingreso
   mockStudents.forEach((student) => {
     const key = `${student.generationId}-${student.careerId}`;
     if (processedKeys.has(key)) {
@@ -97,7 +94,7 @@ function calculateIngressEgressData(): IngressEgress[] {
       return;
     }
 
-    // Para esta combinación no hay cuota, ingreso es 0
+    // Para esta combinación no hay registro de ingreso, ingreso es 0
     const egressNumber = mockStudents.filter(
       (s) =>
         s.generationId === student.generationId &&
@@ -294,16 +291,12 @@ export const ingressEgressHandlers = [
         );
       }
 
-      // Calcular número de ingreso (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale)
-      const admissionNumber = mockQuotas
+      // Calcular número de ingreso (suma de maleCount + femaleCount)
+      const admissionNumber = mockNewAdmissions
         .filter(
-          (q) => q.generationId === generationId && q.careerId === careerId
+          (e) => e.generationId === generationId && e.careerId === careerId
         )
-        .reduce(
-          (sum, q) =>
-            sum + q.newAdmissionQuotasMale + q.newAdmissionQuotasFemale,
-          0
-        );
+        .reduce((sum, e) => sum + e.maleCount + e.femaleCount, 0);
 
       // Calcular número de egreso
       const egressNumber = mockStudents.filter(

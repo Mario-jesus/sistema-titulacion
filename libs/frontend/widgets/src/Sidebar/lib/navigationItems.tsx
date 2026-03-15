@@ -43,9 +43,9 @@ export const createDefaultNavigationItems = (): SidebarItem[] => [
         path: '/ingress-egresses',
       },
       {
-        id: 'cupos',
-        label: 'Cupos',
-        path: '/ingress-egresses/quotas',
+        id: 'nuevo-ingreso',
+        label: 'Nuevo Ingreso',
+        path: '/ingress-egresses/new-admissions',
       },
     ],
   },

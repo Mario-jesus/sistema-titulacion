@@ -18,7 +18,7 @@ import {
   CareersPage,
   ModalitiesPage,
   IngressEgressPage,
-  QuotasPage,
+  NewAdmissionsPage,
   StudentsPage,
   StudentsInProgressPage,
   StudentsScheduledPage,
@@ -99,12 +99,12 @@ export function AppRouter() {
         />
 
         <Route
-          path="/ingress-egresses/quotas"
+          path="/ingress-egresses/new-admissions"
           element={
             <ProtectedRoute>
               <LayoutWithSidebar>
                 <Suspense fallback={<PageLoader />}>
-                  <QuotasPage />
+                  <NewAdmissionsPage />
                 </Suspense>
               </LayoutWithSidebar>
             </ProtectedRoute>

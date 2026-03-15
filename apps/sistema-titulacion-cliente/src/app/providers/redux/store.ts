@@ -11,7 +11,7 @@ import { generationsReducer } from '@features/generations';
 import { graduationOptionsReducer } from '@features/graduation-options';
 import { careersReducer } from '@features/careers';
 import { modalitiesReducer } from '@features/modalities';
-import { quotasReducer } from '@features/quotas';
+import { newAdmissionsReducer } from '@features/new-admissions';
 import { ingressEgressReducer } from '@features/ingress-egress';
 import { studentsReducer } from '@features/students';
 import { capturedFieldsReducer } from '@features/captured-fields';
@@ -30,7 +30,7 @@ export const store = configureStore({
     graduationOptions: graduationOptionsReducer,
     careers: careersReducer,
     modalities: modalitiesReducer,
-    quotas: quotasReducer,
+    newAdmissions: newAdmissionsReducer,
     ingressEgress: ingressEgressReducer,
     students: studentsReducer,
     capturedFields: capturedFieldsReducer,

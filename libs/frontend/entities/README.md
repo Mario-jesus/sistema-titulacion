@@ -71,9 +71,9 @@ libs/frontend/entities/
 │   │   │   └── index.ts
 │   │   └── index.ts
 │   │
-│   ├── quota/                   # Cupo (por generación y carrera)
+│   ├── new-admission/           # Registro de nuevo ingreso (por generación y carrera)
 │   │   ├── model/
-│   │   │   ├── types.ts         # Quota
+│   │   │   ├── types.ts         # NewAdmission
 │   │   │   └── index.ts
 │   │   └── index.ts
 │   │
@@ -112,7 +112,7 @@ libs/frontend/entities/
 | `generation/`        | Generación o cohorte (rango de años).                                                              |
 | `modality/`          | Modalidad educativa (ej. escolarizado, sabatino).                                                  |
 | `graduation-option/` | Opción de titulación (ej. tesis, residencia).                                                      |
-| `quota/`             | Cupos de admisión por generación y carrera (masculino/femenino).                                   |
+| `new-admission/`     | Registros de nuevo ingreso por generación y carrera (conteo masculino/femenino).                   |
 | `captured-fields/`   | Datos de proyecto de titulación (nombre, empresa, fecha).                                          |
 | `graduation/`        | Datos de titulación (opción, mesa, fecha, graduado).                                               |
 | `ingress-egress/`    | Vista agregada de ingreso vs egreso por generación y carrera.                                      |
@@ -151,8 +151,8 @@ erDiagram
   Student ||--o| CapturedFields : "tiene"
   Student ||--o| Graduation : "tiene"
   GraduationOption ||--o{ Graduation : "opción"
-  Generation ||--o{ Quota : "define"
-  Career ||--o{ Quota : "define"
+  Generation ||--o{ NewAdmission : "define"
+  Career ||--o{ NewAdmission : "define"
   Generation ||--o{ IngressEgress : "participa"
   Career ||--o{ IngressEgress : "participa"
 
@@ -336,17 +336,17 @@ interface GraduationOption {
 }
 ```
 
-### Quota
+### NewAdmission
 
-Cupos de admisión por generación y carrera.
+Registros de nuevo ingreso por generación y carrera (conteo de alumnos hombres y mujeres).
 
 ```typescript
-interface Quota {
+interface NewAdmission {
   id: string;
   generationId: string;
   careerId: string;
-  newAdmissionQuotasMale: number;
-  newAdmissionQuotasFemale: number;
+  maleCount: number;
+  femaleCount: number;
   description: string | null;
   isActive: boolean;
   createdAt: Date;
@@ -415,7 +415,7 @@ interface IngressEgress {
 | ------------------ | -------------------------------------------------------------- |
 | **Career**         | `modality: Modality` (N:1)                                     |
 | **Student**        | Referencias a `careerId`, `generationId`                       |
-| **Quota**          | Referencias a `generationId`, `careerId`                       |
+| **NewAdmission**   | Referencias a `generationId`, `careerId`                       |
 | **CapturedFields** | `studentId` → Student (1:1)                                    |
 | **Graduation**     | `studentId` → Student, `graduationOptionId` → GraduationOption |
 | **IngressEgress**  | Agregación por `generationId`, `careerId`                      |
@@ -477,7 +477,7 @@ import type { Career } from '@entities/career';
 import type { Generation } from '@entities/generation';
 import type { Modality } from '@entities/modality';
 import type { GraduationOption } from '@entities/graduation-option';
-import type { Quota } from '@entities/quota';
+import type { NewAdmission } from '@entities/new-admission';
 import type { CapturedFields } from '@entities/captured-fields';
 import type { Graduation } from '@entities/graduation';
 import type { IngressEgress } from '@entities/ingress-egress';
@@ -519,6 +519,6 @@ Las entidades **no dependen de shared** a nivel de código (tipos puros), pero e
 
 El módulo entities es utilizado por:
 
-- **features**: auth, users, students, careers, generations, modalities, graduation-options, quotas, captured-fields, graduations, ingress-egress, reports, dashboard
+- **features**: auth, users, students, careers, generations, modalities, graduation-options, new-admissions, captured-fields, graduations, ingress-egress, reports, dashboard
 - **widgets**: Sidebar (UserRole para navegación)
 - **apps**: sistema-titulacion-cliente (store Redux, mocks, layouts)

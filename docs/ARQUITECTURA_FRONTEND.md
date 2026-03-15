@@ -122,7 +122,7 @@ flowchart TB
     graduationOptions["graduationOptions"]
     careers["careers"]
     modalities["modalities"]
-    quotas["quotas"]
+    newAdmissions["newAdmissions"]
     ingressEgress["ingressEgress"]
     students["students"]
     capturedFields["capturedFields"]

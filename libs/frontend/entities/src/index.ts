@@ -6,5 +6,5 @@ export * from './generation';
 export * from './student';
 export * from './captured-fields';
 export * from './graduation';
-export * from './quota';
+export * from './new-admission';
 export * from './ingress-egress';

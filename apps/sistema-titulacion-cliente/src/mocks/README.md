@@ -48,7 +48,7 @@ src/mocks/
 │   ├── generations.handlers.ts
 │   ├── modalities.handlers.ts
 │   ├── graduation-options.handlers.ts
-│   ├── quotas.handlers.ts
+│   ├── new-admissions.handlers.ts
 │   ├── ingress-egress.handlers.ts
 │   ├── captured-fields.handlers.ts
 │   ├── graduations.handlers.ts
@@ -64,7 +64,7 @@ src/mocks/
 │   ├── generations.ts
 │   ├── modalities.ts
 │   ├── graduation-options.ts
-│   ├── quotas.ts
+│   ├── new-admissions.ts
 │   ├── captured-fields.ts
 │   ├── graduations.ts
 │   └── backups.ts
@@ -126,7 +126,7 @@ flowchart TB
     studentsData[students]
     careersData[careers]
     generationsData[generations]
-    quotasData[quotas]
+    newAdmissionsData[new-admissions]
   end
 
   auth --> token
@@ -136,9 +136,9 @@ flowchart TB
   students --> careersData
   students --> generationsData
   dashboard --> studentsData
-  dashboard --> quotasData
+  dashboard --> newAdmissionsData
   reports --> studentsData
-  reports --> quotasData
+  reports --> newAdmissionsData
   reports --> careersData
   Handlers --> buildApiUrl
   Handlers --> delay
@@ -191,7 +191,7 @@ export const handlers: HttpHandler[] = [
 | **generations**        | CRUD, activate/deactivate                                         |
 | **modalities**         | CRUD, activate/deactivate                                         |
 | **graduation-options** | CRUD, activate/deactivate                                         |
-| **quotas**             | CRUD, activate/deactivate                                         |
+| **new-admissions**     | CRUD, activate/deactivate                                         |
 | **ingress-egress**     | list, getByGenerationAndCareer                                    |
 | **captured-fields**    | getByStudent, create, update, patch, delete                       |
 | **graduations**        | getByStudent, create, update, graduate, ungraduate                |
@@ -224,7 +224,7 @@ Los datos están vinculados por IDs:
 
 - **Career** → modalityId (Modality)
 - **Student** → careerId, generationId
-- **Quota** → generationId, careerId
+- **NewAdmission** → generationId, careerId
 - **CapturedFields** → studentId
 - **Graduation** → studentId, graduationOptionId
 

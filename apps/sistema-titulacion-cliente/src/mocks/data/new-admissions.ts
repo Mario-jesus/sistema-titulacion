@@ -1,16 +1,16 @@
-import type { Quota } from '@entities/quota';
+import type { NewAdmission } from '@entities/new-admission';
 
 /**
- * Datos mock de cupos para testing
+ * Datos mock de registros de nuevo ingreso para testing
  */
-export const mockQuotas: Quota[] = [
+export const mockNewAdmissions: NewAdmission[] = [
   {
     id: '1',
     generationId: '1',
     careerId: '1',
-    newAdmissionQuotasMale: 7,
-    newAdmissionQuotasFemale: 5,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2020-2024',
+    maleCount: 7,
+    femaleCount: 5,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2020-2024',
     isActive: true,
     createdAt: new Date('2024-01-15T10:00:00Z'),
     updatedAt: new Date('2024-01-15T10:00:00Z'),
@@ -19,9 +19,9 @@ export const mockQuotas: Quota[] = [
     id: '2',
     generationId: '1',
     careerId: '2',
-    newAdmissionQuotasMale: 4,
-    newAdmissionQuotasFemale: 4,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2020-2024',
+    maleCount: 4,
+    femaleCount: 4,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2020-2024',
     isActive: true,
     createdAt: new Date('2024-01-16T10:00:00Z'),
     updatedAt: new Date('2024-01-16T10:00:00Z'),
@@ -30,9 +30,9 @@ export const mockQuotas: Quota[] = [
     id: '3',
     generationId: '2',
     careerId: '1',
-    newAdmissionQuotasMale: 6,
-    newAdmissionQuotasFemale: 4,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2021-2025',
+    maleCount: 6,
+    femaleCount: 4,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2021-2025',
     isActive: true,
     createdAt: new Date('2024-01-17T10:00:00Z'),
     updatedAt: new Date('2024-01-17T10:00:00Z'),
@@ -41,8 +41,8 @@ export const mockQuotas: Quota[] = [
     id: '4',
     generationId: '2',
     careerId: '3',
-    newAdmissionQuotasMale: 3,
-    newAdmissionQuotasFemale: 3,
+    maleCount: 3,
+    femaleCount: 3,
     description: null,
     isActive: false,
     createdAt: new Date('2024-01-18T10:00:00Z'),
@@ -52,9 +52,9 @@ export const mockQuotas: Quota[] = [
     id: '5',
     generationId: '1',
     careerId: '3',
-    newAdmissionQuotasMale: 4,
-    newAdmissionQuotasFemale: 3,
-    description: 'Cupos para nuevo ingreso de II - Generación 2020-2024',
+    maleCount: 4,
+    femaleCount: 3,
+    description: 'Registro de nuevo ingreso de II - Generación 2020-2024',
     isActive: true,
     createdAt: new Date('2024-01-19T10:00:00Z'),
     updatedAt: new Date('2024-01-19T10:00:00Z'),
@@ -63,9 +63,9 @@ export const mockQuotas: Quota[] = [
     id: '6',
     generationId: '2',
     careerId: '2',
-    newAdmissionQuotasMale: 5,
-    newAdmissionQuotasFemale: 4,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2021-2025',
+    maleCount: 5,
+    femaleCount: 4,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2021-2025',
     isActive: true,
     createdAt: new Date('2024-01-20T10:00:00Z'),
     updatedAt: new Date('2024-01-20T10:00:00Z'),
@@ -74,9 +74,9 @@ export const mockQuotas: Quota[] = [
     id: '7',
     generationId: '3',
     careerId: '1',
-    newAdmissionQuotasMale: 2,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2022-2026',
+    maleCount: 2,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2022-2026',
     isActive: true,
     createdAt: new Date('2024-01-21T10:00:00Z'),
     updatedAt: new Date('2024-01-21T10:00:00Z'),
@@ -85,9 +85,9 @@ export const mockQuotas: Quota[] = [
     id: '8',
     generationId: '3',
     careerId: '2',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2022-2026',
+    maleCount: 1,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2022-2026',
     isActive: true,
     createdAt: new Date('2024-01-22T10:00:00Z'),
     updatedAt: new Date('2024-01-22T10:00:00Z'),
@@ -96,9 +96,9 @@ export const mockQuotas: Quota[] = [
     id: '9',
     generationId: '3',
     careerId: '3',
-    newAdmissionQuotasMale: 2,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de II - Generación 2022-2026',
+    maleCount: 2,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de II - Generación 2022-2026',
     isActive: true,
     createdAt: new Date('2024-01-23T10:00:00Z'),
     updatedAt: new Date('2024-01-23T10:00:00Z'),
@@ -107,9 +107,9 @@ export const mockQuotas: Quota[] = [
     id: '10',
     generationId: '4',
     careerId: '1',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 0,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2019-2023',
+    maleCount: 1,
+    femaleCount: 0,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2019-2023',
     isActive: true,
     createdAt: new Date('2024-01-24T10:00:00Z'),
     updatedAt: new Date('2024-01-24T10:00:00Z'),
@@ -118,9 +118,9 @@ export const mockQuotas: Quota[] = [
     id: '11',
     generationId: '4',
     careerId: '2',
-    newAdmissionQuotasMale: 0,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2019-2023',
+    maleCount: 0,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2019-2023',
     isActive: true,
     createdAt: new Date('2024-01-25T10:00:00Z'),
     updatedAt: new Date('2024-01-25T10:00:00Z'),
@@ -129,9 +129,9 @@ export const mockQuotas: Quota[] = [
     id: '12',
     generationId: '4',
     careerId: '3',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 0,
-    description: 'Cupos para nuevo ingreso de II - Generación 2019-2023',
+    maleCount: 1,
+    femaleCount: 0,
+    description: 'Registro de nuevo ingreso de II - Generación 2019-2023',
     isActive: true,
     createdAt: new Date('2024-01-26T10:00:00Z'),
     updatedAt: new Date('2024-01-26T10:00:00Z'),
@@ -140,9 +140,9 @@ export const mockQuotas: Quota[] = [
     id: '13',
     generationId: '5',
     careerId: '1',
-    newAdmissionQuotasMale: 0,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2018-2022',
+    maleCount: 0,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2018-2022',
     isActive: true,
     createdAt: new Date('2024-01-27T10:00:00Z'),
     updatedAt: new Date('2024-01-27T10:00:00Z'),
@@ -151,9 +151,9 @@ export const mockQuotas: Quota[] = [
     id: '14',
     generationId: '5',
     careerId: '2',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 0,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2018-2022',
+    maleCount: 1,
+    femaleCount: 0,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2018-2022',
     isActive: true,
     createdAt: new Date('2024-01-28T10:00:00Z'),
     updatedAt: new Date('2024-01-28T10:00:00Z'),
@@ -162,9 +162,9 @@ export const mockQuotas: Quota[] = [
     id: '15',
     generationId: '5',
     careerId: '3',
-    newAdmissionQuotasMale: 0,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de II - Generación 2018-2022',
+    maleCount: 0,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de II - Generación 2018-2022',
     isActive: true,
     createdAt: new Date('2024-01-29T10:00:00Z'),
     updatedAt: new Date('2024-01-29T10:00:00Z'),
@@ -173,9 +173,9 @@ export const mockQuotas: Quota[] = [
     id: '16',
     generationId: '6',
     careerId: '1',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 0,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2017-2021',
+    maleCount: 1,
+    femaleCount: 0,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2017-2021',
     isActive: true,
     createdAt: new Date('2024-01-30T10:00:00Z'),
     updatedAt: new Date('2024-01-30T10:00:00Z'),
@@ -184,9 +184,9 @@ export const mockQuotas: Quota[] = [
     id: '17',
     generationId: '6',
     careerId: '2',
-    newAdmissionQuotasMale: 0,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2017-2021',
+    maleCount: 0,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2017-2021',
     isActive: true,
     createdAt: new Date('2024-01-31T10:00:00Z'),
     updatedAt: new Date('2024-01-31T10:00:00Z'),
@@ -195,9 +195,9 @@ export const mockQuotas: Quota[] = [
     id: '18',
     generationId: '6',
     careerId: '3',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 0,
-    description: 'Cupos para nuevo ingreso de II - Generación 2017-2021',
+    maleCount: 1,
+    femaleCount: 0,
+    description: 'Registro de nuevo ingreso de II - Generación 2017-2021',
     isActive: true,
     createdAt: new Date('2024-02-01T10:00:00Z'),
     updatedAt: new Date('2024-02-01T10:00:00Z'),
@@ -206,9 +206,9 @@ export const mockQuotas: Quota[] = [
     id: '19',
     generationId: '7',
     careerId: '1',
-    newAdmissionQuotasMale: 2,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de ISC - Generación 2023-2027',
+    maleCount: 2,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de ISC - Generación 2023-2027',
     isActive: true,
     createdAt: new Date('2024-02-02T10:00:00Z'),
     updatedAt: new Date('2024-02-02T10:00:00Z'),
@@ -217,9 +217,9 @@ export const mockQuotas: Quota[] = [
     id: '20',
     generationId: '7',
     careerId: '2',
-    newAdmissionQuotasMale: 1,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de LAE - Generación 2023-2027',
+    maleCount: 1,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de LAE - Generación 2023-2027',
     isActive: true,
     createdAt: new Date('2024-02-03T10:00:00Z'),
     updatedAt: new Date('2024-02-03T10:00:00Z'),
@@ -228,9 +228,9 @@ export const mockQuotas: Quota[] = [
     id: '21',
     generationId: '7',
     careerId: '3',
-    newAdmissionQuotasMale: 2,
-    newAdmissionQuotasFemale: 1,
-    description: 'Cupos para nuevo ingreso de II - Generación 2023-2027',
+    maleCount: 2,
+    femaleCount: 1,
+    description: 'Registro de nuevo ingreso de II - Generación 2023-2027',
     isActive: true,
     createdAt: new Date('2024-02-04T10:00:00Z'),
     updatedAt: new Date('2024-02-04T10:00:00Z'),
@@ -238,31 +238,31 @@ export const mockQuotas: Quota[] = [
 ];
 
 /**
- * Busca un cupo por ID
+ * Busca un registro de ingreso por ID
  */
-export function findQuotaById(id: string): Quota | undefined {
-  return mockQuotas.find((quota) => quota.id === id);
+export function findNewAdmissionById(id: string): NewAdmission | undefined {
+  return mockNewAdmissions.find((entry) => entry.id === id);
 }
 
 /**
- * Busca cupos por carrera y generación
+ * Busca registros de ingreso por carrera y generación
  */
-export function findQuotaByCareerAndGeneration(
+export function findNewAdmissionByCareerAndGeneration(
   careerId: string,
   generationId: string
-): Quota | undefined {
-  return mockQuotas.find(
-    (quota) =>
-      quota.careerId === careerId && quota.generationId === generationId
+): NewAdmission | undefined {
+  return mockNewAdmissions.find(
+    (entry) =>
+      entry.careerId === careerId && entry.generationId === generationId
   );
 }
 
 /**
- * Genera un nuevo ID para un cupo
+ * Genera un nuevo ID para un registro de ingreso
  */
-export function generateQuotaId(): string {
+export function generateNewAdmissionId(): string {
   const maxId = Math.max(
-    ...mockQuotas.map((quota) => parseInt(quota.id, 10)),
+    ...mockNewAdmissions.map((entry) => parseInt(entry.id, 10)),
     0
   );
   return String(maxId + 1);

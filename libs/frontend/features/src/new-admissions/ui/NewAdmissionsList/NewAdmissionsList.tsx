@@ -12,130 +12,115 @@ import type { DropdownMenuItem, FilterConfig } from '@shared/ui';
 import { exportTable } from '@shared/lib/excel';
 import { useAuth } from '@features/auth';
 import { UserRole } from '@entities/user';
-import { useQuotas } from '../../lib/useQuotas';
-import { quotasService } from '../../api/quotasService';
-import { QuotaForm } from '../QuotaForm/QuotaForm';
+import { useNewAdmissions } from '../../lib/useNewAdmissions';
+import { newAdmissionsService } from '../../api/newAdmissionsService';
+import { NewAdmissionForm } from '../NewAdmissionForm/NewAdmissionForm';
 import { loadGenerations } from '../../api/generationsHelper';
 import { loadCareers } from '../../api/careersHelper';
-import type { Quota } from '@entities/quota';
+import type { NewAdmission } from '@entities/new-admission';
 import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import type { TableColumn, DetailField } from '@shared/ui';
+import type {
+  CreateNewAdmissionRequest,
+  UpdateNewAdmissionRequest,
+} from '../../model/types';
 
 /**
- * Componente para listar y gestionar cupos
- * Contiene toda la lógica de negocio y UI para la gestión de cupos
+ * Componente para listar y gestionar registros de nuevo ingreso
  */
-export function QuotasList() {
+export function NewAdmissionsList() {
   const { showToast } = useToast();
   const { user } = useAuth();
   const isStaff = user?.role === UserRole.STAFF;
   const {
-    quotas,
+    newAdmissions,
     pagination,
     isLoadingList,
-    listQuotas,
-    createQuota,
-    updateQuota,
-    deleteQuota,
-    activateQuota,
-    deactivateQuota,
-  } = useQuotas();
+    listNewAdmissions,
+    createNewAdmission,
+    updateNewAdmission,
+    deleteNewAdmission,
+    activateNewAdmission,
+    deactivateNewAdmission,
+  } = useNewAdmissions();
 
-  // Estados para relaciones
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [careers, setCareers] = useState<Career[]>([]);
-
-  // Estados locales
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
-
-  // Estados para filtros
   const [filters, setFilters] = useState<
     Record<string, string | string[] | boolean>
   >({});
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Estados para modales
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedQuota, setSelectedQuota] = useState<Quota | null>(null);
+  const [selectedNewAdmission, setSelectedNewAdmission] =
+    useState<NewAdmission | null>(null);
 
-  // Obtener activeOnly de filters
   const activeOnly = filters.activeOnly === true;
 
-  // Cargar generaciones y carreras al montar
   useEffect(() => {
-    loadGenerations()
-      .then((data) => {
-        setGenerations(data);
-      })
-      .catch((error) => {
-        console.error('Error al cargar generaciones:', error);
-      });
-
+    loadGenerations({ activeOnly: false })
+      .then((data) => setGenerations(data))
+      .catch((error) => console.error('Error al cargar generaciones:', error));
     loadCareers()
-      .then((data) => {
-        setCareers(data);
-      })
-      .catch((error) => {
-        console.error('Error al cargar carreras:', error);
-      });
+      .then((data) => setCareers(data))
+      .catch((error) => console.error('Error al cargar carreras:', error));
   }, []);
 
-  // Helper para obtener nombre de generación
   const getGenerationName = useCallback(
-    (generationId: string) => {
-      const generation = generations.find((g) => g.id === generationId);
-      return generation?.name || generationId;
-    },
+    (generationId: string) =>
+      generations.find((g) => g.id === generationId)?.name || generationId,
     [generations]
   );
 
-  // Helper para obtener nombre de carrera
   const getCareerName = useCallback(
-    (careerId: string) => {
-      const career = careers.find((c) => c.id === careerId);
-      return career?.name || careerId;
-    },
+    (careerId: string) =>
+      careers.find((c) => c.id === careerId)?.name || careerId,
     [careers]
   );
 
-  // Cargar cupos
-  const loadQuotas = useCallback(async () => {
-    const result = await listQuotas({
+  const loadNewAdmissions = useCallback(async () => {
+    const result = await listNewAdmissions({
       page,
       limit: 10,
       search: searchTerm || undefined,
       activeOnly: activeOnly || undefined,
-      // Solo incluir sortBy y sortOrder si ambos están definidos
       ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
     });
 
     if (!result.success) {
       showToast({
         type: 'error',
-        title: 'Error al cargar cupos',
-        message: result.error || 'No se pudieron cargar los cupos',
+        title: 'Error al cargar registros de ingreso',
+        message:
+          result.error || 'No se pudieron cargar los registros de ingreso',
       });
     }
-  }, [page, searchTerm, activeOnly, sortBy, sortOrder, listQuotas, showToast]);
+  }, [
+    page,
+    searchTerm,
+    activeOnly,
+    sortBy,
+    sortOrder,
+    listNewAdmissions,
+    showToast,
+  ]);
 
   useEffect(() => {
-    loadQuotas();
-  }, [loadQuotas]);
+    loadNewAdmissions();
+  }, [loadNewAdmissions]);
 
-  // Manejar búsqueda
   const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
     setPage(1);
   }, []);
 
-  // Manejar ordenamiento
   const handleSort = useCallback(
     (columnKey: string, direction: 'asc' | 'desc' | null) => {
       if (direction === null) {
@@ -150,117 +135,121 @@ export function QuotasList() {
     []
   );
 
-  // Manejar crear
   const handleCreate = useCallback(
-    async (data: any) => {
+    async (data: CreateNewAdmissionRequest | UpdateNewAdmissionRequest) => {
       try {
-        await createQuota(data);
+        await createNewAdmission(data as CreateNewAdmissionRequest);
         setIsCreateModalOpen(false);
         showToast({
           type: 'success',
-          title: 'Cupo creado',
-          message: 'El cupo se ha creado exitosamente',
+          title: 'Registro creado',
+          message: 'El registro se ha creado exitosamente',
         });
-        loadQuotas();
+        loadNewAdmissions();
       } catch (error) {
-        console.error('Error al crear cupo:', error);
+        console.error('Error al crear registro:', error);
         showToast({
           type: 'error',
-          title: 'Error al crear cupo',
-          message:
-            error instanceof Error ? error.message : 'No se pudo crear el cupo',
-        });
-        throw error;
-      }
-    },
-    [createQuota, loadQuotas, showToast]
-  );
-
-  // Manejar editar
-  const handleEdit = useCallback(
-    async (data: any) => {
-      if (!selectedQuota) return;
-      try {
-        await updateQuota(selectedQuota.id, data);
-        setIsEditModalOpen(false);
-        setSelectedQuota(null);
-        showToast({
-          type: 'success',
-          title: 'Cupo actualizado',
-          message: 'El cupo se ha actualizado exitosamente',
-        });
-        loadQuotas();
-      } catch (error) {
-        console.error('Error al actualizar cupo:', error);
-        showToast({
-          type: 'error',
-          title: 'Error al actualizar cupo',
+          title: 'Error al crear registro',
           message:
             error instanceof Error
               ? error.message
-              : 'No se pudo actualizar el cupo',
+              : 'No se pudo crear el registro',
         });
         throw error;
       }
     },
-    [selectedQuota, updateQuota, loadQuotas, showToast]
+    [createNewAdmission, loadNewAdmissions, showToast]
   );
 
-  // Manejar eliminar
+  const handleEdit = useCallback(
+    async (data: Parameters<typeof updateNewAdmission>[1]) => {
+      if (!selectedNewAdmission) return;
+      try {
+        await updateNewAdmission(selectedNewAdmission.id, data);
+        setIsEditModalOpen(false);
+        setSelectedNewAdmission(null);
+        showToast({
+          type: 'success',
+          title: 'Registro actualizado',
+          message: 'El registro se ha actualizado exitosamente',
+        });
+        loadNewAdmissions();
+      } catch (error) {
+        console.error('Error al actualizar registro:', error);
+        showToast({
+          type: 'error',
+          title: 'Error al actualizar registro',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo actualizar el registro',
+        });
+        throw error;
+      }
+    },
+    [selectedNewAdmission, updateNewAdmission, loadNewAdmissions, showToast]
+  );
+
   const handleDelete = useCallback(
-    async (quota: Quota) => {
+    async (entry: NewAdmission) => {
       if (
         !window.confirm(
-          `¿Estás seguro de eliminar el cupo de ${getCareerName(
-            quota.careerId
-          )} - ${getGenerationName(quota.generationId)}?`
+          `¿Estás seguro de eliminar el registro de ingreso de ${getCareerName(
+            entry.careerId
+          )} - ${getGenerationName(entry.generationId)}?`
         )
       ) {
         return;
       }
       try {
-        await deleteQuota(quota.id);
+        await deleteNewAdmission(entry.id);
         showToast({
           type: 'success',
-          title: 'Cupo eliminado',
-          message: 'El cupo se ha eliminado exitosamente',
+          title: 'Registro eliminado',
+          message: 'El registro se ha eliminado exitosamente',
         });
-        loadQuotas();
+        loadNewAdmissions();
       } catch (error) {
-        console.error('Error al eliminar cupo:', error);
+        console.error('Error al eliminar registro:', error);
         showToast({
           type: 'error',
-          title: 'Error al eliminar cupo',
+          title: 'Error al eliminar registro',
           message:
             error instanceof Error
               ? error.message
-              : 'No se pudo eliminar el cupo',
+              : 'No se pudo eliminar el registro',
         });
       }
     },
-    [deleteQuota, loadQuotas, showToast, getCareerName, getGenerationName]
+    [
+      deleteNewAdmission,
+      loadNewAdmissions,
+      showToast,
+      getCareerName,
+      getGenerationName,
+    ]
   );
 
-  // Manejar activar/desactivar
   const handleToggleActive = useCallback(
-    async (quota: Quota) => {
+    async (entry: NewAdmission) => {
       try {
-        if (quota.isActive) {
-          await deactivateQuota(quota.id);
+        if (entry.isActive) {
+          await deactivateNewAdmission(entry.id);
           showToast({
             type: 'success',
-            title: 'Cupo desactivado',
-            message: 'El cupo se ha desactivado exitosamente',
+            title: 'Registro desactivado',
+            message: 'El registro se ha desactivado exitosamente',
           });
         } else {
-          await activateQuota(quota.id);
+          await activateNewAdmission(entry.id);
           showToast({
             type: 'success',
-            title: 'Cupo activado',
-            message: 'El cupo se ha activado exitosamente',
+            title: 'Registro activado',
+            message: 'El registro se ha activado exitosamente',
           });
         }
-        loadQuotas();
+        loadNewAdmissions();
       } catch (error) {
         console.error('Error al cambiar estado:', error);
         showToast({
@@ -269,27 +258,24 @@ export function QuotasList() {
           message:
             error instanceof Error
               ? error.message
-              : 'No se pudo cambiar el estado del cupo',
+              : 'No se pudo cambiar el estado del registro',
         });
       }
     },
-    [activateQuota, deactivateQuota, loadQuotas, showToast]
+    [activateNewAdmission, deactivateNewAdmission, loadNewAdmissions, showToast]
   );
 
-  // Abrir modal de edición
-  const handleOpenEdit = useCallback((quota: Quota) => {
-    setSelectedQuota(quota);
+  const handleOpenEdit = useCallback((entry: NewAdmission) => {
+    setSelectedNewAdmission(entry);
     setIsEditModalOpen(true);
   }, []);
 
-  // Abrir modal de detalles
-  const handleOpenDetail = useCallback((quota: Quota) => {
-    setSelectedQuota(quota);
+  const handleOpenDetail = useCallback((entry: NewAdmission) => {
+    setSelectedNewAdmission(entry);
     setIsDetailModalOpen(true);
   }, []);
 
-  // Columnas de la tabla
-  const columns: TableColumn<Quota>[] = [
+  const columns: TableColumn<NewAdmission>[] = [
     {
       key: 'generationId',
       label: 'Generación',
@@ -301,25 +287,23 @@ export function QuotasList() {
       render: (value: string) => getCareerName(value),
     },
     {
-      key: 'newAdmissionQuotasMale',
-      label: 'Cupos Hombres',
+      key: 'maleCount',
+      label: 'Hombres',
       sortable: true,
       render: (value: number) => value.toLocaleString(),
     },
     {
-      key: 'newAdmissionQuotasFemale',
-      label: 'Cupos Mujeres',
+      key: 'femaleCount',
+      label: 'Mujeres',
       sortable: true,
       render: (value: number) => value.toLocaleString(),
     },
     {
       key: 'total',
-      label: 'Total Cupos',
+      label: 'Total Alumnos',
       sortable: false,
-      render: (_value: unknown, quota: Quota) =>
-        (
-          quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale
-        ).toLocaleString(),
+      render: (_value: unknown, entry: NewAdmission) =>
+        (entry.maleCount + entry.femaleCount).toLocaleString(),
     },
     {
       key: 'description',
@@ -328,8 +312,7 @@ export function QuotasList() {
     },
   ];
 
-  // Campos para el modal de detalles
-  const detailFields: DetailField<Quota>[] = [
+  const detailFields: DetailField<NewAdmission>[] = [
     {
       key: 'generationId',
       label: 'Generación',
@@ -341,22 +324,20 @@ export function QuotasList() {
       render: (value: string) => getCareerName(value),
     },
     {
-      key: 'newAdmissionQuotasMale',
-      label: 'Cupos para Hombres',
+      key: 'maleCount',
+      label: 'Alumnos Hombres',
       render: (value: number) => value.toLocaleString(),
     },
     {
-      key: 'newAdmissionQuotasFemale',
-      label: 'Cupos para Mujeres',
+      key: 'femaleCount',
+      label: 'Alumnas Mujeres',
       render: (value: number) => value.toLocaleString(),
     },
     {
       key: 'total',
-      label: 'Total de Cupos',
-      render: (_value: unknown, quota: Quota) =>
-        (
-          quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale
-        ).toLocaleString(),
+      label: 'Total de Alumnos',
+      render: (_value: unknown, entry: NewAdmission) =>
+        (entry.maleCount + entry.femaleCount).toLocaleString(),
     },
     {
       key: 'description',
@@ -405,27 +386,17 @@ export function QuotasList() {
     },
   ];
 
-  // Configuración de filtros
   const filterConfigs: FilterConfig[] = [
-    {
-      columnKey: 'activeOnly',
-      label: 'Solo activos',
-      type: 'toggle',
-    },
+    { columnKey: 'activeOnly', label: 'Solo activos', type: 'toggle' },
   ];
 
-  // Manejar cambios de filtros
   const handleFilterChange = useCallback(
     (columnKey: string, value: string | string[] | boolean) => {
       setFilters((prev) => {
         const updated = { ...prev, [columnKey]: value };
-
-        if (Array.isArray(value) && value.length === 0) {
+        if (Array.isArray(value) && value.length === 0)
           delete updated[columnKey];
-        } else if (value === '' || value === false) {
-          delete updated[columnKey];
-        }
-
+        else if (value === '' || value === false) delete updated[columnKey];
         return updated;
       });
       setPage(1);
@@ -433,13 +404,11 @@ export function QuotasList() {
     []
   );
 
-  // Resetear filtros
   const handleResetFilters = useCallback(() => {
     setFilters({});
     setPage(1);
   }, []);
 
-  // Verificar si hay filtros activos
   const hasActiveFilters = Object.values(filters).some((value) => {
     if (typeof value === 'boolean') return value === true;
     if (typeof value === 'string') return value !== '';
@@ -447,92 +416,67 @@ export function QuotasList() {
     return false;
   });
 
-  // Estado para exportación
   const [isExporting, setIsExporting] = useState(false);
 
-  // Función para exportar a Excel
   const handleExportToExcel = useCallback(async () => {
     setIsExporting(true);
     try {
-      // Obtener todos los datos sin paginación para exportar
-      const response = await quotasService.list({
-        limit: 999999, // Límite muy alto para obtener todos los registros sin paginar
+      const response = await newAdmissionsService.list({
+        limit: 999999,
         search: searchTerm || undefined,
         activeOnly: activeOnly || undefined,
         ...(sortBy && sortOrder ? { sortBy, sortOrder } : {}),
       });
 
-      // Columnas para exportación
       const exportColumns: TableColumn<
-        Quota & { generationName: string; careerName: string; total: number }
+        NewAdmission & {
+          generationName: string;
+          careerName: string;
+          total: number;
+        }
       >[] = [
-        {
-          key: 'generationName',
-          label: 'Generación',
-        },
-        {
-          key: 'careerName',
-          label: 'Carrera',
-        },
-        {
-          key: 'newAdmissionQuotasMale',
-          label: 'Cupos Hombres',
-        },
-        {
-          key: 'newAdmissionQuotasFemale',
-          label: 'Cupos Mujeres',
-        },
-        {
-          key: 'total',
-          label: 'Total Cupos',
-        },
-        {
-          key: 'description',
-          label: 'Descripción',
-        },
-        {
-          key: 'isActive',
-          label: 'Estado',
-        },
+        { key: 'generationName', label: 'Generación' },
+        { key: 'careerName', label: 'Carrera' },
+        { key: 'maleCount', label: 'Hombres' },
+        { key: 'femaleCount', label: 'Mujeres' },
+        { key: 'total', label: 'Total Alumnos' },
+        { key: 'description', label: 'Descripción' },
+        { key: 'isActive', label: 'Estado' },
       ];
 
-      // Preparar datos para exportación
-      // Incluir nombres de generación y carrera, y calcular total
-      const exportData = response.data.map((quota) => ({
-        ...quota,
-        generationName: getGenerationName(quota.generationId),
-        careerName: getCareerName(quota.careerId),
-        total: quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
-        isActive: quota.isActive ? 'Activo' : 'Inactivo',
+      const exportData = response.data.map((entry) => ({
+        ...entry,
+        generationName: getGenerationName(entry.generationId),
+        careerName: getCareerName(entry.careerId),
+        total: entry.maleCount + entry.femaleCount,
+        isActive: entry.isActive ? 'Activo' : 'Inactivo',
       }));
 
-      // Generar nombre de archivo con fecha
       const dateStr = new Date().toISOString().split('T')[0];
-      const filename = `cupos-${dateStr}`;
+      const filename = `nuevo-ingreso-${dateStr}`;
 
-      // Exportar
       await exportTable({
         filename,
-        sheetName: 'Cupos',
+        sheetName: 'Nuevo Ingreso',
         columns: exportColumns,
         data: exportData,
-        title: 'Cupos',
+        title: 'Nuevo Ingreso',
       });
 
       showToast({
         type: 'success',
         title: 'Exportación exitosa',
-        message: 'Los cupos se han exportado a Excel correctamente',
+        message: 'Los registros se han exportado a Excel correctamente',
       });
     } catch (error) {
-      console.error('Error al exportar cupos:', error);
+      console.error('Error al exportar registros:', error);
       showToast({
         type: 'error',
         title: 'Error al exportar',
         message:
           error instanceof Error
             ? error.message
-            : 'No se pudo exportar los cupos',
+            : 'No se pudo exportar los registros',
       });
     } finally {
       setIsExporting(false);
@@ -547,27 +491,23 @@ export function QuotasList() {
     showToast,
   ]);
 
-  // Acciones de fila usando createStatusActions
   const getRowActions = useCallback(
-    (quota: Quota): DropdownMenuItem[] => {
+    (entry: NewAdmission): DropdownMenuItem[] => {
       if (isStaff) {
         return [
-          {
-            label: 'Ver detalles',
-            onClick: () => handleOpenDetail(quota),
-          },
+          { label: 'Ver detalles', onClick: () => handleOpenDetail(entry) },
         ];
       }
-      const statusActions = createStatusActions(quota, {
-        currentStatus: quota.isActive ? 'active' : 'inactive',
+      const statusActions = createStatusActions(entry, {
+        currentStatus: entry.isActive ? 'active' : 'inactive',
         getStatus: (row) => (row.isActive ? 'active' : 'inactive'),
         transitions: {
           active: {
             additionalActions: [
-              { label: 'Editar', onClick: () => handleOpenEdit(quota) },
+              { label: 'Editar', onClick: () => handleOpenEdit(entry) },
               {
                 label: 'Eliminar',
-                onClick: () => handleDelete(quota),
+                onClick: () => handleDelete(entry),
                 variant: 'danger' as const,
               },
             ],
@@ -575,17 +515,17 @@ export function QuotasList() {
               {
                 label: 'Desactivar',
                 targetStatus: 'inactive',
-                onClick: () => handleToggleActive(quota),
+                onClick: () => handleToggleActive(entry),
               },
             ],
             showSeparator: true,
           },
           inactive: {
             additionalActions: [
-              { label: 'Editar', onClick: () => handleOpenEdit(quota) },
+              { label: 'Editar', onClick: () => handleOpenEdit(entry) },
               {
                 label: 'Eliminar',
-                onClick: () => handleDelete(quota),
+                onClick: () => handleDelete(entry),
                 variant: 'danger' as const,
               },
             ],
@@ -593,7 +533,7 @@ export function QuotasList() {
               {
                 label: 'Activar',
                 targetStatus: 'active',
-                onClick: () => handleToggleActive(quota),
+                onClick: () => handleToggleActive(entry),
               },
             ],
             showSeparator: true,
@@ -602,10 +542,7 @@ export function QuotasList() {
       });
 
       return [
-        {
-          label: 'Ver detalles',
-          onClick: () => handleOpenDetail(quota),
-        },
+        { label: 'Ver detalles', onClick: () => handleOpenDetail(entry) },
         { separator: true, label: 'separator', onClick: () => {} },
         ...statusActions,
       ];
@@ -621,21 +558,17 @@ export function QuotasList() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Contenedor para PageHeader */}
       <div className="rounded-lg mt-6 p-6 bg-(--color-component-bg)">
         <PageHeader
-          title="Cupos"
-          searchPlaceholder="Buscar cupo..."
+          title="Nuevo Ingreso"
+          searchPlaceholder="Buscar registro..."
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
           onSearch={handleSearch}
           primaryAction={
             isStaff
               ? undefined
-              : {
-                  label: 'Añadir',
-                  onClick: () => setIsCreateModalOpen(true),
-                }
+              : { label: 'Añadir', onClick: () => setIsCreateModalOpen(true) }
           }
           exportAction={
             isStaff
@@ -644,7 +577,7 @@ export function QuotasList() {
                   label: 'Exportar a Excel',
                   onClick: handleExportToExcel,
                   isLoading: isExporting,
-                  disabled: isLoadingList || quotas.length === 0,
+                  disabled: isLoadingList || newAdmissions.length === 0,
                 }
           }
           filters={{
@@ -655,7 +588,6 @@ export function QuotasList() {
           }}
         />
 
-        {/* FilterDropdown */}
         <FilterDropdown
           isOpen={isFiltersOpen}
           onClose={() => setIsFiltersOpen(false)}
@@ -667,7 +599,6 @@ export function QuotasList() {
         />
       </div>
 
-      {/* Contenedor para Table y Paginación */}
       <div className="flex flex-col gap-6 rounded-lg p-6 bg-(--color-component-bg)">
         {isLoadingList ? (
           <div className="flex items-center justify-center py-12">
@@ -676,7 +607,7 @@ export function QuotasList() {
         ) : (
           <Table
             columns={columns}
-            data={quotas}
+            data={newAdmissions}
             statusColumn={{
               key: 'isActive',
               getStatus: (row) => ({
@@ -693,7 +624,6 @@ export function QuotasList() {
           />
         )}
 
-        {/* Paginación */}
         {pagination && pagination.totalPages > 1 && (
           <Pagination
             page={pagination.page}
@@ -703,44 +633,39 @@ export function QuotasList() {
             prevPage={pagination.prevPage}
             nextPage={pagination.nextPage}
             onPageChange={(newPage) => {
-              if (!isLoadingList) {
-                setPage(newPage);
-              }
+              if (!isLoadingList) setPage(newPage);
             }}
           />
         )}
       </div>
 
-      {/* Modal de creación */}
-      <QuotaForm
+      <NewAdmissionForm
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreate}
         mode="create"
       />
 
-      {/* Modal de edición */}
-      {selectedQuota && (
-        <QuotaForm
+      {selectedNewAdmission && (
+        <NewAdmissionForm
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            setSelectedQuota(null);
+            setSelectedNewAdmission(null);
           }}
           onSubmit={handleEdit}
           mode="edit"
-          initialData={selectedQuota}
+          initialData={selectedNewAdmission}
         />
       )}
 
-      {/* Modal de detalles */}
       <DetailModal
-        title="Detalles del Cupo"
-        data={selectedQuota}
+        title="Detalles del Registro de Ingreso"
+        data={selectedNewAdmission}
         isOpen={isDetailModalOpen}
         onClose={() => {
           setIsDetailModalOpen(false);
-          setSelectedQuota(null);
+          setSelectedNewAdmission(null);
         }}
         fields={detailFields}
         maxWidth="lg"
