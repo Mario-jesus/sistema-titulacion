@@ -8,7 +8,7 @@ const envSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   HOST: z.string().default('0.0.0.0'),
-  PORT: z.coerce.number().int().positive().default(3000),
+  PORT: z.coerce.number().int().positive().default(4000),
   API_PREFIX: z.string().default('/api/v1'),
   MONGODB_URI: z
     .string()
@@ -17,8 +17,8 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
-  /** Comma-separated origins for CORS, or "*" to allow all. Default: http://localhost:5173 (Vite dev) */
-  CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  /** Comma-separated origins for CORS, or "*" to allow all. Default: http://localhost:4200 (Vite dev con NX) */
+  CORS_ORIGIN: z.string().default('http://localhost:4200'),
   /** JWT secret for signing tokens */
   JWT_SECRET: z.string().min(1).default('change-me-in-production'),
   /** Access token expiry in seconds (default 1 hour) */
