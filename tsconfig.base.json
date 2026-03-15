@@ -31,7 +31,9 @@
       "@backend/users": ["libs/backend/users/src/index.ts"],
       "@backend/users/*": ["libs/backend/users/src/*"],
       "@backend/seeds": ["libs/backend/seeds/src/index.ts"],
-      "@backend/seeds/*": ["libs/backend/seeds/src/*"]
+      "@backend/seeds/*": ["libs/backend/seeds/src/*"],
+      "@backend/auth": ["libs/backend/auth/src/index.ts"],
+      "@backend/auth/*": ["libs/backend/auth/src/*"]
     }
   }
 }

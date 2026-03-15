@@ -12,7 +12,8 @@
     "../../libs/backend/core/src/**/*.ts",
     "../../libs/backend/shared/src/**/*.ts",
     "../../libs/backend/seeds/src/**/*.ts",
-    "../../libs/backend/users/src/**/*.ts"
+    "../../libs/backend/users/src/**/*.ts",
+    "../../libs/backend/auth/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",

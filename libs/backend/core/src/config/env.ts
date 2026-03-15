@@ -19,6 +19,12 @@ const envSchema = z.object({
     .default('info'),
   /** Comma-separated origins for CORS, or "*" to allow all. Default: http://localhost:5173 (Vite dev) */
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  /** JWT secret for signing tokens */
+  JWT_SECRET: z.string().min(1).default('change-me-in-production'),
+  /** Access token expiry in seconds (default 1 hour) */
+  JWT_ACCESS_EXPIRES: z.coerce.number().int().positive().default(3600),
+  /** Refresh token expiry in seconds (default 7 days) */
+  JWT_REFRESH_EXPIRES: z.coerce.number().int().positive().default(604800),
 });
 
 const parsed = envSchema.safeParse(process.env);

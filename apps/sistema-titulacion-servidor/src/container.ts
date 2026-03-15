@@ -4,6 +4,13 @@ import {
   createContainer,
   type AwilixContainer,
 } from 'awilix';
+import {
+  AuthController,
+  AuthService,
+  createMongoRefreshTokenStore,
+  RefreshTokenModel,
+} from '@backend/auth';
+import { env } from '@backend/core';
 import { UserModel, UsersController, UsersService } from '@backend/users';
 
 export interface AppContainer
@@ -11,6 +18,10 @@ export interface AppContainer
     userModel: typeof UserModel;
     usersService: UsersService;
     usersController: UsersController;
+    refreshTokenModel: typeof RefreshTokenModel;
+    refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
+    authService: AuthService;
+    authController: AuthController;
   }> {}
 
 /**
@@ -26,6 +37,13 @@ export function createAppContainer(): AppContainer {
     userModel: asValue(UserModel),
     usersService: asClass(UsersService).singleton(),
     usersController: asClass(UsersController).singleton(),
+    refreshTokenModel: asValue(RefreshTokenModel),
+    refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
+    jwtSecret: asValue(env.JWT_SECRET),
+    jwtAccessExpires: asValue(env.JWT_ACCESS_EXPIRES),
+    jwtRefreshExpires: asValue(env.JWT_REFRESH_EXPIRES),
+    authService: asClass(AuthService).singleton(),
+    authController: asClass(AuthController).singleton(),
   });
 
   return container as AppContainer;

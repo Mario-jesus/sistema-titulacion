@@ -7,6 +7,7 @@ import {
   env,
   logger,
 } from '@backend/core';
+import { createAuthRouter, createRequireAuth } from '@backend/auth';
 import { createUsersRouter } from '@backend/users';
 import { createAppContainer } from './container.js';
 
@@ -16,18 +17,30 @@ const usersApiDocPath = path.join(
   process.cwd(),
   'libs/backend/users/src/users.openapi.js'
 );
+const authApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/auth/src/auth.openapi.js'
+);
 
 const app = createApp(
   (a) => {
     a.use(
+      `${env.API_PREFIX}/auth`,
+      createAuthRouter({
+        getAuthController: () => container.resolve('authController'),
+        getAuthService: () => container.resolve('authService'),
+      })
+    );
+    a.use(
       `${env.API_PREFIX}/users`,
+      createRequireAuth(() => container.resolve('authService')),
       createUsersRouter({
         getUsersController: () => container.resolve('usersController'),
       })
     );
   },
   {
-    swagger: { apiDocPaths: [usersApiDocPath] },
+    swagger: { apiDocPaths: [authApiDocPath, usersApiDocPath] },
   }
 );
 

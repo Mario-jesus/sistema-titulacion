@@ -25,6 +25,9 @@
       "path": "./libs/backend/users"
     },
     {
+      "path": "./libs/backend/auth"
+    },
+    {
       "path": "./libs/frontend/pages"
     },
     {
