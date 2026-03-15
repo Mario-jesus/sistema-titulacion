@@ -13,7 +13,10 @@
     "../../libs/backend/shared/src/**/*.ts",
     "../../libs/backend/seeds/src/**/*.ts",
     "../../libs/backend/users/src/**/*.ts",
-    "../../libs/backend/auth/src/**/*.ts"
+    "../../libs/backend/auth/src/**/*.ts",
+    "../../libs/backend/modalities/src/**/*.ts",
+    "../../libs/backend/generations/src/**/*.ts",
+    "../../libs/backend/careers/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -24,5 +27,28 @@
     "eslint.config.js",
     "eslint.config.cjs",
     "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../libs/backend/users/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/auth/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/seeds/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/core/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/modalities/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/generations/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/careers/tsconfig.lib.json"
+    }
   ]
 }

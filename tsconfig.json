@@ -28,6 +28,15 @@
       "path": "./libs/backend/auth"
     },
     {
+      "path": "./libs/backend/modalities"
+    },
+    {
+      "path": "./libs/backend/generations"
+    },
+    {
+      "path": "./libs/backend/careers"
+    },
+    {
       "path": "./libs/frontend/pages"
     },
     {

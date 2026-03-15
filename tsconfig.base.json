@@ -33,7 +33,13 @@
       "@backend/seeds": ["libs/backend/seeds/src/index.ts"],
       "@backend/seeds/*": ["libs/backend/seeds/src/*"],
       "@backend/auth": ["libs/backend/auth/src/index.ts"],
-      "@backend/auth/*": ["libs/backend/auth/src/*"]
+      "@backend/auth/*": ["libs/backend/auth/src/*"],
+      "@backend/modalities": ["libs/backend/modalities/src/index.ts"],
+      "@backend/modalities/*": ["libs/backend/modalities/src/*"],
+      "@backend/generations": ["libs/backend/generations/src/index.ts"],
+      "@backend/generations/*": ["libs/backend/generations/src/*"],
+      "@backend/careers": ["libs/backend/careers/src/index.ts"],
+      "@backend/careers/*": ["libs/backend/careers/src/*"]
     }
   }
 }

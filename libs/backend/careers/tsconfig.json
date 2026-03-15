@@ -3,10 +3,7 @@
   "include": [],
   "references": [
     { "path": "./tsconfig.lib.json" },
-    { "path": "../users" },
-    { "path": "../modalities" },
-    { "path": "../generations" },
-    { "path": "../careers" }
+    { "path": "../modalities" }
   ],
   "extends": "../../../tsconfig.base.json"
 }

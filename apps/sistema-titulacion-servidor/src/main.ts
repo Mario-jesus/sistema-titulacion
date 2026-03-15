@@ -15,6 +15,9 @@ import {
   ensureRefreshTokenTTLIndex,
   RefreshTokenModel,
 } from '@backend/auth';
+import { createCareersRouter } from '@backend/careers';
+import { createGenerationsRouter } from '@backend/generations';
+import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
 import { createAppContainer } from './container.js';
 
@@ -30,6 +33,18 @@ const usersApiDocPath = path.join(
 const authApiDocPath = path.join(
   process.cwd(),
   'libs/backend/auth/src/auth.openapi.js'
+);
+const generationsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/generations/src/generations.openapi.js'
+);
+const modalitiesApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/modalities/src/modalities.openapi.js'
+);
+const careersApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/careers/src/careers.openapi.js'
 );
 
 const app = createApp(
@@ -50,9 +65,43 @@ const app = createApp(
         requireAdminOrSelf,
       })
     );
+    a.use(
+      `${env.API_PREFIX}/modalities`,
+      createRequireAuth(getAuthService),
+      createModalitiesRouter({
+        getModalitiesController: () =>
+          container.resolve('modalitiesController'),
+        requireAdmin,
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/generations`,
+      createRequireAuth(getAuthService),
+      createGenerationsRouter({
+        getGenerationsController: () =>
+          container.resolve('generationsController'),
+        requireAdmin,
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/careers`,
+      createRequireAuth(getAuthService),
+      createCareersRouter({
+        getCareersController: () => container.resolve('careersController'),
+        requireAdmin,
+      })
+    );
   },
   {
-    swagger: { apiDocPaths: [authApiDocPath, usersApiDocPath] },
+    swagger: {
+      apiDocPaths: [
+        authApiDocPath,
+        usersApiDocPath,
+        modalitiesApiDocPath,
+        generationsApiDocPath,
+        careersApiDocPath,
+      ],
+    },
   }
 );
 

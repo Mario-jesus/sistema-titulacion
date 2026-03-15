@@ -4,6 +4,27 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/backend/users"
+    },
+    {
+      "path": "../../libs/backend/auth"
+    },
+    {
+      "path": "../../libs/backend/seeds"
+    },
+    {
+      "path": "../../libs/backend/core"
+    },
+    {
+      "path": "../../libs/backend/generations"
+    },
+    {
+      "path": "../../libs/backend/modalities"
+    },
+    {
+      "path": "../../libs/backend/careers"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

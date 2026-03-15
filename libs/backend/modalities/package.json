@@ -1,7 +1,12 @@
 {
-  "name": "@backend/seeds",
+  "name": "@backend/modalities",
   "version": "0.0.1",
   "main": "./src/index.ts",
+  "dependencies": {
+    "@backend/shared": "*",
+    "mongoose": "^9.3.0",
+    "zod": "^4.3.6"
+  },
   "types": "./src/index.ts",
   "exports": {
     ".": {
@@ -12,18 +17,10 @@
     "./package.json": "./package.json"
   },
   "nx": {
-    "name": "backend-seeds",
+    "name": "backend-modalities",
     "tags": [
       "scope:backend",
-      "type:seeds"
+      "type:feature"
     ]
-  },
-  "dependencies": {
-    "@backend/users": "*",
-    "@backend/modalities": "*",
-    "@backend/generations": "*",
-    "@backend/careers": "*",
-    "bcrypt": "^5.1.1",
-    "mongoose": "^9.3.0"
   }
 }

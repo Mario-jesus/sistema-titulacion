@@ -12,5 +12,17 @@
     "declarationMap": true
   },
   "exclude": ["out-tsc", "dist", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["src/**/*.ts", "../users/src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../users/src/**/*.ts",
+    "../modalities/src/**/*.ts",
+    "../generations/src/**/*.ts",
+    "../careers/src/**/*.ts"
+  ],
+  "references": [
+    { "path": "../users/tsconfig.lib.json" },
+    { "path": "../modalities/tsconfig.lib.json" },
+    { "path": "../generations/tsconfig.lib.json" },
+    { "path": "../careers/tsconfig.lib.json" }
+  ]
 }

@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "init-msw": "node apps/sistema-titulacion-cliente/scripts/init-msw.js",
-    "seed:users": "npx ts-node -r tsconfig-paths/register apps/sistema-titulacion-servidor/scripts/seed-users.ts"
+    "seed:users": "npx tsx -r tsconfig-paths/register apps/sistema-titulacion-servidor/scripts/seed-users.ts",
+    "seed:all": "npx tsx -r tsconfig-paths/register apps/sistema-titulacion-servidor/scripts/seed-all.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -102,6 +103,7 @@
     "tailwindcss": "^4.1.18",
     "ts-jest": "^29.4.6",
     "ts-node": "10.9.1",
+    "tsx": "^4.21.0",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",

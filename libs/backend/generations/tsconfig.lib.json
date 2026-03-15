@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "types": ["node"],
-    "rootDir": "../../../",
+    "rootDir": "../../",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
@@ -12,13 +12,6 @@
     "declarationMap": true
   },
   "exclude": ["out-tsc", "dist", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["src/**/*.ts", "../shared/src/**/*.ts", "../users/src/**/*.ts"],
-  "references": [
-    {
-      "path": "../users/tsconfig.lib.json"
-    },
-    {
-      "path": "../shared/tsconfig.lib.json"
-    }
-  ]
+  "include": ["src/**/*.ts", "../shared/src/**/*.ts"],
+  "references": [{ "path": "../shared/tsconfig.lib.json" }]
 }
