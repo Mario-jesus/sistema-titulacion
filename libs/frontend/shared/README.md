@@ -221,7 +221,7 @@ Constantes de rutas del backend:
 
 - `AUTH` (login, logout, me, refresh)
 - `USERS`, `DASHBOARD`
-- `GRADUATION_OPTIONS`, `GENERATIONS`, `MODALITIES`, `CAREERS`, `QUOTAS`
+- `GRADUATION_OPTIONS`, `GENERATIONS`, `MODALITIES`, `CAREERS`, `NEW_ADMISSIONS`
 - `STUDENTS`, `CAPTURED_FIELDS`, `GRADUATIONS`
 - `INGRESS_EGRESS`, `BACKUPS`, `REPORTS`
 
@@ -444,6 +444,6 @@ import type { TableColumn, DetailField } from '@shared/ui';
 
 El módulo shared es utilizado por:
 
-- **features**: students, users, careers, generations, modalities, quotas, backups, reports, dashboard, auth, etc.
+- **features**: students, users, careers, generations, modalities, new-admissions, backups, reports, dashboard, auth, etc.
 - **widgets**: Header, PageHeader
 - **apps**: sistema-titulacion-cliente (mocks, providers)

@@ -25,11 +25,11 @@ export {
 } from './modalities';
 export { mockCareers, findCareerById, generateCareerId } from './careers';
 export {
-  mockQuotas,
-  findQuotaById,
-  findQuotaByCareerAndGeneration,
-  generateQuotaId,
-} from './quotas';
+  mockNewAdmissions,
+  findNewAdmissionById,
+  findNewAdmissionByCareerAndGeneration,
+  generateNewAdmissionId,
+} from './new-admissions';
 export {
   mockStudents,
   findStudentById,

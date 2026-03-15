@@ -3,7 +3,7 @@ import { buildApiUrl, delay, extractUserIdFromToken } from '../utils';
 import { findUserById } from '../data';
 import { UserRole } from '@entities/user';
 import { mockStudents } from '../data/students';
-import { mockQuotas } from '../data/quotas';
+import { mockNewAdmissions } from '../data/new-admissions';
 import { mockGenerations } from '../data/generations';
 import { mockCareers } from '../data/careers';
 import { Sex, StudentProcessStatus } from '@entities/student';
@@ -206,23 +206,21 @@ const calculateMetricsForCombination = (
   };
 
   // Calcular ingresos según el filtro de sexo
-  const ingreso = mockQuotas
+  const ingreso = mockNewAdmissions
     .filter(
-      (quota) =>
-        quota.isActive === true &&
-        quota.generationId === generationId &&
-        quota.careerId === careerId
+      (entry) =>
+        entry.isActive === true &&
+        entry.generationId === generationId &&
+        entry.careerId === careerId
     )
-    .reduce((sum, quota) => {
+    .reduce((sum, entry) => {
       if (!sexFilter || sexFilter === 'general') {
         // Si no hay filtro, sumar ambos
-        return (
-          sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale
-        );
+        return sum + entry.maleCount + entry.femaleCount;
       } else if (sexFilter === Sex.MASCULINO) {
-        return sum + quota.newAdmissionQuotasMale;
+        return sum + entry.maleCount;
       } else if (sexFilter === Sex.FEMENINO) {
-        return sum + quota.newAdmissionQuotasFemale;
+        return sum + entry.femaleCount;
       }
       return sum;
     }, 0);

@@ -1,9 +1,9 @@
-export interface Quota {
+export interface NewAdmission {
   id: string;
   generationId: string;
   careerId: string;
-  newAdmissionQuotasMale: number;
-  newAdmissionQuotasFemale: number;
+  maleCount: number;
+  femaleCount: number;
   description: string | null;
   isActive: boolean;
   createdAt: Date;

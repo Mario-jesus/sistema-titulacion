@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { buildApiUrl, delay } from '../utils';
 import { mockStudents } from '../data/students';
-import { mockQuotas } from '../data/quotas';
+import { mockNewAdmissions } from '../data/new-admissions';
 import { mockGenerations } from '../data/generations';
 import { mockCareers } from '../data/careers';
 import { StudentStatus, StudentProcessStatus } from '@entities/student';
@@ -89,10 +89,9 @@ function calculateDashboardStats(): DashboardStats {
     (student) => student.isEgressed === true
   ).length;
 
-  // Total de ingresos (suma de newAdmissionQuotas)
-  const totalAdmissions = mockQuotas.reduce(
-    (sum, quota) =>
-      sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
+  // Total de ingresos (suma de maleCount + femaleCount)
+  const totalAdmissions = mockNewAdmissions.reduce(
+    (sum, entry) => sum + entry.maleCount + entry.femaleCount,
     0
   );
 
@@ -129,14 +128,10 @@ function calculateIngressEgressByGeneration(): IngressEgressByGeneration[] {
 
   // Agrupar por generación
   mockGenerations.forEach((generation) => {
-    // Calcular ingresos (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale para esta generación)
-    const admissions = mockQuotas
-      .filter((quota) => quota.generationId === generation.id)
-      .reduce(
-        (sum, quota) =>
-          sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
-        0
-      );
+    // Calcular ingresos (suma de maleCount + femaleCount para esta generación)
+    const admissions = mockNewAdmissions
+      .filter((entry) => entry.generationId === generation.id)
+      .reduce((sum, entry) => sum + entry.maleCount + entry.femaleCount, 0);
 
     // Calcular egresos (estudiantes egresados de esta generación)
     const egresses = mockStudents.filter(
@@ -171,10 +166,9 @@ function calculateIngressEgressByGeneration(): IngressEgressByGeneration[] {
  * Calcula la distribución: Ingreso, Egreso y Titulación
  */
 function calculateStatusDistribution(): StatusDistribution[] {
-  // Total de ingresos (suma de newAdmissionQuotasMale + newAdmissionQuotasFemale)
-  const totalAdmissions = mockQuotas.reduce(
-    (sum, quota) =>
-      sum + quota.newAdmissionQuotasMale + quota.newAdmissionQuotasFemale,
+  // Total de ingresos (suma de maleCount + femaleCount)
+  const totalAdmissions = mockNewAdmissions.reduce(
+    (sum, entry) => sum + entry.maleCount + entry.femaleCount,
     0
   );
 

@@ -1,1 +1,0 @@
-export { QuotasList } from './QuotasList';

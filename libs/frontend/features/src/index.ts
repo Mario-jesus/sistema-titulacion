@@ -13,8 +13,8 @@ export * from './careers';
 // Modalities feature
 export * from './modalities';
 
-// Quotas feature
-export * from './quotas';
+// New Admissions feature
+export * from './new-admissions';
 
 // Ingress-Egress feature
 export * from './ingress-egress';

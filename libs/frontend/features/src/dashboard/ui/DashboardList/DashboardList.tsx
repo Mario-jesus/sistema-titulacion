@@ -160,7 +160,7 @@ export function DashboardList() {
         <StatCard
           title="Total Ingresos"
           value={stats.totalAdmissions.toLocaleString()}
-          subtitle="Cupos asignados"
+          subtitle="Alumnos registrados"
           icon={<TotalAdmissionsIcon size={24} />}
           iconBgColor="#6366f1"
         />

@@ -62,9 +62,9 @@ export const ModalitiesPage = lazy(() =>
   }))
 );
 
-export const QuotasPage = lazy(() =>
-  import('@pages/QuotasPage').then((module) => ({
-    default: module.QuotasPage,
+export const NewAdmissionsPage = lazy(() =>
+  import('@pages/NewAdmissionsPage').then((module) => ({
+    default: module.NewAdmissionsPage,
   }))
 );
 

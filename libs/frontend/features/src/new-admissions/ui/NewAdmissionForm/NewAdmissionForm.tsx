@@ -1,33 +1,36 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { Button, Input, Modal } from '@shared/ui';
-import type { CreateQuotaRequest, UpdateQuotaRequest } from '../../model/types';
-import type { Quota } from '@entities/quota';
+import type {
+  CreateNewAdmissionRequest,
+  UpdateNewAdmissionRequest,
+} from '../../model/types';
+import type { NewAdmission } from '@entities/new-admission';
 import type { Generation } from '@entities/generation';
 import type { Career } from '@entities/career';
 import { loadGenerations } from '../../api/generationsHelper';
 import { loadCareers } from '../../api/careersHelper';
 
-export interface QuotaFormProps {
+export interface NewAdmissionFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateQuotaRequest | UpdateQuotaRequest) => Promise<void>;
+  onSubmit: (
+    data: CreateNewAdmissionRequest | UpdateNewAdmissionRequest
+  ) => Promise<void>;
   mode: 'create' | 'edit';
-  initialData?: Quota | null;
+  initialData?: NewAdmission | null;
 }
 
-export function QuotaForm({
+export function NewAdmissionForm({
   isOpen,
   onClose,
   onSubmit,
   mode,
   initialData,
-}: QuotaFormProps) {
+}: NewAdmissionFormProps) {
   const [generationId, setGenerationId] = useState('');
   const [careerId, setCareerId] = useState('');
-  const [newAdmissionQuotasMale, setNewAdmissionQuotasMale] =
-    useState<number>(0);
-  const [newAdmissionQuotasFemale, setNewAdmissionQuotasFemale] =
-    useState<number>(0);
+  const [maleCount, setMaleCount] = useState<number>(0);
+  const [femaleCount, setFemaleCount] = useState<number>(0);
   const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,57 +41,46 @@ export function QuotaForm({
   const [errors, setErrors] = useState<{
     generationId?: string;
     careerId?: string;
-    newAdmissionQuotasMale?: string;
-    newAdmissionQuotasFemale?: string;
+    maleCount?: string;
+    femaleCount?: string;
     description?: string;
   }>({});
 
-  // Cargar generaciones y carreras cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
       setIsLoadingGenerations(true);
       loadGenerations()
-        .then((data) => {
-          setGenerations(data);
-        })
+        .then((data) => setGenerations(data))
         .catch((error) => {
           console.error('Error al cargar generaciones:', error);
           setGenerations([]);
         })
-        .finally(() => {
-          setIsLoadingGenerations(false);
-        });
+        .finally(() => setIsLoadingGenerations(false));
 
       setIsLoadingCareers(true);
       loadCareers()
-        .then((data) => {
-          setCareers(data);
-        })
+        .then((data) => setCareers(data))
         .catch((error) => {
           console.error('Error al cargar carreras:', error);
           setCareers([]);
         })
-        .finally(() => {
-          setIsLoadingCareers(false);
-        });
+        .finally(() => setIsLoadingCareers(false));
     }
   }, [isOpen]);
 
-  // Cargar datos iniciales cuando se abre en modo edición
   useEffect(() => {
     if (isOpen && mode === 'edit' && initialData) {
       setGenerationId(initialData.generationId || '');
       setCareerId(initialData.careerId || '');
-      setNewAdmissionQuotasMale(initialData.newAdmissionQuotasMale || 0);
-      setNewAdmissionQuotasFemale(initialData.newAdmissionQuotasFemale || 0);
+      setMaleCount(initialData.maleCount || 0);
+      setFemaleCount(initialData.femaleCount || 0);
       setDescription(initialData.description || '');
       setIsActive(initialData.isActive);
     } else if (isOpen && mode === 'create') {
-      // Resetear formulario en modo creación
       setGenerationId('');
       setCareerId('');
-      setNewAdmissionQuotasMale(0);
-      setNewAdmissionQuotasFemale(0);
+      setMaleCount(0);
+      setFemaleCount(0);
       setDescription('');
       setIsActive(true);
     }
@@ -98,25 +90,15 @@ export function QuotaForm({
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
 
-    if (!generationId) {
-      newErrors.generationId = 'La generación es requerida';
+    if (!generationId) newErrors.generationId = 'La generación es requerida';
+    if (!careerId) newErrors.careerId = 'La carrera es requerida';
+    if (maleCount === undefined || maleCount < 0) {
+      newErrors.maleCount =
+        'El número de alumnos hombres debe ser un número positivo';
     }
-
-    if (!careerId) {
-      newErrors.careerId = 'La carrera es requerida';
-    }
-
-    if (newAdmissionQuotasMale === undefined || newAdmissionQuotasMale < 0) {
-      newErrors.newAdmissionQuotasMale =
-        'El número de cupos para hombres debe ser un número positivo';
-    }
-
-    if (
-      newAdmissionQuotasFemale === undefined ||
-      newAdmissionQuotasFemale < 0
-    ) {
-      newErrors.newAdmissionQuotasFemale =
-        'El número de cupos para mujeres debe ser un número positivo';
+    if (femaleCount === undefined || femaleCount < 0) {
+      newErrors.femaleCount =
+        'El número de alumnas mujeres debe ser un número positivo';
     }
 
     setErrors(newErrors);
@@ -125,36 +107,20 @@ export function QuotaForm({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
-
     try {
-      if (mode === 'create') {
-        await onSubmit({
-          generationId,
-          careerId,
-          newAdmissionQuotasMale,
-          newAdmissionQuotasFemale,
-          description: description.trim() || null,
-          isActive,
-        });
-      } else {
-        await onSubmit({
-          generationId,
-          careerId,
-          newAdmissionQuotasMale,
-          newAdmissionQuotasFemale,
-          description: description.trim() || null,
-          isActive,
-        });
-      }
+      await onSubmit({
+        generationId,
+        careerId,
+        maleCount,
+        femaleCount,
+        description: description.trim() || null,
+        isActive,
+      });
     } catch (error) {
-      console.error('Error al guardar cupo:', error);
-      // El error se maneja en el componente padre
+      console.error('Error al guardar registro:', error);
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -170,7 +136,11 @@ export function QuotaForm({
 
   return (
     <Modal
-      title={mode === 'create' ? 'Crear Cupo' : 'Editar Cupo'}
+      title={
+        mode === 'create'
+          ? 'Registrar Nuevo Ingreso'
+          : 'Editar Registro de Ingreso'
+      }
       isOpen={isOpen}
       onClose={handleClose}
       maxWidth="md"
@@ -188,17 +158,16 @@ export function QuotaForm({
             value={generationId}
             onChange={(e) => {
               setGenerationId(e.target.value);
-              if (errors.generationId) {
+              if (errors.generationId)
                 setErrors({ ...errors, generationId: undefined });
-              }
             }}
             disabled={isSubmitting || isLoadingGenerations}
             required
           >
             <option value="">Seleccionar generación</option>
-            {generations.map((generation) => (
-              <option key={generation.id} value={generation.id}>
-                {generation.name}
+            {generations.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
               </option>
             ))}
           </select>
@@ -221,17 +190,16 @@ export function QuotaForm({
             value={careerId}
             onChange={(e) => {
               setCareerId(e.target.value);
-              if (errors.careerId) {
+              if (errors.careerId)
                 setErrors({ ...errors, careerId: undefined });
-              }
             }}
             disabled={isSubmitting || isLoadingCareers}
             required
           >
             <option value="">Seleccionar carrera</option>
-            {careers.map((career) => (
-              <option key={career.id} value={career.id}>
-                {career.name}
+            {careers.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
               </option>
             ))}
           </select>
@@ -248,42 +216,37 @@ export function QuotaForm({
               className="block text-sm font-medium mb-2"
               style={{ color: 'var(--color-base-primary-typo)' }}
             >
-              Cupos por Sexo *
+              Alumnos por Sexo *
             </label>
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Cupos para Hombres *"
+                label="Alumnos Hombres *"
                 type="number"
                 placeholder="Ej: 30"
-                value={newAdmissionQuotasMale.toString()}
+                value={maleCount.toString()}
                 onChange={(e) => {
                   const value = parseInt(e.target.value, 10);
-                  setNewAdmissionQuotasMale(isNaN(value) ? 0 : value);
-                  if (errors.newAdmissionQuotasMale) {
-                    setErrors({ ...errors, newAdmissionQuotasMale: undefined });
-                  }
+                  setMaleCount(isNaN(value) ? 0 : value);
+                  if (errors.maleCount)
+                    setErrors({ ...errors, maleCount: undefined });
                 }}
-                error={errors.newAdmissionQuotasMale}
+                error={errors.maleCount}
                 disabled={isSubmitting}
                 required
                 min={0}
               />
               <Input
-                label="Cupos para Mujeres *"
+                label="Alumnas Mujeres *"
                 type="number"
                 placeholder="Ej: 20"
-                value={newAdmissionQuotasFemale.toString()}
+                value={femaleCount.toString()}
                 onChange={(e) => {
                   const value = parseInt(e.target.value, 10);
-                  setNewAdmissionQuotasFemale(isNaN(value) ? 0 : value);
-                  if (errors.newAdmissionQuotasFemale) {
-                    setErrors({
-                      ...errors,
-                      newAdmissionQuotasFemale: undefined,
-                    });
-                  }
+                  setFemaleCount(isNaN(value) ? 0 : value);
+                  if (errors.femaleCount)
+                    setErrors({ ...errors, femaleCount: undefined });
                 }}
-                error={errors.newAdmissionQuotasFemale}
+                error={errors.femaleCount}
                 disabled={isSubmitting}
                 required
                 min={0}
@@ -293,11 +256,7 @@ export function QuotaForm({
               className="mt-2 text-sm"
               style={{ color: 'var(--color-base-secondary-typo)' }}
             >
-              Total:{' '}
-              {(
-                newAdmissionQuotasMale + newAdmissionQuotasFemale
-              ).toLocaleString()}{' '}
-              cupos
+              Total: {(maleCount + femaleCount).toLocaleString()} alumnos
             </div>
           </div>
         </div>
@@ -311,13 +270,12 @@ export function QuotaForm({
           </label>
           <textarea
             className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none placeholder:text-(--color-base-secondary-typo) focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60 resize-none"
-            placeholder="Descripción opcional del cupo"
+            placeholder="Descripción opcional del registro"
             value={description}
             onChange={(e) => {
               setDescription(e.target.value);
-              if (errors.description) {
+              if (errors.description)
                 setErrors({ ...errors, description: undefined });
-              }
             }}
             disabled={isSubmitting}
             rows={4}
@@ -343,7 +301,7 @@ export function QuotaForm({
             className="text-sm cursor-pointer"
             style={{ color: 'var(--color-base-primary-typo)' }}
           >
-            Cupo activo
+            Registro activo
           </label>
         </div>
 

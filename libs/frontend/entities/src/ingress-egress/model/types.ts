@@ -7,6 +7,6 @@ export interface IngressEgress {
   careerId: string;
   generationName: string | null;
   careerName: string;
-  admissionNumber: number; // Número de ingreso (de Quota)
+  admissionNumber: number; // Número de ingreso (de NewAdmission)
   egressNumber: number; // Número de egreso (estudiantes con hasCompletedCareer = true)
 }

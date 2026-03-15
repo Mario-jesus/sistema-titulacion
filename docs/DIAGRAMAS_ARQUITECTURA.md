@@ -78,7 +78,7 @@ libs/frontend/entities/src/
 ├── generation/
 ├── modality/
 ├── graduation-option/
-├── quota/
+├── new-admission/
 ├── graduation/
 ├── ingress-egress/
 ├── captured-fields/
@@ -107,7 +107,7 @@ libs/frontend/features/src/
 ├── generations/
 ├── modalities/
 ├── graduation-options/
-├── quotas/
+├── new-admissions/
 ├── graduations/
 ├── captured-fields/
 ├── ingress-egress/
@@ -130,7 +130,7 @@ libs/frontend/pages/src/
 ├── GenerationsPage/
 ├── ModalitiesPage/
 ├── GraduationOptionsPage/
-├── QuotasPage/
+├── NewAdmissionsPage/
 ├── ReportsPage/
 ├── BackupsPage/
 ├── ComingSoonPage/
@@ -245,7 +245,7 @@ flowchart TB
   Root --> graduationOptions["graduationOptions"]
   Root --> careers["careers"]
   Root --> modalities["modalities"]
-  Root --> quotas["quotas"]
+  Root --> newAdmissions["newAdmissions"]
   Root --> ingressEgress["ingressEgress"]
   Root --> students["students"]
   Root --> capturedFields["capturedFields"]

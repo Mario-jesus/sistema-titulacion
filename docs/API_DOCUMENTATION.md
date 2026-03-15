@@ -70,7 +70,7 @@ Los errores incluyen un código de error personalizado:
 - `GENERATION_NOT_FOUND`: Generación no encontrada
 - `MODALITY_NOT_FOUND`: Modalidad no encontrada
 - `GRADUATION_OPTION_NOT_FOUND`: Opción de titulación no encontrada
-- `QUOTA_NOT_FOUND`: Cupo no encontrado
+- `NEW_ADMISSION_NOT_FOUND`: Registro de ingreso no encontrado
 - `USER_NOT_FOUND`: Usuario no encontrado
 - `CAPTURED_FIELDS_NOT_FOUND`: Campos capturados no encontrados
 - `GRADUATION_NOT_FOUND`: Titulación no encontrada
@@ -1555,20 +1555,20 @@ Desactivar opción de titulación.
 
 ---
 
-## 8. Cupos
+## 8. Nuevo Ingreso (New Admissions)
 
-### GET /quotas
+### GET /new-admissions
 
-Listar cupos.
+Listar registros de nuevo ingreso.
 
 **Query Parameters:**
 
 - `page`, `limit`: Paginación
 - `careerId` (string): Filtrar por carrera
 - `generationId` (string): Filtrar por generación
-- `activeOnly` (boolean): Solo cupos activos
+- `activeOnly` (boolean): Solo registros activos
 - `search` o `q` (string): Búsqueda en descripción
-- `sortBy` (string, default: "createdAt"): `newAdmissionQuotas`, `createdAt`, `isActive`
+- `sortBy` (string, default: "createdAt"): `maleCount`, `femaleCount`, `createdAt`, `isActive`
 - `sortOrder` (string, default: "desc")
 
 **Response 200:**
@@ -1580,7 +1580,8 @@ Listar cupos.
       "id": "string",
       "generationId": "string",
       "careerId": "string",
-      "newAdmissionQuotas": 0,
+      "maleCount": 0,
+      "femaleCount": 0,
       "description": "string | null",
       "isActive": true,
       "createdAt": "ISO8601",
@@ -1593,19 +1594,19 @@ Listar cupos.
 
 ---
 
-### GET /quotas/:id
+### GET /new-admissions/:id
 
-Obtener detalle de cupo.
+Obtener detalle de registro de ingreso.
 
 **Errores:**
 
-- **404**: Cupo no encontrado (`QUOTA_NOT_FOUND`)
+- **404**: Registro de ingreso no encontrado (`NEW_ADMISSION_NOT_FOUND`)
 
 ---
 
-### POST /quotas
+### POST /new-admissions
 
-Crear cupo.
+Crear registro de nuevo ingreso.
 
 **Request Body:**
 
@@ -1613,7 +1614,8 @@ Crear cupo.
 {
   "generationId": "string",
   "careerId": "string",
-  "newAdmissionQuotas": 0,
+  "maleCount": 0,
+  "femaleCount": 0,
   "description": "string | null",
   "isActive": true
 }
@@ -1622,79 +1624,79 @@ Crear cupo.
 **Errores:**
 
 - **400**: Validación fallida (`VALIDATION_ERROR`)
-  - `careerId`, `generationId`, `newAdmissionQuotas` requeridos
-  - `newAdmissionQuotas` debe ser >= 0
+  - `careerId`, `generationId`, `maleCount`, `femaleCount` requeridos
+  - `maleCount` y `femaleCount` deben ser >= 0
 - **404**: Carrera o generación no encontrada (`CAREER_NOT_FOUND`, `GENERATION_NOT_FOUND`)
 - **409**: Duplicado (`DUPLICATE_ERROR`)
-  - Ya existe un cupo para esta combinación carrera + generación
+  - Ya existe un registro de ingreso para esta combinación carrera + generación
 
 **Restricciones:**
 
 - Combinación `careerId + generationId` única
-- `newAdmissionQuotas` >= 0
+- `maleCount` y `femaleCount` >= 0
 - `careerId` y `generationId` deben existir
 
 ---
 
-### PUT /quotas/:id
+### PUT /new-admissions/:id
 
-Actualizar cupo completo.
+Actualizar registro de ingreso completo.
 
 **Errores:**
 
 - **400**: Validación fallida
-- **404**: Cupo, carrera o generación no encontrada
+- **404**: Registro de ingreso, carrera o generación no encontrada
 - **409**: Duplicado (si cambia carrera o generación)
 
 ---
 
-### PATCH /quotas/:id
+### PATCH /new-admissions/:id
 
-Actualización parcial de cupo.
+Actualización parcial de registro de ingreso.
 
 **Errores:** (igual que PUT)
 
 ---
 
-### DELETE /quotas/:id
+### DELETE /new-admissions/:id
 
-Eliminar cupo.
+Eliminar registro de ingreso.
 
 **Response 200:**
 
 ```json
 {
-  "message": "Cupo eliminado exitosamente"
+  "message": "Registro eliminado exitosamente"
 }
 ```
 
 **Errores:**
 
-- **404**: Cupo no encontrado (`QUOTA_NOT_FOUND`)
+- **404**: Registro de ingreso no encontrado (`NEW_ADMISSION_NOT_FOUND`)
 
 ---
 
-### POST /quotas/:id/activate
+### POST /new-admissions/:id/activate
 
-Activar cupo.
+Activar registro de ingreso.
 
-**Response 200:** (cupo actualizado)
+**Response 200:** (registro actualizado)
 
 **Errores:**
 
-- **404**: Cupo no encontrado (`QUOTA_NOT_FOUND`)
+- **404**: Registro de ingreso no encontrado (`NEW_ADMISSION_NOT_FOUND`)
 
 ---
 
-### POST /quotas/:id/deactivate
+### POST /new-admissions/:id/deactivate
 
-Desactivar cupo.
+Desactivar registro de ingreso.
 
-**Response 200:** (cupo actualizado)
+**Response 200:** (registro actualizado)
 
 **Errores:**
 
-- **404**: Cupo no encontrado (`QUOTA_NOT_FOUND`)
+- **404**: Registro de ingreso no encontrado (`NEW_ADMISSION_NOT_FOUND`)
 
 ---
 
@@ -1735,7 +1737,7 @@ Listar estadísticas de ingreso y egreso por generación y carrera.
 **Notas:**
 
 - Endpoint de solo lectura (no tiene CRUD)
-- `admissionNumber`: Suma de `newAdmissionQuotas` de cupos para la combinación generación + carrera
+- `admissionNumber`: Suma de `maleCount + femaleCount` de registros de nuevo ingreso para la combinación generación + carrera
 - `egressNumber`: Conteo de estudiantes con `isEgressed = true` para la combinación generación + carrera
 
 ---
@@ -2126,7 +2128,7 @@ Authorization: Bearer <token>
 - `scheduled`: Estudiantes programados para titulación (activos, no titulados, con datos completos)
 - `graduatedStudents`: Estudiantes titulados (`isGraduated = true`)
 - `egressedStudents`: Estudiantes egresados (`isEgressed = true`)
-- `totalAdmissions`: Suma total de cupos de admisión (`newAdmissionQuotas` de todos los cupos)
+- `totalAdmissions`: Suma total de alumnos registrados (`maleCount + femaleCount` de todos los registros de nuevo ingreso)
 - `totalEgresses`: Total de estudiantes egresados (igual a `egressedStudents`)
 - `egressRate`: Tasa de egreso calculada como `(totalEgresses / totalAdmissions) * 100` (redondeado a 2 decimales)
 - `graduationRate`: Tasa de titulación calculada como `(graduatedStudents / totalEgresses) * 100` (redondeado a 2 decimales)
@@ -2137,7 +2139,7 @@ Authorization: Bearer <token>
 - Muestra las 6 generaciones más recientes (ordenadas por año de inicio ascendente)
 - `generation`: Etiqueta de la generación en formato "startYear-endYear" (ej: "2020-2024")
 - `generationId`: ID de la generación
-- `admissions`: Suma de `newAdmissionQuotas` de cupos para esta generación
+- `admissions`: Suma de `maleCount + femaleCount` de registros de nuevo ingreso para esta generación
 - `egresses`: Conteo de estudiantes egresados de esta generación
 
 **statusDistribution:**

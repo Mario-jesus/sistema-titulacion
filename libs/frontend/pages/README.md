@@ -47,7 +47,7 @@ libs/frontend/pages/
 │   ├── GraduationOptionsPage/  # Opciones de titulación
 │   ├── CareersPage/            # Carreras
 │   ├── ModalitiesPage/         # Modalidades
-│   ├── QuotasPage/             # Cupos
+│   ├── NewAdmissionsPage/      # Nuevo ingreso
 │   ├── IngressEgressPage/      # Ingreso y egreso
 │   ├── StudentsPage/           # Estudiantes (vista general)
 │   ├── StudentsInProgressPage/ # Estudiantes en proceso
@@ -144,24 +144,24 @@ flowchart LR
 
 ## Páginas del módulo
 
-| Página                     | Feature que renderiza  | Ruta típica                |
-| -------------------------- | ---------------------- | -------------------------- |
-| **LoginPage**              | LoginForm              | `/login`                   |
-| **ComingSoonPage**         | — (UI propia)          | rutas en desarrollo        |
-| **DashboardPage**          | DashboardList          | `/dashboard`               |
-| **GenerationsPage**        | GenerationsList        | `/generation`              |
-| **GraduationOptionsPage**  | GraduationOptionsList  | `/graduation-options`      |
-| **CareersPage**            | CareersList            | `/careers`                 |
-| **ModalitiesPage**         | ModalitiesList         | `/modalities`              |
-| **QuotasPage**             | QuotasList             | `/ingress-egresses/quotas` |
-| **IngressEgressPage**      | IngressEgressList      | `/ingress-egresses`        |
-| **StudentsPage**           | StudentsList           | `/students`                |
-| **StudentsInProgressPage** | StudentsInProgressList | `/students/in-progress`    |
-| **StudentsScheduledPage**  | StudentsScheduledList  | `/students/scheduled`      |
-| **StudentsGraduatedPage**  | StudentsGraduatedList  | `/students/graduated`      |
-| **AccessesPage**           | UsersList              | `/accesses`                |
-| **BackupsPage**            | BackupsList            | `/backups`                 |
-| **ReportsPage**            | ReportsList            | `/reports`                 |
+| Página                     | Feature que renderiza  | Ruta típica                        |
+| -------------------------- | ---------------------- | ---------------------------------- |
+| **LoginPage**              | LoginForm              | `/login`                           |
+| **ComingSoonPage**         | — (UI propia)          | rutas en desarrollo                |
+| **DashboardPage**          | DashboardList          | `/dashboard`                       |
+| **GenerationsPage**        | GenerationsList        | `/generation`                      |
+| **GraduationOptionsPage**  | GraduationOptionsList  | `/graduation-options`              |
+| **CareersPage**            | CareersList            | `/careers`                         |
+| **ModalitiesPage**         | ModalitiesList         | `/modalities`                      |
+| **NewAdmissionsPage**      | NewAdmissionsList      | `/ingress-egresses/new-admissions` |
+| **IngressEgressPage**      | IngressEgressList      | `/ingress-egresses`                |
+| **StudentsPage**           | StudentsList           | `/students`                        |
+| **StudentsInProgressPage** | StudentsInProgressList | `/students/in-progress`            |
+| **StudentsScheduledPage**  | StudentsScheduledList  | `/students/scheduled`              |
+| **StudentsGraduatedPage**  | StudentsGraduatedList  | `/students/graduated`              |
+| **AccessesPage**           | UsersList              | `/accesses`                        |
+| **BackupsPage**            | BackupsList            | `/backups`                         |
+| **ReportsPage**            | ReportsList            | `/reports`                         |
 
 ---
 

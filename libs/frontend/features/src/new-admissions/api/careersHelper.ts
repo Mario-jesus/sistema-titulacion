@@ -4,7 +4,7 @@ import type { ListResponse } from '@shared/lib/model';
 
 /**
  * Helper para cargar carreras desde el API
- * Usado en el formulario de cupos para el selector de carreras
+ * Usado en el formulario de nuevo ingreso para el selector de carreras
  */
 export async function loadCareers(): Promise<Career[]> {
   try {

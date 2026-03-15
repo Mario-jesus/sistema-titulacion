@@ -45,7 +45,7 @@ libs/frontend/features/
 │   ├── graduation-options/      # Opciones de titulación
 │   ├── careers/                 # Carreras
 │   ├── modalities/              # Modalidades
-│   ├── quotas/                  # Cupos por generación/carrera
+│   ├── new-admissions/          # Registros de nuevo ingreso por generación/carrera
 │   ├── ingress-egress/          # Ingreso y egreso (reporte)
 │   ├── students/                # Estudiantes
 │   ├── captured-fields/         # Campos capturados (residencia/tesis)
@@ -240,16 +240,16 @@ feature-name/
 
 ---
 
-### 6. quotas
+### 6. new-admissions
 
-**Propósito**: CRUD de cupos por generación y carrera; activar/desactivar.
+**Propósito**: CRUD de registros de nuevo ingreso por generación y carrera; activar/desactivar.
 
-| Capa  | Contenido                                             |
-| ----- | ----------------------------------------------------- |
-| api   | `quotasService`, `careersHelper`, `generationsHelper` |
-| model | `quotasSlice`, `quotasThunks`                         |
-| lib   | `useQuotas`                                           |
-| ui    | `QuotaForm`, `QuotasList`                             |
+| Capa  | Contenido                                                    |
+| ----- | ------------------------------------------------------------ |
+| api   | `newAdmissionsService`, `careersHelper`, `generationsHelper` |
+| model | `newAdmissionsSlice`, `newAdmissionsThunks`                  |
+| lib   | `useNewAdmissions`                                           |
+| ui    | `NewAdmissionForm`, `NewAdmissionsList`                      |
 
 ---
 
@@ -366,7 +366,7 @@ feature-name/
 | graduation-options | graduationOptionsService | useGraduationOptions | graduationOptions |
 | careers            | careersService           | useCareers           | careers           |
 | modalities         | modalitiesService        | useModalities        | modalities        |
-| quotas             | quotasService            | useQuotas            | quotas            |
+| new-admissions     | newAdmissionsService     | useNewAdmissions     | newAdmissions     |
 | ingress-egress     | ingressEgressService     | useIngressEgress     | ingressEgress     |
 | students           | studentsService          | useStudents          | students          |
 | captured-fields    | capturedFieldsService    | useCapturedFields    | capturedFields    |

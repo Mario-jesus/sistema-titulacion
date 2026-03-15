@@ -5,7 +5,7 @@ import { graduationOptionsHandlers } from './graduation-options.handlers';
 import { generationsHandlers } from './generations.handlers';
 import { modalitiesHandlers } from './modalities.handlers';
 import { careersHandlers } from './careers.handlers';
-import { quotasHandlers } from './quotas.handlers';
+import { newAdmissionsHandlers } from './new-admissions.handlers';
 import { studentsHandlers } from './students.handlers';
 import { capturedFieldsHandlers } from './captured-fields.handlers';
 import { graduationsHandlers } from './graduations.handlers';
@@ -30,7 +30,7 @@ export const handlers: HttpHandler[] = [
   ...generationsHandlers,
   ...modalitiesHandlers,
   ...careersHandlers,
-  ...quotasHandlers,
+  ...newAdmissionsHandlers,
   ...studentsHandlers,
   ...capturedFieldsHandlers,
   ...graduationsHandlers,

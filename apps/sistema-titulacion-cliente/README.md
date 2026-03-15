@@ -202,25 +202,25 @@ router/
 
 ### Rutas
 
-| Ruta                       | Guard          | Layout            | Página                         |
-| -------------------------- | -------------- | ----------------- | ------------------------------ |
-| `/login`                   | PublicRoute    | —                 | LoginPage                      |
-| `/`                        | —              | —                 | Redirect a /dashboard o /login |
-| `/dashboard`               | ProtectedRoute | LayoutWithSidebar | DashboardPage                  |
-| `/graduation-options`      | ProtectedRoute | LayoutWithSidebar | GraduationOptionsPage          |
-| `/generation`              | ProtectedRoute | LayoutWithSidebar | GenerationsPage                |
-| `/ingress-egresses`        | ProtectedRoute | LayoutWithSidebar | IngressEgressPage              |
-| `/ingress-egresses/quotas` | ProtectedRoute | LayoutWithSidebar | QuotasPage                     |
-| `/students`                | ProtectedRoute | LayoutWithSidebar | StudentsPage                   |
-| `/students/in-progress`    | ProtectedRoute | LayoutWithSidebar | StudentsInProgressPage         |
-| `/students/scheduled`      | ProtectedRoute | LayoutWithSidebar | StudentsScheduledPage          |
-| `/students/graduated`      | ProtectedRoute | LayoutWithSidebar | StudentsGraduatedPage          |
-| `/careers`                 | ProtectedRoute | LayoutWithSidebar | CareersPage                    |
-| `/modalities`              | ProtectedRoute | LayoutWithSidebar | ModalitiesPage                 |
-| `/reports`                 | ProtectedRoute | LayoutWithSidebar | ReportsPage                    |
-| `/accesses`                | **AdminRoute** | LayoutWithSidebar | AccessesPage                   |
-| `/backups`                 | ProtectedRoute | LayoutWithSidebar | BackupsPage                    |
-| `*`                        | —              | —                 | Redirect a /                   |
+| Ruta                               | Guard          | Layout            | Página                         |
+| ---------------------------------- | -------------- | ----------------- | ------------------------------ |
+| `/login`                           | PublicRoute    | —                 | LoginPage                      |
+| `/`                                | —              | —                 | Redirect a /dashboard o /login |
+| `/dashboard`                       | ProtectedRoute | LayoutWithSidebar | DashboardPage                  |
+| `/graduation-options`              | ProtectedRoute | LayoutWithSidebar | GraduationOptionsPage          |
+| `/generation`                      | ProtectedRoute | LayoutWithSidebar | GenerationsPage                |
+| `/ingress-egresses`                | ProtectedRoute | LayoutWithSidebar | IngressEgressPage              |
+| `/ingress-egresses/new-admissions` | ProtectedRoute | LayoutWithSidebar | NewAdmissionsPage              |
+| `/students`                        | ProtectedRoute | LayoutWithSidebar | StudentsPage                   |
+| `/students/in-progress`            | ProtectedRoute | LayoutWithSidebar | StudentsInProgressPage         |
+| `/students/scheduled`              | ProtectedRoute | LayoutWithSidebar | StudentsScheduledPage          |
+| `/students/graduated`              | ProtectedRoute | LayoutWithSidebar | StudentsGraduatedPage          |
+| `/careers`                         | ProtectedRoute | LayoutWithSidebar | CareersPage                    |
+| `/modalities`                      | ProtectedRoute | LayoutWithSidebar | ModalitiesPage                 |
+| `/reports`                         | ProtectedRoute | LayoutWithSidebar | ReportsPage                    |
+| `/accesses`                        | **AdminRoute** | LayoutWithSidebar | AccessesPage                   |
+| `/backups`                         | ProtectedRoute | LayoutWithSidebar | BackupsPage                    |
+| `*`                                | —              | —                 | Redirect a /                   |
 
 Ver `src/app/providers/router/README.md` para detalles del router.
 
@@ -240,7 +240,7 @@ Ver `src/app/providers/router/README.md` para detalles del router.
 | graduationOptions | @features/graduation-options |
 | careers           | @features/careers            |
 | modalities        | @features/modalities         |
-| quotas            | @features/quotas             |
+| newAdmissions     | @features/new-admissions     |
 | ingressEgress     | @features/ingress-egress     |
 | students          | @features/students           |
 | capturedFields    | @features/captured-fields    |
@@ -280,7 +280,7 @@ En desarrollo, si `VITE_ENABLE_MOCK_API=true`, se usa MSW para interceptar petic
 - `generations.handlers`
 - `modalities.handlers`
 - `careers.handlers`
-- `quotas.handlers`
+- `new-admissions.handlers`
 - `students.handlers`
 - `captured-fields.handlers`
 - `graduations.handlers`
