@@ -15,6 +15,16 @@ import {
   CareersController,
   CareersService,
 } from '@backend/careers';
+import {
+  GraduationOptionModel,
+  GraduationOptionsController,
+  GraduationOptionsService,
+} from '@backend/graduation-options';
+import {
+  NewAdmissionModel,
+  NewAdmissionsController,
+  NewAdmissionsService,
+} from '@backend/new-admissions';
 import { env } from '@backend/core';
 import {
   GenerationModel,
@@ -34,14 +44,20 @@ export interface AppContainer
     modalityModel: typeof ModalityModel;
     generationModel: typeof GenerationModel;
     careerModel: typeof CareerModel;
+    graduationOptionModel: typeof GraduationOptionModel;
+    newAdmissionModel: typeof NewAdmissionModel;
     usersService: UsersService;
     modalitiesService: ModalitiesService;
     generationsService: GenerationsService;
     careersService: CareersService;
+    graduationOptionsService: GraduationOptionsService;
+    newAdmissionsService: NewAdmissionsService;
     usersController: UsersController;
     modalitiesController: ModalitiesController;
     generationsController: GenerationsController;
     careersController: CareersController;
+    graduationOptionsController: GraduationOptionsController;
+    newAdmissionsController: NewAdmissionsController;
     refreshTokenModel: typeof RefreshTokenModel;
     refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
     authService: AuthService;
@@ -62,14 +78,22 @@ export function createAppContainer(): AppContainer {
     modalityModel: asValue(ModalityModel),
     generationModel: asValue(GenerationModel),
     careerModel: asValue(CareerModel),
+    graduationOptionModel: asValue(GraduationOptionModel),
+    newAdmissionModel: asValue(NewAdmissionModel),
     usersService: asClass(UsersService).singleton(),
     modalitiesService: asClass(ModalitiesService).singleton(),
     generationsService: asClass(GenerationsService).singleton(),
     careersService: asClass(CareersService).singleton(),
+    graduationOptionsService: asClass(GraduationOptionsService).singleton(),
+    newAdmissionsService: asClass(NewAdmissionsService).singleton(),
     usersController: asClass(UsersController).singleton(),
     modalitiesController: asClass(ModalitiesController).singleton(),
     generationsController: asClass(GenerationsController).singleton(),
     careersController: asClass(CareersController).singleton(),
+    graduationOptionsController: asClass(
+      GraduationOptionsController
+    ).singleton(),
+    newAdmissionsController: asClass(NewAdmissionsController).singleton(),
     refreshTokenModel: asValue(RefreshTokenModel),
     refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
     jwtSecret: asValue(env.JWT_SECRET),

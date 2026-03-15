@@ -39,7 +39,15 @@
       "@backend/generations": ["libs/backend/generations/src/index.ts"],
       "@backend/generations/*": ["libs/backend/generations/src/*"],
       "@backend/careers": ["libs/backend/careers/src/index.ts"],
-      "@backend/careers/*": ["libs/backend/careers/src/*"]
+      "@backend/careers/*": ["libs/backend/careers/src/*"],
+      "@backend/graduation-options": [
+        "libs/backend/graduation-options/src/index.ts"
+      ],
+      "@backend/graduation-options/*": [
+        "libs/backend/graduation-options/src/*"
+      ],
+      "@backend/new-admissions": ["libs/backend/new-admissions/src/index.ts"],
+      "@backend/new-admissions/*": ["libs/backend/new-admissions/src/*"]
     }
   }
 }

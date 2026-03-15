@@ -25,6 +25,12 @@
       "path": "../../libs/backend/careers"
     },
     {
+      "path": "../../libs/backend/graduation-options"
+    },
+    {
+      "path": "../../libs/backend/new-admissions"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

@@ -50,6 +50,12 @@
     },
     {
       "path": "./libs/frontend/shared"
+    },
+    {
+      "path": "./libs/backend/graduation-options"
+    },
+    {
+      "path": "./libs/backend/new-admissions"
     }
   ]
 }

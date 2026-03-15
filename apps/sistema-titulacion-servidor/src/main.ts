@@ -16,6 +16,8 @@ import {
   RefreshTokenModel,
 } from '@backend/auth';
 import { createCareersRouter } from '@backend/careers';
+import { createGraduationOptionsRouter } from '@backend/graduation-options';
+import { createNewAdmissionsRouter } from '@backend/new-admissions';
 import { createGenerationsRouter } from '@backend/generations';
 import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
@@ -45,6 +47,14 @@ const modalitiesApiDocPath = path.join(
 const careersApiDocPath = path.join(
   process.cwd(),
   'libs/backend/careers/src/careers.openapi.js'
+);
+const graduationOptionsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/graduation-options/src/graduation-options.openapi.js'
+);
+const newAdmissionsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/new-admissions/src/new-admissions.openapi.js'
 );
 
 const app = createApp(
@@ -91,6 +101,24 @@ const app = createApp(
         requireAdmin,
       })
     );
+    a.use(
+      `${env.API_PREFIX}/graduation-options`,
+      createRequireAuth(getAuthService),
+      createGraduationOptionsRouter({
+        getGraduationOptionsController: () =>
+          container.resolve('graduationOptionsController'),
+        requireAdmin,
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/new-admissions`,
+      createRequireAuth(getAuthService),
+      createNewAdmissionsRouter({
+        getNewAdmissionsController: () =>
+          container.resolve('newAdmissionsController'),
+        requireAdmin,
+      })
+    );
   },
   {
     swagger: {
@@ -100,6 +128,8 @@ const app = createApp(
         modalitiesApiDocPath,
         generationsApiDocPath,
         careersApiDocPath,
+        graduationOptionsApiDocPath,
+        newAdmissionsApiDocPath,
       ],
     },
   }

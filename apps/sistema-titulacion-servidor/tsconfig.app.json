@@ -16,7 +16,9 @@
     "../../libs/backend/auth/src/**/*.ts",
     "../../libs/backend/modalities/src/**/*.ts",
     "../../libs/backend/generations/src/**/*.ts",
-    "../../libs/backend/careers/src/**/*.ts"
+    "../../libs/backend/careers/src/**/*.ts",
+    "../../libs/backend/graduation-options/src/**/*.ts",
+    "../../libs/backend/new-admissions/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -49,6 +51,12 @@
     },
     {
       "path": "../../libs/backend/careers/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/graduation-options/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/new-admissions/tsconfig.lib.json"
     }
   ]
 }

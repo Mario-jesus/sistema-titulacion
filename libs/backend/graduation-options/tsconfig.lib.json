@@ -12,13 +12,10 @@
     "declarationMap": true
   },
   "exclude": ["out-tsc", "dist", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../shared/src/**/*.ts"],
   "references": [
     {
       "path": "../shared/tsconfig.lib.json"
-    },
-    {
-      "path": "../modalities/tsconfig.lib.json"
     }
   ]
 }
