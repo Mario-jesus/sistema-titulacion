@@ -56,6 +56,9 @@
     },
     {
       "path": "./libs/backend/new-admissions"
+    },
+    {
+      "path": "./libs/backend/students"
     }
   ]
 }

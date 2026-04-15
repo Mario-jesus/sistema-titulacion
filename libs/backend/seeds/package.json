@@ -25,6 +25,7 @@
     "@backend/careers": "*",
     "@backend/graduation-options": "*",
     "@backend/new-admissions": "*",
+    "@backend/students": "*",
     "bcrypt": "^5.1.1",
     "mongoose": "^9.3.0"
   }

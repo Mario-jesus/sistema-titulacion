@@ -25,6 +25,13 @@ import {
   NewAdmissionsController,
   NewAdmissionsService,
 } from '@backend/new-admissions';
+import {
+  StudentModel,
+  GraduationModel,
+  CapturedFieldsModel,
+  StudentsController,
+  StudentsService,
+} from '@backend/students';
 import { env } from '@backend/core';
 import {
   GenerationModel,
@@ -58,6 +65,11 @@ export interface AppContainer
     careersController: CareersController;
     graduationOptionsController: GraduationOptionsController;
     newAdmissionsController: NewAdmissionsController;
+    studentModel: typeof StudentModel;
+    graduationModel: typeof GraduationModel;
+    capturedFieldsModel: typeof CapturedFieldsModel;
+    studentsService: StudentsService;
+    studentsController: StudentsController;
     refreshTokenModel: typeof RefreshTokenModel;
     refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
     authService: AuthService;
@@ -94,6 +106,11 @@ export function createAppContainer(): AppContainer {
       GraduationOptionsController
     ).singleton(),
     newAdmissionsController: asClass(NewAdmissionsController).singleton(),
+    studentModel: asValue(StudentModel),
+    graduationModel: asValue(GraduationModel),
+    capturedFieldsModel: asValue(CapturedFieldsModel),
+    studentsService: asClass(StudentsService).singleton(),
+    studentsController: asClass(StudentsController).singleton(),
     refreshTokenModel: asValue(RefreshTokenModel),
     refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
     jwtSecret: asValue(env.JWT_SECRET),

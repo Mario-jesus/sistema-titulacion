@@ -18,6 +18,7 @@ import {
 import { createCareersRouter } from '@backend/careers';
 import { createGraduationOptionsRouter } from '@backend/graduation-options';
 import { createNewAdmissionsRouter } from '@backend/new-admissions';
+import { createStudentsRouter } from '@backend/students';
 import { createGenerationsRouter } from '@backend/generations';
 import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
@@ -55,6 +56,10 @@ const graduationOptionsApiDocPath = path.join(
 const newAdmissionsApiDocPath = path.join(
   process.cwd(),
   'libs/backend/new-admissions/src/new-admissions.openapi.js'
+);
+const studentsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/students/src/students.openapi.js'
 );
 
 const app = createApp(
@@ -119,6 +124,13 @@ const app = createApp(
         requireAdmin,
       })
     );
+    a.use(
+      `${env.API_PREFIX}/students`,
+      createRequireAuth(getAuthService),
+      createStudentsRouter({
+        getStudentsController: () => container.resolve('studentsController'),
+      })
+    );
   },
   {
     swagger: {
@@ -130,6 +142,7 @@ const app = createApp(
         careersApiDocPath,
         graduationOptionsApiDocPath,
         newAdmissionsApiDocPath,
+        studentsApiDocPath,
       ],
     },
   }

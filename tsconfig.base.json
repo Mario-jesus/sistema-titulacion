@@ -47,7 +47,9 @@
         "libs/backend/graduation-options/src/*"
       ],
       "@backend/new-admissions": ["libs/backend/new-admissions/src/index.ts"],
-      "@backend/new-admissions/*": ["libs/backend/new-admissions/src/*"]
+      "@backend/new-admissions/*": ["libs/backend/new-admissions/src/*"],
+      "@backend/students": ["libs/backend/students/src/index.ts"],
+      "@backend/students/*": ["libs/backend/students/src/*"]
     }
   }
 }
