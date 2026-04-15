@@ -19,7 +19,8 @@
     "../../libs/backend/careers/src/**/*.ts",
     "../../libs/backend/graduation-options/src/**/*.ts",
     "../../libs/backend/new-admissions/src/**/*.ts",
-    "../../libs/backend/students/src/**/*.ts"
+    "../../libs/backend/students/src/**/*.ts",
+    "../../libs/backend/captured-fields/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -34,6 +35,9 @@
   "references": [
     {
       "path": "../../libs/backend/students/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/captured-fields/tsconfig.lib.json"
     },
     {
       "path": "../../libs/backend/new-admissions/tsconfig.lib.json"

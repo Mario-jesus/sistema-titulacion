@@ -32,6 +32,10 @@ import {
   StudentsController,
   StudentsService,
 } from '@backend/students';
+import {
+  CapturedFieldsController,
+  CapturedFieldsService,
+} from '@backend/captured-fields';
 import { env } from '@backend/core';
 import {
   GenerationModel,
@@ -45,36 +49,37 @@ import {
 } from '@backend/modalities';
 import { UserModel, UsersController, UsersService } from '@backend/users';
 
-export interface AppContainer
-  extends AwilixContainer<{
-    userModel: typeof UserModel;
-    modalityModel: typeof ModalityModel;
-    generationModel: typeof GenerationModel;
-    careerModel: typeof CareerModel;
-    graduationOptionModel: typeof GraduationOptionModel;
-    newAdmissionModel: typeof NewAdmissionModel;
-    usersService: UsersService;
-    modalitiesService: ModalitiesService;
-    generationsService: GenerationsService;
-    careersService: CareersService;
-    graduationOptionsService: GraduationOptionsService;
-    newAdmissionsService: NewAdmissionsService;
-    usersController: UsersController;
-    modalitiesController: ModalitiesController;
-    generationsController: GenerationsController;
-    careersController: CareersController;
-    graduationOptionsController: GraduationOptionsController;
-    newAdmissionsController: NewAdmissionsController;
-    studentModel: typeof StudentModel;
-    graduationModel: typeof GraduationModel;
-    capturedFieldsModel: typeof CapturedFieldsModel;
-    studentsService: StudentsService;
-    studentsController: StudentsController;
-    refreshTokenModel: typeof RefreshTokenModel;
-    refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
-    authService: AuthService;
-    authController: AuthController;
-  }> {}
+export type AppContainer = AwilixContainer<{
+  userModel: typeof UserModel;
+  modalityModel: typeof ModalityModel;
+  generationModel: typeof GenerationModel;
+  careerModel: typeof CareerModel;
+  graduationOptionModel: typeof GraduationOptionModel;
+  newAdmissionModel: typeof NewAdmissionModel;
+  usersService: UsersService;
+  modalitiesService: ModalitiesService;
+  generationsService: GenerationsService;
+  careersService: CareersService;
+  graduationOptionsService: GraduationOptionsService;
+  newAdmissionsService: NewAdmissionsService;
+  usersController: UsersController;
+  modalitiesController: ModalitiesController;
+  generationsController: GenerationsController;
+  careersController: CareersController;
+  graduationOptionsController: GraduationOptionsController;
+  newAdmissionsController: NewAdmissionsController;
+  studentModel: typeof StudentModel;
+  graduationModel: typeof GraduationModel;
+  capturedFieldsModel: typeof CapturedFieldsModel;
+  studentsService: StudentsService;
+  studentsController: StudentsController;
+  capturedFieldsService: CapturedFieldsService;
+  capturedFieldsController: CapturedFieldsController;
+  refreshTokenModel: typeof RefreshTokenModel;
+  refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
+  authService: AuthService;
+  authController: AuthController;
+}>;
 
 /**
  * Creates and configures the Awilix DI container for the server app.
@@ -111,6 +116,8 @@ export function createAppContainer(): AppContainer {
     capturedFieldsModel: asValue(CapturedFieldsModel),
     studentsService: asClass(StudentsService).singleton(),
     studentsController: asClass(StudentsController).singleton(),
+    capturedFieldsService: asClass(CapturedFieldsService).singleton(),
+    capturedFieldsController: asClass(CapturedFieldsController).singleton(),
     refreshTokenModel: asValue(RefreshTokenModel),
     refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
     jwtSecret: asValue(env.JWT_SECRET),

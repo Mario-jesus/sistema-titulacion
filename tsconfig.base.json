@@ -49,7 +49,9 @@
       "@backend/new-admissions": ["libs/backend/new-admissions/src/index.ts"],
       "@backend/new-admissions/*": ["libs/backend/new-admissions/src/*"],
       "@backend/students": ["libs/backend/students/src/index.ts"],
-      "@backend/students/*": ["libs/backend/students/src/*"]
+      "@backend/students/*": ["libs/backend/students/src/*"],
+      "@backend/captured-fields": ["libs/backend/captured-fields/src/index.ts"],
+      "@backend/captured-fields/*": ["libs/backend/captured-fields/src/*"]
     }
   }
 }

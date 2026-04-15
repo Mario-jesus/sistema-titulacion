@@ -59,6 +59,9 @@
     },
     {
       "path": "./libs/backend/students"
+    },
+    {
+      "path": "./libs/backend/captured-fields"
     }
   ]
 }
