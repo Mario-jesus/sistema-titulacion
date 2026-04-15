@@ -1,5 +1,6 @@
 /**
- * Ejecuta todos los seeds (usuarios, modalidades, generaciones, carreras).
+ * Ejecuta todos los seeds (usuarios, modalidades, generaciones, carreras,
+ * opciones de titulación, nuevo ingreso, estudiantes, campos capturados, titulaciones).
  * Ejecutar desde la raíz: npm run seed:all
  *
  * Requiere que MongoDB esté corriendo. Las modalidades y generaciones

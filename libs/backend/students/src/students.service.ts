@@ -829,6 +829,9 @@ export class StudentsService {
       }
     }
 
+    // Graduation documents are shared with REST /graduations (GraduationsService).
+    // Keep these writes aligned with the same collection; a fuller refactor would
+    // delegate to @backend/graduations helpers to avoid drift.
     if (next === 'SCHEDULED' && body.scheduledDate) {
       await this.graduationModel.findOneAndUpdate(
         { studentId: id },

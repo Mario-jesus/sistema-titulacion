@@ -6,6 +6,7 @@ import { seedGraduationOptions } from './graduation-options.seed';
 import { seedNewAdmissions } from './new-admissions.seed';
 import { seedStudents } from './students.seed';
 import { seedCapturedFields } from './captured-fields.seed';
+import { seedGraduations } from './graduations.seed';
 
 export {
   seedUsers,
@@ -16,6 +17,7 @@ export {
   seedNewAdmissions,
   seedStudents,
   seedCapturedFields,
+  seedGraduations,
 };
 
 /**
@@ -26,6 +28,7 @@ export {
  * Nuevo ingreso (depende de generaciones y carreras).
  * Estudiantes (depende de generaciones y carreras).
  * Campos capturados (depende de estudiantes).
+ * Titulaciones (depende de estudiantes y opciones de titulación).
  */
 export async function runAllSeeds(mongoUri: string): Promise<void> {
   await seedUsers(mongoUri);
@@ -36,4 +39,5 @@ export async function runAllSeeds(mongoUri: string): Promise<void> {
   await seedNewAdmissions(mongoUri);
   await seedStudents(mongoUri);
   await seedCapturedFields(mongoUri);
+  await seedGraduations(mongoUri);
 }

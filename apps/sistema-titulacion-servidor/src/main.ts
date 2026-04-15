@@ -20,6 +20,7 @@ import { createGraduationOptionsRouter } from '@backend/graduation-options';
 import { createNewAdmissionsRouter } from '@backend/new-admissions';
 import { createStudentsRouter } from '@backend/students';
 import { createCapturedFieldsRouter } from '@backend/captured-fields';
+import { createGraduationsRouter } from '@backend/graduations';
 import { createGenerationsRouter } from '@backend/generations';
 import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
@@ -65,6 +66,10 @@ const studentsApiDocPath = path.join(
 const capturedFieldsApiDocPath = path.join(
   process.cwd(),
   'libs/backend/captured-fields/src/captured-fields.openapi.js'
+);
+const graduationsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/graduations/src/graduations.openapi.js'
 );
 
 const app = createApp(
@@ -144,6 +149,14 @@ const app = createApp(
           container.resolve('capturedFieldsController'),
       })
     );
+    a.use(
+      `${env.API_PREFIX}/graduations`,
+      createRequireAuth(getAuthService),
+      createGraduationsRouter({
+        getGraduationsController: () =>
+          container.resolve('graduationsController'),
+      })
+    );
   },
   {
     swagger: {
@@ -157,6 +170,7 @@ const app = createApp(
         newAdmissionsApiDocPath,
         studentsApiDocPath,
         capturedFieldsApiDocPath,
+        graduationsApiDocPath,
       ],
     },
   }

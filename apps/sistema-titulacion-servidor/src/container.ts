@@ -36,6 +36,10 @@ import {
   CapturedFieldsController,
   CapturedFieldsService,
 } from '@backend/captured-fields';
+import {
+  GraduationsController,
+  GraduationsService,
+} from '@backend/graduations';
 import { env } from '@backend/core';
 import {
   GenerationModel,
@@ -75,6 +79,8 @@ export type AppContainer = AwilixContainer<{
   studentsController: StudentsController;
   capturedFieldsService: CapturedFieldsService;
   capturedFieldsController: CapturedFieldsController;
+  graduationsService: GraduationsService;
+  graduationsController: GraduationsController;
   refreshTokenModel: typeof RefreshTokenModel;
   refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
   authService: AuthService;
@@ -118,6 +124,8 @@ export function createAppContainer(): AppContainer {
     studentsController: asClass(StudentsController).singleton(),
     capturedFieldsService: asClass(CapturedFieldsService).singleton(),
     capturedFieldsController: asClass(CapturedFieldsController).singleton(),
+    graduationsService: asClass(GraduationsService).singleton(),
+    graduationsController: asClass(GraduationsController).singleton(),
     refreshTokenModel: asValue(RefreshTokenModel),
     refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
     jwtSecret: asValue(env.JWT_SECRET),
