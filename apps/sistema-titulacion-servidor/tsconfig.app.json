@@ -23,7 +23,8 @@
     "../../libs/backend/captured-fields/src/**/*.ts",
     "../../libs/backend/graduations/src/**/*.ts",
     "../../libs/backend/ingress-egress/src/**/*.ts",
-    "../../libs/backend/dashboard/src/**/*.ts"
+    "../../libs/backend/dashboard/src/**/*.ts",
+    "../../libs/backend/reports/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -77,6 +78,9 @@
     },
     {
       "path": "../../libs/backend/dashboard/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/reports/tsconfig.lib.json"
     }
   ]
 }

@@ -57,7 +57,9 @@
       "@backend/ingress-egress": ["libs/backend/ingress-egress/src/index.ts"],
       "@backend/ingress-egress/*": ["libs/backend/ingress-egress/src/*"],
       "@backend/dashboard": ["libs/backend/dashboard/src/index.ts"],
-      "@backend/dashboard/*": ["libs/backend/dashboard/src/*"]
+      "@backend/dashboard/*": ["libs/backend/dashboard/src/*"],
+      "@backend/reports": ["libs/backend/reports/src/index.ts"],
+      "@backend/reports/*": ["libs/backend/reports/src/*"]
     }
   }
 }
