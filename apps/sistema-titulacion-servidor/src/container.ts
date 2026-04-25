@@ -40,6 +40,10 @@ import {
   GraduationsController,
   GraduationsService,
 } from '@backend/graduations';
+import {
+  IngressEgressController,
+  IngressEgressService,
+} from '@backend/ingress-egress';
 import { env } from '@backend/core';
 import {
   GenerationModel,
@@ -81,6 +85,8 @@ export type AppContainer = AwilixContainer<{
   capturedFieldsController: CapturedFieldsController;
   graduationsService: GraduationsService;
   graduationsController: GraduationsController;
+  ingressEgressService: IngressEgressService;
+  ingressEgressController: IngressEgressController;
   refreshTokenModel: typeof RefreshTokenModel;
   refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
   authService: AuthService;
@@ -126,6 +132,8 @@ export function createAppContainer(): AppContainer {
     capturedFieldsController: asClass(CapturedFieldsController).singleton(),
     graduationsService: asClass(GraduationsService).singleton(),
     graduationsController: asClass(GraduationsController).singleton(),
+    ingressEgressService: asClass(IngressEgressService).singleton(),
+    ingressEgressController: asClass(IngressEgressController).singleton(),
     refreshTokenModel: asValue(RefreshTokenModel),
     refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
     jwtSecret: asValue(env.JWT_SECRET),

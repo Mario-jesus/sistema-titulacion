@@ -114,6 +114,7 @@
     "@backend/careers": "*",
     "@backend/core": "*",
     "@backend/generations": "*",
+    "@backend/ingress-egress": "*",
     "@backend/modalities": "*",
     "@backend/users": "*",
     "express": "^4.21.2"

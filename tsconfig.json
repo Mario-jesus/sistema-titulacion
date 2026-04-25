@@ -65,6 +65,9 @@
     },
     {
       "path": "./libs/backend/graduations"
+    },
+    {
+      "path": "./libs/backend/ingress-egress"
     }
   ]
 }

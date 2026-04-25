@@ -40,6 +40,9 @@
       "path": "../../libs/backend/auth"
     },
     {
+      "path": "../../libs/backend/ingress-egress"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {
