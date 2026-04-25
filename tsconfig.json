@@ -68,6 +68,9 @@
     },
     {
       "path": "./libs/backend/ingress-egress"
+    },
+    {
+      "path": "./libs/backend/dashboard"
     }
   ]
 }

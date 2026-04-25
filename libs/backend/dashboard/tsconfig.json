@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "../students" },
+    { "path": "../generations" },
+    { "path": "../careers" },
+    { "path": "../new-admissions" },
+    { "path": "./tsconfig.lib.json" }
+  ],
+  "extends": "../../../tsconfig.base.json"
+}

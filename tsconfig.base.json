@@ -55,7 +55,9 @@
       "@backend/graduations": ["libs/backend/graduations/src/index.ts"],
       "@backend/graduations/*": ["libs/backend/graduations/src/*"],
       "@backend/ingress-egress": ["libs/backend/ingress-egress/src/index.ts"],
-      "@backend/ingress-egress/*": ["libs/backend/ingress-egress/src/*"]
+      "@backend/ingress-egress/*": ["libs/backend/ingress-egress/src/*"],
+      "@backend/dashboard": ["libs/backend/dashboard/src/index.ts"],
+      "@backend/dashboard/*": ["libs/backend/dashboard/src/*"]
     }
   }
 }

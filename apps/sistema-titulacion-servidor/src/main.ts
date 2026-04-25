@@ -22,6 +22,7 @@ import { createStudentsRouter } from '@backend/students';
 import { createCapturedFieldsRouter } from '@backend/captured-fields';
 import { createGraduationsRouter } from '@backend/graduations';
 import { createIngressEgressRouter } from '@backend/ingress-egress';
+import { createDashboardRouter } from '@backend/dashboard';
 import { createGenerationsRouter } from '@backend/generations';
 import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
@@ -75,6 +76,10 @@ const graduationsApiDocPath = path.join(
 const ingressEgressApiDocPath = path.join(
   process.cwd(),
   'libs/backend/ingress-egress/src/ingress-egress.openapi.js'
+);
+const dashboardApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/dashboard/src/dashboard.openapi.js'
 );
 
 const app = createApp(
@@ -170,6 +175,13 @@ const app = createApp(
           container.resolve('ingressEgressController'),
       })
     );
+    a.use(
+      `${env.API_PREFIX}/dashboard`,
+      createRequireAuth(getAuthService),
+      createDashboardRouter({
+        getDashboardController: () => container.resolve('dashboardController'),
+      })
+    );
   },
   {
     swagger: {
@@ -185,6 +197,7 @@ const app = createApp(
         capturedFieldsApiDocPath,
         graduationsApiDocPath,
         ingressEgressApiDocPath,
+        dashboardApiDocPath,
       ],
     },
   }
