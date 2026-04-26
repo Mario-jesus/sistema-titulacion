@@ -49,6 +49,9 @@
       "path": "../../libs/backend/reports"
     },
     {
+      "path": "../../libs/backend/backups"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

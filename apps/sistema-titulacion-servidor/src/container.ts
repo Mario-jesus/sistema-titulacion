@@ -46,6 +46,11 @@ import {
 } from '@backend/ingress-egress';
 import { DashboardController, DashboardService } from '@backend/dashboard';
 import { ReportsController, ReportsService } from '@backend/reports';
+import {
+  BackupModel,
+  BackupsController,
+  BackupsService,
+} from '@backend/backups';
 import { env } from '@backend/core';
 import {
   GenerationModel,
@@ -93,6 +98,9 @@ export type AppContainer = AwilixContainer<{
   dashboardController: DashboardController;
   reportsService: ReportsService;
   reportsController: ReportsController;
+  backupModel: typeof BackupModel;
+  backupsService: BackupsService;
+  backupsController: BackupsController;
   refreshTokenModel: typeof RefreshTokenModel;
   refreshTokenStore: ReturnType<typeof createMongoRefreshTokenStore>;
   authService: AuthService;
@@ -144,6 +152,9 @@ export function createAppContainer(): AppContainer {
     dashboardController: asClass(DashboardController).singleton(),
     reportsService: asClass(ReportsService).singleton(),
     reportsController: asClass(ReportsController).singleton(),
+    backupModel: asValue(BackupModel),
+    backupsService: asClass(BackupsService).singleton(),
+    backupsController: asClass(BackupsController).singleton(),
     refreshTokenModel: asValue(RefreshTokenModel),
     refreshTokenStore: asValue(createMongoRefreshTokenStore(RefreshTokenModel)),
     jwtSecret: asValue(env.JWT_SECRET),

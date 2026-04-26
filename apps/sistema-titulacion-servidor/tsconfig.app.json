@@ -24,7 +24,8 @@
     "../../libs/backend/graduations/src/**/*.ts",
     "../../libs/backend/ingress-egress/src/**/*.ts",
     "../../libs/backend/dashboard/src/**/*.ts",
-    "../../libs/backend/reports/src/**/*.ts"
+    "../../libs/backend/reports/src/**/*.ts",
+    "../../libs/backend/backups/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -81,6 +82,9 @@
     },
     {
       "path": "../../libs/backend/reports/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/backups/tsconfig.lib.json"
     }
   ]
 }

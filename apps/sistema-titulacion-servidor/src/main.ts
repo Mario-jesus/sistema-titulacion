@@ -1,4 +1,5 @@
 import path from 'node:path';
+import multer from 'multer';
 import './load-env';
 import {
   connectToDatabase,
@@ -27,12 +28,22 @@ import { createReportsRouter } from '@backend/reports';
 import { createGenerationsRouter } from '@backend/generations';
 import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
+import {
+  createBackupsRouter,
+  ensureBackupDirs,
+  loadBackupsEnv,
+} from '@backend/backups';
 import { createAppContainer } from './container.js';
 
 const container = createAppContainer();
 const getAuthService = () => container.resolve('authService');
 const requireAdmin = createRequireRole(getAuthService, ['ADMIN']);
 const requireAdminOrSelf = createRequireRoleOrSelf(getAuthService, ['ADMIN']);
+const backupsEnv = loadBackupsEnv();
+const backupUpload = multer({
+  dest: backupsEnv.tmpPath,
+  limits: { fileSize: backupsEnv.maxUploadBytes },
+});
 
 const usersApiDocPath = path.join(
   process.cwd(),
@@ -85,6 +96,10 @@ const dashboardApiDocPath = path.join(
 const reportsApiDocPath = path.join(
   process.cwd(),
   'libs/backend/reports/src/reports.openapi.js'
+);
+const backupsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/backups/src/backups.openapi.js'
 );
 
 const app = createApp(
@@ -194,6 +209,15 @@ const app = createApp(
         getReportsController: () => container.resolve('reportsController'),
       })
     );
+    a.use(
+      `${env.API_PREFIX}/backups`,
+      createRequireAuth(getAuthService),
+      requireAdmin,
+      createBackupsRouter({
+        getBackupsController: () => container.resolve('backupsController'),
+        uploadMiddleware: backupUpload.single('file'),
+      })
+    );
   },
   {
     swagger: {
@@ -211,6 +235,7 @@ const app = createApp(
         ingressEgressApiDocPath,
         dashboardApiDocPath,
         reportsApiDocPath,
+        backupsApiDocPath,
       ],
     },
   }
@@ -225,6 +250,7 @@ const start = async () => {
       RefreshTokenModel,
       env.JWT_REFRESH_EXPIRES + 86400
     );
+    await ensureBackupDirs(backupsEnv);
 
     const server = app.listen(env.PORT, env.HOST, () => {
       logger.info(

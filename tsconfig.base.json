@@ -59,7 +59,9 @@
       "@backend/dashboard": ["libs/backend/dashboard/src/index.ts"],
       "@backend/dashboard/*": ["libs/backend/dashboard/src/*"],
       "@backend/reports": ["libs/backend/reports/src/index.ts"],
-      "@backend/reports/*": ["libs/backend/reports/src/*"]
+      "@backend/reports/*": ["libs/backend/reports/src/*"],
+      "@backend/backups": ["libs/backend/backups/src/index.ts"],
+      "@backend/backups/*": ["libs/backend/backups/src/*"]
     }
   }
 }

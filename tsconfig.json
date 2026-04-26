@@ -74,6 +74,9 @@
     },
     {
       "path": "./libs/backend/reports"
+    },
+    {
+      "path": "./libs/backend/backups"
     }
   ]
 }
