@@ -1,0 +1,23 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "rootDir": "../../../",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "exclude": ["out-tsc", "dist", "**/*.spec.ts", "**/*.test.ts"],
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../shared/tsconfig.lib.json" },
+    { "path": "../students/tsconfig.lib.json" },
+    { "path": "../generations/tsconfig.lib.json" },
+    { "path": "../careers/tsconfig.lib.json" },
+    { "path": "../new-admissions/tsconfig.lib.json" }
+  ]
+}

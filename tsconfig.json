@@ -56,6 +56,27 @@
     },
     {
       "path": "./libs/backend/new-admissions"
+    },
+    {
+      "path": "./libs/backend/students"
+    },
+    {
+      "path": "./libs/backend/captured-fields"
+    },
+    {
+      "path": "./libs/backend/graduations"
+    },
+    {
+      "path": "./libs/backend/ingress-egress"
+    },
+    {
+      "path": "./libs/backend/dashboard"
+    },
+    {
+      "path": "./libs/backend/reports"
+    },
+    {
+      "path": "./libs/backend/backups"
     }
   ]
 }

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import multer from 'multer';
 import './load-env';
 import {
   connectToDatabase,
@@ -18,15 +19,31 @@ import {
 import { createCareersRouter } from '@backend/careers';
 import { createGraduationOptionsRouter } from '@backend/graduation-options';
 import { createNewAdmissionsRouter } from '@backend/new-admissions';
+import { createStudentsRouter } from '@backend/students';
+import { createCapturedFieldsRouter } from '@backend/captured-fields';
+import { createGraduationsRouter } from '@backend/graduations';
+import { createIngressEgressRouter } from '@backend/ingress-egress';
+import { createDashboardRouter } from '@backend/dashboard';
+import { createReportsRouter } from '@backend/reports';
 import { createGenerationsRouter } from '@backend/generations';
 import { createModalitiesRouter } from '@backend/modalities';
 import { createUsersRouter } from '@backend/users';
+import {
+  createBackupsRouter,
+  ensureBackupDirs,
+  loadBackupsEnv,
+} from '@backend/backups';
 import { createAppContainer } from './container.js';
 
 const container = createAppContainer();
 const getAuthService = () => container.resolve('authService');
 const requireAdmin = createRequireRole(getAuthService, ['ADMIN']);
 const requireAdminOrSelf = createRequireRoleOrSelf(getAuthService, ['ADMIN']);
+const backupsEnv = loadBackupsEnv();
+const backupUpload = multer({
+  dest: backupsEnv.tmpPath,
+  limits: { fileSize: backupsEnv.maxUploadBytes },
+});
 
 const usersApiDocPath = path.join(
   process.cwd(),
@@ -55,6 +72,34 @@ const graduationOptionsApiDocPath = path.join(
 const newAdmissionsApiDocPath = path.join(
   process.cwd(),
   'libs/backend/new-admissions/src/new-admissions.openapi.js'
+);
+const studentsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/students/src/students.openapi.js'
+);
+const capturedFieldsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/captured-fields/src/captured-fields.openapi.js'
+);
+const graduationsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/graduations/src/graduations.openapi.js'
+);
+const ingressEgressApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/ingress-egress/src/ingress-egress.openapi.js'
+);
+const dashboardApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/dashboard/src/dashboard.openapi.js'
+);
+const reportsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/reports/src/reports.openapi.js'
+);
+const backupsApiDocPath = path.join(
+  process.cwd(),
+  'libs/backend/backups/src/backups.openapi.js'
 );
 
 const app = createApp(
@@ -119,6 +164,60 @@ const app = createApp(
         requireAdmin,
       })
     );
+    a.use(
+      `${env.API_PREFIX}/students`,
+      createRequireAuth(getAuthService),
+      createStudentsRouter({
+        getStudentsController: () => container.resolve('studentsController'),
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/captured-fields`,
+      createRequireAuth(getAuthService),
+      createCapturedFieldsRouter({
+        getCapturedFieldsController: () =>
+          container.resolve('capturedFieldsController'),
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/graduations`,
+      createRequireAuth(getAuthService),
+      createGraduationsRouter({
+        getGraduationsController: () =>
+          container.resolve('graduationsController'),
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/ingress-egress`,
+      createRequireAuth(getAuthService),
+      createIngressEgressRouter({
+        getIngressEgressController: () =>
+          container.resolve('ingressEgressController'),
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/dashboard`,
+      createRequireAuth(getAuthService),
+      createDashboardRouter({
+        getDashboardController: () => container.resolve('dashboardController'),
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/reports`,
+      createRequireAuth(getAuthService),
+      createReportsRouter({
+        getReportsController: () => container.resolve('reportsController'),
+      })
+    );
+    a.use(
+      `${env.API_PREFIX}/backups`,
+      createRequireAuth(getAuthService),
+      requireAdmin,
+      createBackupsRouter({
+        getBackupsController: () => container.resolve('backupsController'),
+        uploadMiddleware: backupUpload.single('file'),
+      })
+    );
   },
   {
     swagger: {
@@ -130,6 +229,13 @@ const app = createApp(
         careersApiDocPath,
         graduationOptionsApiDocPath,
         newAdmissionsApiDocPath,
+        studentsApiDocPath,
+        capturedFieldsApiDocPath,
+        graduationsApiDocPath,
+        ingressEgressApiDocPath,
+        dashboardApiDocPath,
+        reportsApiDocPath,
+        backupsApiDocPath,
       ],
     },
   }
@@ -144,6 +250,7 @@ const start = async () => {
       RefreshTokenModel,
       env.JWT_REFRESH_EXPIRES + 86400
     );
+    await ensureBackupDirs(backupsEnv);
 
     const server = app.listen(env.PORT, env.HOST, () => {
       logger.info(

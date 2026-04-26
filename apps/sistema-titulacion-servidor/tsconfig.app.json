@@ -18,7 +18,14 @@
     "../../libs/backend/generations/src/**/*.ts",
     "../../libs/backend/careers/src/**/*.ts",
     "../../libs/backend/graduation-options/src/**/*.ts",
-    "../../libs/backend/new-admissions/src/**/*.ts"
+    "../../libs/backend/new-admissions/src/**/*.ts",
+    "../../libs/backend/students/src/**/*.ts",
+    "../../libs/backend/captured-fields/src/**/*.ts",
+    "../../libs/backend/graduations/src/**/*.ts",
+    "../../libs/backend/ingress-egress/src/**/*.ts",
+    "../../libs/backend/dashboard/src/**/*.ts",
+    "../../libs/backend/reports/src/**/*.ts",
+    "../../libs/backend/backups/src/**/*.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -32,16 +39,25 @@
   ],
   "references": [
     {
-      "path": "../../libs/backend/users/tsconfig.lib.json"
+      "path": "../../libs/backend/students/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/backend/auth/tsconfig.lib.json"
+      "path": "../../libs/backend/captured-fields/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/graduations/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/new-admissions/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/graduation-options/tsconfig.lib.json"
     },
     {
       "path": "../../libs/backend/seeds/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/backend/core/tsconfig.lib.json"
+      "path": "../../libs/backend/users/tsconfig.lib.json"
     },
     {
       "path": "../../libs/backend/modalities/tsconfig.lib.json"
@@ -50,13 +66,25 @@
       "path": "../../libs/backend/generations/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/backend/core/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/backend/careers/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/backend/graduation-options/tsconfig.lib.json"
+      "path": "../../libs/backend/auth/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/backend/new-admissions/tsconfig.lib.json"
+      "path": "../../libs/backend/ingress-egress/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/dashboard/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/reports/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/backend/backups/tsconfig.lib.json"
     }
   ]
 }

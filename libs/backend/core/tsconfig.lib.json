@@ -21,7 +21,7 @@
     "eslint.config.cjs",
     "eslint.config.mjs"
   ],
-  "include": ["src/**/*.ts", "../shared/src/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "references": [
     {
       "path": "../shared/tsconfig.lib.json"

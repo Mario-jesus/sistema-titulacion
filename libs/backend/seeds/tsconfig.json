@@ -8,7 +8,8 @@
     { "path": "../generations" },
     { "path": "../careers" },
     { "path": "../graduation-options" },
-    { "path": "../new-admissions" }
+    { "path": "../new-admissions" },
+    { "path": "../students" }
   ],
   "extends": "../../../tsconfig.base.json"
 }
