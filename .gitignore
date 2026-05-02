@@ -58,3 +58,7 @@ vitest.config.*.timestamp*
 
 # MSW
 #apps/sistema-titulacion-cliente/public/mockServiceWorker.js
+
+.nx/polygraph
+.claude/worktrees
+.claude/settings.local.json
