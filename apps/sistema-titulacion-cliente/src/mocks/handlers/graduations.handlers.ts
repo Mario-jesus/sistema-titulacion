@@ -120,8 +120,18 @@ export const graduationsHandlers = [
       );
     }
 
-    // Verificar que la opción de titulación existe (si se proporciona)
-    if (body.graduationOptionId) {
+    if (!body.graduationOptionId) {
+      return HttpResponse.json(
+        {
+          error: 'La opción de titulación es requerida',
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que la opción de titulación existe
+    {
       const graduationOption = findGraduationOptionById(
         body.graduationOptionId
       );
@@ -134,46 +144,6 @@ export const graduationsHandlers = [
           { status: 404 }
         );
       }
-    }
-
-    if (!body.president || body.president.trim().length === 0) {
-      return HttpResponse.json(
-        {
-          error: 'El presidente del comité es requerido',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!body.secretary || body.secretary.trim().length === 0) {
-      return HttpResponse.json(
-        {
-          error: 'El secretario del comité es requerido',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!body.vocal || body.vocal.trim().length === 0) {
-      return HttpResponse.json(
-        {
-          error: 'El vocal del comité es requerido',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!body.substituteVocal || body.substituteVocal.trim().length === 0) {
-      return HttpResponse.json(
-        {
-          error: 'El vocal suplente del comité es requerido',
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
     }
 
     const graduationDate = body.graduationDate
@@ -222,10 +192,10 @@ export const graduationsHandlers = [
       idCardIssueDate: body.idCardIssueDate
         ? new Date(body.idCardIssueDate)
         : undefined,
-      president: body.president.trim(),
-      secretary: body.secretary.trim(),
-      vocal: body.vocal.trim(),
-      substituteVocal: body.substituteVocal.trim(),
+      president: (body.president ?? '').trim(),
+      secretary: (body.secretary ?? '').trim(),
+      vocal: (body.vocal ?? '').trim(),
+      substituteVocal: (body.substituteVocal ?? '').trim(),
       notes: body.notes?.trim() || null,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -272,59 +242,6 @@ export const graduationsHandlers = [
       }
 
       const body = (await request.json()) as UpdateGraduationRequest;
-
-      // Validaciones
-      if (
-        body.president !== undefined &&
-        (!body.president || body.president.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El presidente del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (
-        body.secretary !== undefined &&
-        (!body.secretary || body.secretary.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El secretario del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (
-        body.vocal !== undefined &&
-        (!body.vocal || body.vocal.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El vocal del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (
-        body.substituteVocal !== undefined &&
-        (!body.substituteVocal || body.substituteVocal.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El vocal suplente del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
 
       // Obtener el estudiante actual o el nuevo si se cambia
       const currentStudentId = body.studentId ?? graduation.studentId;
@@ -474,59 +391,6 @@ export const graduationsHandlers = [
       }
 
       const body = (await request.json()) as Partial<UpdateGraduationRequest>;
-
-      // Validaciones
-      if (
-        body.president !== undefined &&
-        (!body.president || body.president.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El presidente del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (
-        body.secretary !== undefined &&
-        (!body.secretary || body.secretary.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El secretario del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (
-        body.vocal !== undefined &&
-        (!body.vocal || body.vocal.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El vocal del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (
-        body.substituteVocal !== undefined &&
-        (!body.substituteVocal || body.substituteVocal.trim().length === 0)
-      ) {
-        return HttpResponse.json(
-          {
-            error: 'El vocal suplente del comité no puede estar vacío',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 }
-        );
-      }
 
       // Obtener el estudiante actual o el nuevo si se cambia
       const currentStudentId = body.studentId ?? graduation.studentId;

@@ -738,12 +738,7 @@ export class StudentsService {
       );
     }
 
-    const [hasCapturedFields, hasGraduation] = await Promise.all([
-      this.capturedFieldsModel.findOne({ studentId: id }).lean().exec(),
-      this.graduationModel.findOne({ studentId: id }).lean().exec(),
-    ]);
-
-    if (hasCapturedFields || hasGraduation) {
+    if (student.processStatus !== 'NOT_STARTED') {
       throw new AppError(
         400,
         'CANNOT_UNEGRESS',
@@ -782,7 +777,11 @@ export class StudentsService {
       );
     }
 
-    if (next === 'IN_PROCESS' && current !== 'NOT_STARTED') {
+    if (
+      next === 'IN_PROCESS' &&
+      current !== 'NOT_STARTED' &&
+      current !== 'IN_PROCESS'
+    ) {
       throw new AppError(
         400,
         'INVALID_PROCESS_STATUS_TRANSITION',
@@ -825,6 +824,43 @@ export class StudentsService {
           400,
           'STUDENT_NOT_EGRESSED',
           'El estudiante debe estar egresado para cambiar a este estado'
+        );
+      }
+    }
+
+    if (next === 'GRADUATED') {
+      const [captured, graduation] = await Promise.all([
+        this.capturedFieldsModel.findOne({ studentId: id }).lean().exec(),
+        this.graduationModel.findOne({ studentId: id }).lean().exec(),
+      ]);
+
+      const hasProcessData = captured != null;
+
+      const graduationDateFromBody =
+        body.graduationDate != null && String(body.graduationDate).trim() !== ''
+          ? new Date(body.graduationDate)
+          : null;
+      const effectiveGraduationDate =
+        graduationDateFromBody &&
+        !Number.isNaN(graduationDateFromBody.getTime())
+          ? graduationDateFromBody
+          : graduation?.graduationDate ?? null;
+
+      const hasGraduationOption =
+        graduation?.graduationOptionId != null &&
+        String(graduation.graduationOptionId).trim() !== '';
+
+      const hasGraduationDate =
+        effectiveGraduationDate != null &&
+        !Number.isNaN(new Date(effectiveGraduationDate).getTime());
+
+      const hasTitulationData = hasGraduationOption && hasGraduationDate;
+
+      if (!hasProcessData || !hasTitulationData) {
+        throw new AppError(
+          400,
+          'INCOMPLETE_PROCESS_OR_GRADUATION',
+          'Debe registrar los datos del proceso de titulación y los datos de titulación (opción y fecha) antes de marcar al estudiante como titulado'
         );
       }
     }

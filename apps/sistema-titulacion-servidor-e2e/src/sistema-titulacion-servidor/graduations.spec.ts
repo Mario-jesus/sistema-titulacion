@@ -18,6 +18,7 @@ describe('Graduations API', () => {
   let token: string;
   let careerId: string;
   let generationId: string;
+  let graduationOptionId: string;
   const createdStudentIds: string[] = [];
   const ts = Date.now();
 
@@ -32,8 +33,15 @@ describe('Graduations API', () => {
     careerId = careers.data.data[0]?.id;
     generationId = generations.data.data[0]?.id;
 
+    const opts = await axios.get(
+      `${API}/graduation-options?limit=1`,
+      authHeaders(token)
+    );
+    graduationOptionId = opts.data.data[0]?.id;
+
     expect(careerId).toBeDefined();
     expect(generationId).toBeDefined();
+    expect(graduationOptionId).toBeDefined();
   });
 
   afterAll(async () => {
@@ -105,6 +113,7 @@ describe('Graduations API', () => {
         `${API}/graduations`,
         {
           studentId,
+          graduationOptionId,
           ...committeeBody(),
           notes: null,
         },
@@ -160,14 +169,22 @@ describe('Graduations API', () => {
 
       await axios.post(
         `${API}/graduations`,
-        { studentId: a, ...committeeBody() },
+        {
+          studentId: a,
+          graduationOptionId,
+          ...committeeBody(),
+        },
         authHeaders(token)
       );
 
       try {
         await axios.post(
           `${API}/graduations`,
-          { studentId: a, ...committeeBody() },
+          {
+            studentId: a,
+            graduationOptionId,
+            ...committeeBody(),
+          },
           authHeaders(token)
         );
         fail('Should have thrown');
@@ -216,7 +233,11 @@ describe('Graduations API', () => {
 
       await axios.post(
         `${API}/graduations`,
-        { studentId: sid, ...committeeBody() },
+        {
+          studentId: sid,
+          graduationOptionId,
+          ...committeeBody(),
+        },
         authHeaders(token)
       );
 

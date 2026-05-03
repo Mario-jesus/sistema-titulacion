@@ -1,15 +1,27 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Input, Modal } from '@shared/ui';
 import { useToast } from '@shared/ui';
 import type { Student } from '@entities/student';
+import { StudentProcessStatus } from '@entities/student';
+import type { GraduationOption } from '@entities/graduation-option';
 import { studentsService } from '../../api/studentsService';
 import type { UpdateProcessStatusRequest } from '../../model/types';
+import { loadGraduationOptions } from '@features/graduations/api/graduationOptionsHelper';
+import { findGraduationByStudentId } from '@features/graduations/api/studentHelper';
+import { graduationsService } from '@features/graduations/api/graduationsService';
 
 interface GraduateModalProps {
   isOpen: boolean;
   onClose: () => void;
   student: Student | null;
   onSuccess?: () => void;
+}
+
+function formatDateInput(value: string | Date | undefined): string {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().split('T')[0];
 }
 
 export function GraduateModal({
@@ -19,18 +31,62 @@ export function GraduateModal({
   onSuccess,
 }: GraduateModalProps) {
   const { showToast } = useToast();
+  const [graduationOptionId, setGraduationOptionId] = useState('');
   const [graduationDate, setGraduationDate] = useState('');
   const [hasIdCard, setHasIdCard] = useState(false);
   const [idCardNumber, setIdCardNumber] = useState('');
   const [idCardIssueDate, setIdCardIssueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [graduationOptions, setGraduationOptions] = useState<
+    GraduationOption[]
+  >([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !student) return;
+
+    let cancelled = false;
+    setIsLoadingData(true);
+
+    Promise.all([
+      loadGraduationOptions(),
+      findGraduationByStudentId(student.id),
+    ])
+      .then(([options, graduation]) => {
+        if (cancelled) return;
+        setGraduationOptions(options);
+        setGraduationOptionId(graduation?.graduationOptionId?.trim() ?? '');
+        setGraduationDate(formatDateInput(graduation?.graduationDate));
+        setIdCardNumber(graduation?.idCardNumber?.trim() ?? '');
+        setIdCardIssueDate(formatDateInput(graduation?.idCardIssueDate));
+        setHasIdCard(
+          Boolean(graduation?.idCardNumber || graduation?.idCardIssueDate)
+        );
+      })
+      .catch((err) => {
+        console.error('Error al cargar datos de titulación:', err);
+        if (!cancelled) {
+          setGraduationOptions([]);
+          setGraduationOptionId('');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingData(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, student?.id]);
 
   const handleModalClose = useCallback(() => {
+    setGraduationOptionId('');
     setGraduationDate('');
     setHasIdCard(false);
     setIdCardNumber('');
     setIdCardIssueDate('');
     setIsSubmitting(false);
+    setGraduationOptions([]);
     onClose();
   }, [onClose]);
 
@@ -70,6 +126,15 @@ export function GraduateModal({
   const handleSubmit = useCallback(async () => {
     if (!student) return;
 
+    if (!graduationOptionId.trim()) {
+      showToast({
+        type: 'error',
+        title: 'Error de validación',
+        message: 'Debe seleccionar una opción de titulación',
+      });
+      return;
+    }
+
     if (!graduationDate) {
       showToast({
         type: 'error',
@@ -82,9 +147,28 @@ export function GraduateModal({
     setIsSubmitting(true);
 
     try {
+      const graduationFromApi = await findGraduationByStudentId(student.id);
+      const isoDate = new Date(graduationDate).toISOString();
+
+      if (!graduationFromApi) {
+        await graduationsService.create({
+          studentId: student.id,
+          graduationOptionId: graduationOptionId.trim(),
+          notes: null,
+        });
+      } else {
+        await graduationsService.patch(student.id, {
+          graduationOptionId: graduationOptionId.trim(),
+        });
+      }
+
+      if (!student.isEgressed) {
+        await studentsService.egress(student.id);
+      }
+
       const requestData: UpdateProcessStatusRequest = {
-        processStatus: 'GRADUATED' as any,
-        graduationDate: new Date(graduationDate).toISOString(),
+        processStatus: StudentProcessStatus.GRADUATED,
+        graduationDate: isoDate,
         hasIdCard,
         idCardNumber: hasIdCard ? idCardNumber || undefined : undefined,
         idCardIssueDate:
@@ -94,6 +178,7 @@ export function GraduateModal({
       };
 
       await studentsService.updateProcessStatus(student.id, requestData);
+      await graduationsService.graduate(student.id);
 
       showToast({
         type: 'success',
@@ -120,6 +205,7 @@ export function GraduateModal({
     }
   }, [
     student,
+    graduationOptionId,
     graduationDate,
     hasIdCard,
     idCardNumber,
@@ -129,12 +215,17 @@ export function GraduateModal({
     handleModalClose,
   ]);
 
+  const canSubmit =
+    Boolean(graduationDate) &&
+    Boolean(graduationOptionId.trim()) &&
+    !isLoadingData;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleModalClose}
       title="Titular Estudiante"
-      maxWidth="md"
+      maxWidth="xl"
     >
       <div className="space-y-6">
         <div className="bg-gray-2-light dark:bg-gray-3-dark p-4 rounded-lg border border-gray-3-light dark:border-gray-6-dark">
@@ -180,13 +271,39 @@ export function GraduateModal({
             Datos de Titulación
           </h3>
 
+          <div>
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: 'var(--color-base-primary-typo)' }}
+            >
+              Opción de Titulación *
+            </label>
+            <select
+              className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
+              value={graduationOptionId}
+              onChange={(e) => setGraduationOptionId(e.target.value)}
+              disabled={isSubmitting || isLoadingData}
+            >
+              <option value="">
+                {isLoadingData
+                  ? 'Cargando opciones…'
+                  : 'Seleccionar opción de titulación'}
+              </option>
+              {graduationOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <Input
-            label="Fecha de Titulación"
+            label="Fecha de Titulación *"
             type="date"
             value={graduationDate}
             onChange={handleGraduationDateChange}
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoadingData}
             placeholder="Seleccione la fecha de titulación"
           />
 
@@ -227,7 +344,7 @@ export function GraduateModal({
           </div>
 
           <div className="text-sm text-gray-4-light dark:text-gray-5-dark">
-            <p>• La fecha de titulación es obligatoria.</p>
+            <p>• La opción y la fecha de titulación son obligatorias.</p>
             <p>• Si cuenta con cédula, los datos son opcionales.</p>
           </div>
         </div>
@@ -243,7 +360,7 @@ export function GraduateModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !graduationDate}
+            disabled={isSubmitting || !canSubmit}
             isLoading={isSubmitting}
             size="small"
           >

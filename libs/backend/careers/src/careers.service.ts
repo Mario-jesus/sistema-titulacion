@@ -55,7 +55,7 @@ type CareerDoc = {
   _id: { toString: () => string };
   name: string;
   shortName: string;
-  modalityId: { toString: () => string } | PopulatedModality;
+  modalityId: { toString: () => string } | PopulatedModality | null;
   description: string | null;
   isActive: boolean;
   createdAt: Date;
@@ -69,7 +69,7 @@ function isPopulatedModality(v: unknown): v is PopulatedModality {
 function toCareerPublic(doc: CareerDoc): CareerPublic {
   const modalityId = isPopulatedModality(doc.modalityId)
     ? doc.modalityId._id.toString()
-    : doc.modalityId.toString();
+    : doc.modalityId?.toString() ?? '';
 
   const modality = isPopulatedModality(doc.modalityId)
     ? {

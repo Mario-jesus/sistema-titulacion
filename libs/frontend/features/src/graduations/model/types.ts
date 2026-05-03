@@ -1,13 +1,13 @@
 export interface CreateGraduationRequest {
   studentId: string;
-  graduationOptionId: string | null;
-  graduationDate: string | Date; // ISO string o Date
+  graduationOptionId: string;
+  graduationDate?: string | Date; // ISO string o Date
   idCardNumber?: string;
   idCardIssueDate?: string | Date;
-  president: string;
-  secretary: string;
-  vocal: string;
-  substituteVocal: string;
+  president?: string;
+  secretary?: string;
+  vocal?: string;
+  substituteVocal?: string;
   notes?: string | null;
 }
 

@@ -129,12 +129,7 @@ export class GraduationsService {
   async create(input: CreateGraduationInput): Promise<GraduationPublic> {
     const student = await this.loadStudentOrThrow(input.studentId);
 
-    if (
-      input.graduationOptionId !== undefined &&
-      input.graduationOptionId !== null
-    ) {
-      await this.assertGraduationOptionExists(input.graduationOptionId);
-    }
+    await this.assertGraduationOptionExists(input.graduationOptionId);
 
     const existing = await this.graduationModel.findOne({
       studentId: input.studentId,
@@ -181,12 +176,7 @@ export class GraduationsService {
       ? new Date(input.scheduledDate)
       : null;
 
-    const goId =
-      input.graduationOptionId === undefined
-        ? null
-        : input.graduationOptionId === null
-        ? null
-        : new mongoose.Types.ObjectId(input.graduationOptionId);
+    const goId = new mongoose.Types.ObjectId(input.graduationOptionId);
 
     try {
       const doc = await this.graduationModel.create({
@@ -194,10 +184,10 @@ export class GraduationsService {
         graduationOptionId: goId,
         graduationDate,
         scheduledDate,
-        president: input.president.trim(),
-        secretary: input.secretary.trim(),
-        vocal: input.vocal.trim(),
-        substituteVocal: input.substituteVocal.trim(),
+        president: (input.president ?? '').trim(),
+        secretary: (input.secretary ?? '').trim(),
+        vocal: (input.vocal ?? '').trim(),
+        substituteVocal: (input.substituteVocal ?? '').trim(),
         notes:
           input.notes === undefined
             ? null
@@ -236,19 +226,6 @@ export class GraduationsService {
     }
   }
 
-  private assertCommitteeNonEmpty(
-    field: string | undefined,
-    label: string
-  ): void {
-    if (field !== undefined && field.trim().length === 0) {
-      throw new AppError(
-        400,
-        'VALIDATION_ERROR',
-        `${label} no puede estar vacío`
-      );
-    }
-  }
-
   async updatePut(
     pathStudentId: string,
     input: UpdateGraduationInput
@@ -277,14 +254,6 @@ export class GraduationsService {
         'Titulación no encontrada'
       );
     }
-
-    this.assertCommitteeNonEmpty(input.president, 'El presidente del comité');
-    this.assertCommitteeNonEmpty(input.secretary, 'El secretario del comité');
-    this.assertCommitteeNonEmpty(input.vocal, 'El vocal del comité');
-    this.assertCommitteeNonEmpty(
-      input.substituteVocal,
-      'El vocal suplente del comité'
-    );
 
     const nextStudentId =
       input.studentId !== undefined
