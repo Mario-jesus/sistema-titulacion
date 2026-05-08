@@ -1,0 +1,21 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "rootDir": "../../../",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "exclude": ["out-tsc", "dist", "**/*.spec.ts", "**/*.test.ts"],
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../shared/tsconfig.lib.json" },
+    { "path": "../auth/tsconfig.lib.json" },
+    { "path": "../core/tsconfig.lib.json" }
+  ]
+}

@@ -123,29 +123,12 @@ export function GraduationForm({
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
 
-    if (isStudentGraduated) {
-      if (!graduationDate) {
-        newErrors.graduationDate = 'La fecha de titulación es requerida';
-      }
-      if (!graduationTime) {
-        newErrors.graduationTime = 'La hora de titulación es requerida';
-      }
+    if (!graduationOptionId.trim()) {
+      newErrors.graduationOptionId = 'La opción de titulación es requerida';
     }
 
-    if (!president.trim()) {
-      newErrors.president = 'El presidente del comité es requerido';
-    }
-
-    if (!secretary.trim()) {
-      newErrors.secretary = 'El secretario del comité es requerido';
-    }
-
-    if (!vocal.trim()) {
-      newErrors.vocal = 'El vocal del comité es requerido';
-    }
-
-    if (!substituteVocal.trim()) {
-      newErrors.substituteVocal = 'El vocal suplente del comité es requerido';
+    if (isStudentGraduated && !graduationDate.trim()) {
+      newErrors.graduationDate = 'La fecha de titulación es requerida';
     }
 
     setErrors(newErrors);
@@ -160,14 +143,9 @@ export function GraduationForm({
     }
 
     try {
-      const dateTime =
-        isStudentGraduated && graduationDate && graduationTime
-          ? new Date(`${graduationDate}T${graduationTime}:00`)
-          : null;
-
       const formData: CreateGraduationRequest | UpdateGraduationRequest = {
         studentId,
-        graduationOptionId: graduationOptionId || null,
+        graduationOptionId: graduationOptionId.trim(),
         president: president.trim(),
         secretary: secretary.trim(),
         vocal: vocal.trim(),
@@ -175,7 +153,11 @@ export function GraduationForm({
         notes: notes.trim() || null,
       };
 
-      if (isStudentGraduated && dateTime) {
+      if (isStudentGraduated && graduationDate.trim()) {
+        const timePart = graduationTime.trim()
+          ? `${graduationTime.trim()}:00`
+          : '00:00:00';
+        const dateTime = new Date(`${graduationDate.trim()}T${timePart}`);
         formData.graduationDate = dateTime.toISOString();
         formData.idCardNumber = idCardNumber.trim() || undefined;
         formData.idCardIssueDate = idCardIssueDate || undefined;
@@ -201,7 +183,7 @@ export function GraduationForm({
             className="block text-sm font-medium mb-2"
             style={{ color: 'var(--color-base-primary-typo)' }}
           >
-            Opción de Titulación
+            Opción de Titulación *
           </label>
           <select
             className="w-full px-4 py-3 text-base font-inherit text-(--color-base-primary-typo) bg-(--color-input-bg) border border-(--color-input-border) rounded-lg outline-none focus:border-(--color-primary-color) focus:ring-2 focus:ring-(--color-primary-color) focus:ring-opacity-10 disabled:bg-(--color-gray-2) disabled:cursor-not-allowed disabled:opacity-60"
@@ -249,7 +231,7 @@ export function GraduationForm({
           />
 
           <Input
-            label="Hora de Titulación *"
+            label="Hora de Titulación"
             type="time"
             value={graduationTime}
             onChange={(e) => {
@@ -261,7 +243,6 @@ export function GraduationForm({
             error={errors.graduationTime}
             fullWidth
             disabled={isSubmitting || !isStudentGraduated}
-            required={isStudentGraduated}
             placeholder={
               !isStudentGraduated ? 'Solo para titulados' : undefined
             }
@@ -294,7 +275,7 @@ export function GraduationForm({
         </div>
 
         <Input
-          label="Presidente del Comité *"
+          label="Presidente del Comité"
           placeholder="Ej: Dr. Carlos Ramírez García"
           value={president}
           onChange={(e) => {
@@ -306,11 +287,10 @@ export function GraduationForm({
           error={errors.president}
           fullWidth
           disabled={isSubmitting}
-          required
         />
 
         <Input
-          label="Secretario del Comité *"
+          label="Secretario del Comité"
           placeholder="Ej: Mtra. Ana Martínez López"
           value={secretary}
           onChange={(e) => {
@@ -322,11 +302,10 @@ export function GraduationForm({
           error={errors.secretary}
           fullWidth
           disabled={isSubmitting}
-          required
         />
 
         <Input
-          label="Vocal del Comité *"
+          label="Vocal del Comité"
           placeholder="Ej: Ing. Luis Sánchez Pérez"
           value={vocal}
           onChange={(e) => {
@@ -338,11 +317,10 @@ export function GraduationForm({
           error={errors.vocal}
           fullWidth
           disabled={isSubmitting}
-          required
         />
 
         <Input
-          label="Vocal Suplente del Comité *"
+          label="Vocal Suplente del Comité"
           placeholder="Ej: Dra. María González Hernández"
           value={substituteVocal}
           onChange={(e) => {
@@ -354,7 +332,6 @@ export function GraduationForm({
           error={errors.substituteVocal}
           fullWidth
           disabled={isSubmitting}
-          required
         />
 
         <div>

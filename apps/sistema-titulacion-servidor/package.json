@@ -110,6 +110,15 @@
     }
   },
   "dependencies": {
+    "@backend/auth": "*",
+    "@backend/careers": "*",
+    "@backend/core": "*",
+    "@backend/generations": "*",
+    "@backend/dashboard": "*",
+    "@backend/reports": "*",
+    "@backend/ingress-egress": "*",
+    "@backend/modalities": "*",
+    "@backend/users": "*",
     "express": "^4.21.2"
   }
 }

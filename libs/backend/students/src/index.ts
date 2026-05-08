@@ -1,0 +1,11 @@
+export { createStudentsRouter } from './students.routes.js';
+export type { StudentsRouterDeps } from './students.routes.js';
+export { StudentsController } from './students.controller.js';
+export { StudentsService } from './students.service.js';
+export type { StudentPublic } from './students.service.js';
+export { StudentModel } from './models/Student.model.js';
+export type { IStudent } from './models/Student.model.js';
+export { GraduationModel } from './models/Graduation.model.js';
+export type { IGraduation } from './models/Graduation.model.js';
+export { CapturedFieldsModel } from './models/CapturedFields.model.js';
+export type { ICapturedFields } from './models/CapturedFields.model.js';

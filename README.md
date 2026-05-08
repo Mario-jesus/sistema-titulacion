@@ -1,81 +1,109 @@
-# SistemaTitulacion
+# Sistema de Titulacion
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Monorepo Nx con:
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+- `apps/sistema-titulacion-servidor`: API backend (Node.js + Express + MongoDB).
+- `apps/sistema-titulacion-cliente`: frontend (React + Vite).
+- `libs/backend/*` y `libs/frontend/*`: librerias compartidas y modulos por dominio.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Requisitos
 
-## Finish your remote caching setup
+- Node.js 20+ (recomendado LTS).
+- npm 10+.
+- MongoDB local o remoto accesible desde el backend.
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/eh6LEJZRMA)
+## Instalacion de dependencias
 
-## Run tasks
+Desde la raiz del repositorio:
 
-To run the dev server for your app, use:
-
-```sh
-npx nx serve sistema-titulacion-servidor
+```bash
+npm install
 ```
 
-To create a production bundle:
+> Si prefieres una instalacion reproducible en CI/local, usa `npm ci`.
 
-```sh
-npx nx build sistema-titulacion-servidor
+## Configuracion del entorno
+
+### Backend (`apps/sistema-titulacion-servidor`)
+
+1. Copia el archivo de ejemplo:
+
+```bash
+cp apps/sistema-titulacion-servidor/.env.example apps/sistema-titulacion-servidor/.env
 ```
 
-To see all available targets to run for a project, run:
+2. Ajusta los valores en `apps/sistema-titulacion-servidor/.env`.
 
-```sh
-npx nx show project sistema-titulacion-servidor
+Variables clave:
+
+- `HOST`: host de arranque del servidor (default `0.0.0.0`).
+- `PORT`: puerto del backend (default `4000`).
+- `API_PREFIX`: prefijo de rutas API (default `/api/v1`).
+- `MONGODB_URI`: URI completa de MongoDB (tiene prioridad si existe).
+- `MONGODB_HOST` + `DATABASE_NAME` (+ opcional `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_AUTH_SOURCE`): alternativa para construir `MONGODB_URI`.
+- `CORS_ORIGIN`: origenes permitidos (coma separada) o `*`.
+- `JWT_SECRET`, `JWT_ACCESS_EXPIRES`, `JWT_REFRESH_EXPIRES`: configuracion de autenticacion JWT. Para generar un secreto seguro: [jwtsecrets.com](https://jwtsecrets.com/).
+
+### Frontend (`apps/sistema-titulacion-cliente`)
+
+1. Crea el archivo local de entorno:
+
+```bash
+cp apps/sistema-titulacion-cliente/.env.example apps/sistema-titulacion-cliente/.env.local
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+2. Ajusta `apps/sistema-titulacion-cliente/.env.local` segun tu entorno.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Variables clave:
 
-## Add new projects
+- `VITE_API_BASE_URL`: URL base del backend (ejemplo: `http://localhost:4000/api/v1`).
+- `VITE_API_TIMEOUT`: timeout de requests en ms.
+- `VITE_ENABLE_MOCK_API`: habilita MSW para mocks locales (`true`/`false`).
+- `VITE_MOCK_API_DELAY`: latencia simulada en ms cuando se usan mocks.
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+## Ejecutar el proyecto en desarrollo
 
-Use the plugin's generator to create new projects.
+En terminales separadas:
 
-To generate a new application, use:
-
-```sh
-npx nx g @nx/node:app demo
+```bash
+npx nx serve @sistema-titulacion/sistema-titulacion-servidor
 ```
 
-To generate a new library, use:
-
-```sh
-npx nx g @nx/node:lib mylib
+```bash
+npx nx serve @sistema-titulacion/sistema-titulacion-cliente
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+Puertos por defecto:
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Backend: `http://localhost:4000`
+- Frontend: `http://localhost:4200`
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Documentacion OpenAPI del servidor
 
-## Install Nx Console
+Con el backend corriendo, la documentacion queda disponible en:
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+- Swagger UI: `http://localhost:4000/api-docs`
+- OpenAPI JSON: `http://localhost:4000/api-docs.json`
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Notas importantes:
 
-## Useful links
+- Las rutas del spec se generan con el prefijo configurado en `API_PREFIX` (por defecto `/api/v1`).
+- Si cambias `PORT`, actualiza las URLs anteriores con el nuevo puerto.
 
-Learn more:
+## Comandos utiles
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+# Build
+npx nx build @sistema-titulacion/sistema-titulacion-servidor
+npx nx build @sistema-titulacion/sistema-titulacion-cliente
 
-And join the Nx community:
+# Tests
+npx nx test @sistema-titulacion/sistema-titulacion-servidor
+npx nx test @sistema-titulacion/sistema-titulacion-cliente
 
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+# Semillas de datos
+npm run seed:users
+npm run seed:graduation-options
+npm run seed:new-admissions
+npm run seed:all
+```

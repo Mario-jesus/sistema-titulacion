@@ -23,7 +23,45 @@
       "@entities/*": ["libs/frontend/entities/src/*"],
       "@pages/*": ["libs/frontend/pages/src/*"],
       "@shared/*": ["libs/frontend/shared/src/*"],
-      "@widgets/*": ["libs/frontend/widgets/src/*"]
+      "@widgets/*": ["libs/frontend/widgets/src/*"],
+      "@backend/core": ["libs/backend/core/src/index.ts"],
+      "@backend/core/*": ["libs/backend/core/src/*"],
+      "@backend/shared": ["libs/backend/shared/src/index.ts"],
+      "@backend/shared/*": ["libs/backend/shared/src/*"],
+      "@backend/users": ["libs/backend/users/src/index.ts"],
+      "@backend/users/*": ["libs/backend/users/src/*"],
+      "@backend/seeds": ["libs/backend/seeds/src/index.ts"],
+      "@backend/seeds/*": ["libs/backend/seeds/src/*"],
+      "@backend/auth": ["libs/backend/auth/src/index.ts"],
+      "@backend/auth/*": ["libs/backend/auth/src/*"],
+      "@backend/modalities": ["libs/backend/modalities/src/index.ts"],
+      "@backend/modalities/*": ["libs/backend/modalities/src/*"],
+      "@backend/generations": ["libs/backend/generations/src/index.ts"],
+      "@backend/generations/*": ["libs/backend/generations/src/*"],
+      "@backend/careers": ["libs/backend/careers/src/index.ts"],
+      "@backend/careers/*": ["libs/backend/careers/src/*"],
+      "@backend/graduation-options": [
+        "libs/backend/graduation-options/src/index.ts"
+      ],
+      "@backend/graduation-options/*": [
+        "libs/backend/graduation-options/src/*"
+      ],
+      "@backend/new-admissions": ["libs/backend/new-admissions/src/index.ts"],
+      "@backend/new-admissions/*": ["libs/backend/new-admissions/src/*"],
+      "@backend/students": ["libs/backend/students/src/index.ts"],
+      "@backend/students/*": ["libs/backend/students/src/*"],
+      "@backend/captured-fields": ["libs/backend/captured-fields/src/index.ts"],
+      "@backend/captured-fields/*": ["libs/backend/captured-fields/src/*"],
+      "@backend/graduations": ["libs/backend/graduations/src/index.ts"],
+      "@backend/graduations/*": ["libs/backend/graduations/src/*"],
+      "@backend/ingress-egress": ["libs/backend/ingress-egress/src/index.ts"],
+      "@backend/ingress-egress/*": ["libs/backend/ingress-egress/src/*"],
+      "@backend/dashboard": ["libs/backend/dashboard/src/index.ts"],
+      "@backend/dashboard/*": ["libs/backend/dashboard/src/*"],
+      "@backend/reports": ["libs/backend/reports/src/index.ts"],
+      "@backend/reports/*": ["libs/backend/reports/src/*"],
+      "@backend/backups": ["libs/backend/backups/src/index.ts"],
+      "@backend/backups/*": ["libs/backend/backups/src/*"]
     }
   }
 }

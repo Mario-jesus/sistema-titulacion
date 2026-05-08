@@ -13,6 +13,30 @@
       "path": "./apps/sistema-titulacion-cliente"
     },
     {
+      "path": "./libs/backend/core"
+    },
+    {
+      "path": "./libs/backend/shared"
+    },
+    {
+      "path": "./libs/backend/seeds"
+    },
+    {
+      "path": "./libs/backend/users"
+    },
+    {
+      "path": "./libs/backend/auth"
+    },
+    {
+      "path": "./libs/backend/modalities"
+    },
+    {
+      "path": "./libs/backend/generations"
+    },
+    {
+      "path": "./libs/backend/careers"
+    },
+    {
       "path": "./libs/frontend/pages"
     },
     {
@@ -26,6 +50,33 @@
     },
     {
       "path": "./libs/frontend/shared"
+    },
+    {
+      "path": "./libs/backend/graduation-options"
+    },
+    {
+      "path": "./libs/backend/new-admissions"
+    },
+    {
+      "path": "./libs/backend/students"
+    },
+    {
+      "path": "./libs/backend/captured-fields"
+    },
+    {
+      "path": "./libs/backend/graduations"
+    },
+    {
+      "path": "./libs/backend/ingress-egress"
+    },
+    {
+      "path": "./libs/backend/dashboard"
+    },
+    {
+      "path": "./libs/backend/reports"
+    },
+    {
+      "path": "./libs/backend/backups"
     }
   ]
 }

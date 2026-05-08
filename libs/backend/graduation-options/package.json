@@ -1,0 +1,26 @@
+{
+  "name": "@backend/graduation-options",
+  "version": "0.0.1",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@backend/shared": "*",
+    "mongoose": "^9.3.0",
+    "zod": "^4.3.6"
+  },
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "nx": {
+    "name": "backend-graduation-options",
+    "tags": [
+      "scope:backend",
+      "type:feature"
+    ]
+  }
+}

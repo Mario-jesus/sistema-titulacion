@@ -1,0 +1,31 @@
+{
+  "name": "@backend/reports",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@backend/auth": "*",
+    "@backend/careers": "*",
+    "@backend/generations": "*",
+    "@backend/new-admissions": "*",
+    "@backend/shared": "*",
+    "@backend/students": "*",
+    "zod": "^4.3.6"
+  },
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "nx": {
+    "name": "backend-reports",
+    "tags": [
+      "scope:backend",
+      "type:feature"
+    ]
+  }
+}

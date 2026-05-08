@@ -4,6 +4,54 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/backend/students"
+    },
+    {
+      "path": "../../libs/backend/captured-fields"
+    },
+    {
+      "path": "../../libs/backend/graduations"
+    },
+    {
+      "path": "../../libs/backend/new-admissions"
+    },
+    {
+      "path": "../../libs/backend/graduation-options"
+    },
+    {
+      "path": "../../libs/backend/seeds"
+    },
+    {
+      "path": "../../libs/backend/users"
+    },
+    {
+      "path": "../../libs/backend/modalities"
+    },
+    {
+      "path": "../../libs/backend/generations"
+    },
+    {
+      "path": "../../libs/backend/core"
+    },
+    {
+      "path": "../../libs/backend/careers"
+    },
+    {
+      "path": "../../libs/backend/auth"
+    },
+    {
+      "path": "../../libs/backend/ingress-egress"
+    },
+    {
+      "path": "../../libs/backend/dashboard"
+    },
+    {
+      "path": "../../libs/backend/reports"
+    },
+    {
+      "path": "../../libs/backend/backups"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {
