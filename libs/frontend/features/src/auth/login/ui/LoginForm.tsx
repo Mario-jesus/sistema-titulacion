@@ -147,6 +147,7 @@ export function LoginForm() {
             Iniciar sesión
           </Button>
 
+          {/*
           <a
             href="/forgot-password"
             className="block text-center text-sm no-underline transition-colors duration-200 hover:underline"
@@ -162,6 +163,7 @@ export function LoginForm() {
           >
             ¿Olvido su contraseña?
           </a>
+          */}
         </form>
       </Card>
     </div>

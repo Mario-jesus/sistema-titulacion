@@ -1,4 +1,4 @@
-import { seedUsers } from './users.seed';
+import { seedAdminOnlyFromEnv, seedUsers } from './users.seed';
 import { seedModalities } from './modalities.seed';
 import { seedGenerations } from './generations.seed';
 import { seedCareers } from './careers.seed';
@@ -9,6 +9,7 @@ import { seedCapturedFields } from './captured-fields.seed';
 import { seedGraduations } from './graduations.seed';
 
 export {
+  seedAdminOnlyFromEnv,
   seedUsers,
   seedModalities,
   seedGenerations,
