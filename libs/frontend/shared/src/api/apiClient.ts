@@ -13,6 +13,21 @@ const defaultHeaders = {
   'Content-Type': 'application/json',
 };
 
+function isFormData(value: unknown): value is FormData {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
+}
+
+function isBodyInitLike(value: unknown): value is BodyInit {
+  return (
+    typeof value === 'string' ||
+    value instanceof Blob ||
+    value instanceof ArrayBuffer ||
+    ArrayBuffer.isView(value) ||
+    value instanceof URLSearchParams ||
+    value instanceof ReadableStream
+  );
+}
+
 function buildUrl(endpoint: string): string {
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
     return endpoint;
@@ -33,18 +48,24 @@ async function request<T>(
 
   logger.log(`API Request: ${options.method || 'GET'} ${url}`);
 
-  const requestBody: BodyInit | undefined =
-    options.body && typeof options.body !== 'string'
-      ? JSON.stringify(options.body)
-      : (options.body as BodyInit | undefined);
+  const rawBody = options.body;
+  const isMultipartBody = isFormData(rawBody);
+  const requestHeaders: HeadersInit = {
+    ...(isMultipartBody ? {} : defaultHeaders),
+    ...(options.headers ?? {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const requestBody: BodyInit | undefined = (() => {
+    if (rawBody === undefined || rawBody === null) return undefined;
+    if (isMultipartBody) return rawBody;
+    if (isBodyInitLike(rawBody)) return rawBody;
+    return JSON.stringify(rawBody);
+  })();
 
   const response = await fetch(url, {
     ...options,
-    headers: {
-      ...defaultHeaders,
-      ...(options.headers ?? {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    headers: requestHeaders,
     body: requestBody,
   });
 

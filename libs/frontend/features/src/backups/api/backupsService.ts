@@ -165,12 +165,7 @@ export const backupsService = {
 
       const response = await apiClient.post<{ message: string }>(
         API_ENDPOINTS.BACKUPS.UPLOAD,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        formData
       );
 
       logger.log('Archivo de respaldo subido exitosamente', {

@@ -31,7 +31,8 @@ import {
 } from './utils/index.js';
 
 type BackupDoc = {
-  _id: { toString: () => string };
+  _id?: { toString: () => string };
+  id?: string;
   name: string;
   description: string;
   status: BackupStatus;
@@ -149,7 +150,7 @@ export class BackupsService {
     void this.runBackupCreationJob(backupId);
 
     const fresh = await this.backupModel.findById(backupId).lean().exec();
-    return toBackupPublic((fresh ?? backup.toJSON()) as BackupDoc);
+    return toBackupPublic((fresh ?? backup.toObject()) as BackupDoc);
   }
 
   async deleteBackup(id: string): Promise<void> {
@@ -264,8 +265,13 @@ export class BackupsService {
         waitForProcess(restoreProcess, 'RESTORE_FAILED', 'Falló mongorestore'),
       ]);
 
+      const restoredStats = await getDatabaseStatsSafe();
+      backup.tablesCount = restoredStats.tablesCount;
+      backup.recordsCount = restoredStats.recordsCount;
+      await backup.save();
+
       return {
-        message: 'Restauración iniciada',
+        message: 'Restauración completada',
         backupId: id,
       };
     } catch (error) {
@@ -338,7 +344,7 @@ export class BackupsService {
         errorMessage: null,
       });
 
-      return toBackupPublic(backup.toJSON() as BackupDoc);
+      return toBackupPublic(backup.toObject() as BackupDoc);
     } catch (error) {
       await deleteBackupFile(opts.tmpPath);
       await deleteBackupFile(finalPath);
@@ -358,13 +364,17 @@ export class BackupsService {
       const filename = buildBackupFilename({ id: backupId, name: backup.name });
       finalPath = buildBackupPath(backupsEnv, filename);
 
-      const dumpProcess = spawn(
-        'mongodump',
-        ['--uri', env.MONGODB_URI, '--archive'],
-        {
-          stdio: ['ignore', 'pipe', 'pipe'],
-        }
+      const dumpArgs = ['--uri', env.MONGODB_URI, '--archive'];
+      const includeBackupsCollection = await this.canIncludeBackupsCollection(
+        backupId
       );
+      if (!includeBackupsCollection) {
+        dumpArgs.push('--excludeCollection', 'backups');
+      }
+
+      const dumpProcess = spawn('mongodump', dumpArgs, {
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
 
       if (!dumpProcess.stdout) {
         throw new AppError(
@@ -415,11 +425,47 @@ export class BackupsService {
       });
     }
   }
+
+  private async canIncludeBackupsCollection(
+    currentBackupId: string
+  ): Promise<boolean> {
+    const backups = await this.backupModel
+      .find({ _id: { $ne: currentBackupId } })
+      .select({ filePath: 1 })
+      .lean()
+      .exec();
+
+    if (backups.length === 0) {
+      return true;
+    }
+
+    const checks = await Promise.all(
+      backups.map(async (backup) => {
+        const backupFilePath =
+          typeof backup.filePath === 'string' ? backup.filePath : null;
+        if (!backupFilePath) {
+          return false;
+        }
+        return backupFileExists(backupFilePath);
+      })
+    );
+
+    return checks.every(Boolean);
+  }
 }
 
 function toBackupPublic(doc: BackupDoc): BackupPublic {
+  const backupId = doc._id?.toString() ?? doc.id;
+  if (!backupId) {
+    throw new AppError(
+      500,
+      'BACKUP_INVALID_DOCUMENT',
+      'Documento de respaldo inválido: id faltante'
+    );
+  }
+
   return {
-    id: doc._id.toString(),
+    id: backupId,
     name: doc.name,
     description: doc.description || null,
     status: doc.status,

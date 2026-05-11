@@ -1,0 +1,16 @@
+module.exports = {
+  apps: [
+    {
+      name: "sistema-titulacion-backend",
+      script: "apps/sistema-titulacion-servidor/dist/main.js",
+      cwd: "<absolute-path-to-project-root>",
+      instances: 1,
+      exec_mode: "fork",
+      autorestart: true,
+      max_memory_restart: "500M",
+      env: {
+        NODE_ENV: "production",
+      },
+    },
+  ],
+};

@@ -162,7 +162,7 @@ export class BackupsController {
         });
         return;
       }
-      await this.backupsService.ingestUploadedBackup({
+      const uploadedBackup = await this.backupsService.ingestUploadedBackup({
         tmpPath: file.path,
         originalName: file.originalname,
         size: file.size,
@@ -170,9 +170,12 @@ export class BackupsController {
         description: parsed.data.description,
         createdBy: user.email,
       });
+      await this.backupsService.restoreBackup(uploadedBackup.id);
       res
         .status(201)
-        .json({ message: 'Archivo de respaldo subido exitosamente' });
+        .json({
+          message: 'Archivo de respaldo subido y restauración completada',
+        });
     } catch (err) {
       next(err);
     }

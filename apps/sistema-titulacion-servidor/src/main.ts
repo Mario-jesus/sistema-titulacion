@@ -44,6 +44,16 @@ const backupUpload = multer({
   dest: backupsEnv.tmpPath,
   limits: { fileSize: backupsEnv.maxUploadBytes },
 });
+const backupUploadMiddleware = (
+  req: Parameters<ReturnType<typeof backupUpload.single>>[0],
+  res: Parameters<ReturnType<typeof backupUpload.single>>[1],
+  next: Parameters<ReturnType<typeof backupUpload.single>>[2]
+) => {
+  // Recover gracefully if tmp/storage dirs were deleted while server is running.
+  void ensureBackupDirs(backupsEnv)
+    .then(() => backupUpload.single('file')(req, res, next))
+    .catch(next);
+};
 
 const usersApiDocPath = path.join(
   process.cwd(),
@@ -215,7 +225,7 @@ const app = createApp(
       requireAdmin,
       createBackupsRouter({
         getBackupsController: () => container.resolve('backupsController'),
-        uploadMiddleware: backupUpload.single('file'),
+        uploadMiddleware: backupUploadMiddleware,
       })
     );
   },

@@ -62,3 +62,10 @@ vitest.config.*.timestamp*
 .nx/polygraph
 .claude/worktrees
 .claude/settings.local.json
+
+# Backups
+/var/backups/*
+*.enc
+
+# PM2
+ecosystem.config.cjs

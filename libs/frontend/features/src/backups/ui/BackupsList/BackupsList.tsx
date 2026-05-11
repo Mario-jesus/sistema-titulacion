@@ -247,7 +247,11 @@ export function BackupsList() {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `${backup.name}.gzip`;
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const fileNameFromHeader = contentDisposition?.match(
+        /filename="?([^"]+)"?/i
+      )?.[1];
+      link.download = fileNameFromHeader || `${backup.name}.enc`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -349,7 +353,7 @@ export function BackupsList() {
       showToast({
         type: 'success',
         title: 'Archivo subido',
-        message: `El archivo "${selectedFile.name}" se ha subido correctamente. La restauración está en proceso...`,
+        message: `El archivo "${selectedFile.name}" se subió y restauró correctamente.`,
       });
       setIsUploadModalOpen(false);
       setSelectedFile(null);
@@ -373,10 +377,7 @@ export function BackupsList() {
         <div className="flex flex-col">
           <span className="font-medium">{value}</span>
           {backup.description && (
-            <span
-              className="text-sm"
-              style={{ color: 'var(--color-base-secondary-typo)' }}
-            >
+            <span className="text-sm text-(--color-base-secondary-typo)">
               {backup.description}
             </span>
           )}
@@ -387,10 +388,7 @@ export function BackupsList() {
       key: 'tablesCount',
       label: 'Tablas',
       render: (value: number, backup: Backup) => (
-        <span
-          className="text-sm"
-          style={{ color: 'var(--color-base-secondary-typo)' }}
-        >
+        <span className="text-sm text-(--color-base-secondary-typo)">
           {value} {value === 1 ? 'tabla' : 'tablas'}
         </span>
       ),
@@ -399,10 +397,7 @@ export function BackupsList() {
       key: 'recordsCount',
       label: 'Registros',
       render: (value: number) => (
-        <span
-          className="text-sm"
-          style={{ color: 'var(--color-base-secondary-typo)' }}
-        >
+        <span className="text-sm text-(--color-base-secondary-typo)">
           {value.toLocaleString()}
         </span>
       ),
@@ -416,10 +411,7 @@ export function BackupsList() {
       key: 'size',
       label: 'Tamaño',
       render: (value: number) => (
-        <span
-          className="text-sm"
-          style={{ color: 'var(--color-base-secondary-typo)' }}
-        >
+        <span className="text-sm text-(--color-base-secondary-typo)">
           {formatSize(value)}
         </span>
       ),
@@ -428,10 +420,7 @@ export function BackupsList() {
       key: 'createdAt',
       label: 'Fecha de Creación',
       render: (value: string) => (
-        <span
-          className="text-sm"
-          style={{ color: 'var(--color-base-secondary-typo)' }}
-        >
+        <span className="text-sm text-(--color-base-secondary-typo)">
           {formatDate(value)}
         </span>
       ),
@@ -440,10 +429,7 @@ export function BackupsList() {
       key: 'completedAt',
       label: 'Fecha de Finalización',
       render: (value: string | null) => (
-        <span
-          className="text-sm"
-          style={{ color: 'var(--color-base-secondary-typo)' }}
-        >
+        <span className="text-sm text-(--color-base-secondary-typo)">
           {formatDate(value)}
         </span>
       ),
@@ -559,64 +545,40 @@ export function BackupsList() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card variant="flat">
           <div className="flex flex-col gap-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-base-secondary-typo)' }}
-            >
+            <span className="text-sm font-medium text-(--color-base-secondary-typo)">
               Total Respaldos
             </span>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
+            <span className="text-2xl font-bold text-(--color-base-primary-typo)">
               {backups.length}
             </span>
           </div>
         </Card>
         <Card variant="flat">
           <div className="flex flex-col gap-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-base-secondary-typo)' }}
-            >
+            <span className="text-sm font-medium text-(--color-base-secondary-typo)">
               Completados
             </span>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
+            <span className="text-2xl font-bold text-(--color-base-primary-typo)">
               {backups.filter((b) => b.status === 'AVAILABLE').length}
             </span>
           </div>
         </Card>
         <Card variant="flat">
           <div className="flex flex-col gap-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-base-secondary-typo)' }}
-            >
+            <span className="text-sm font-medium text-(--color-base-secondary-typo)">
               Espacio Total
             </span>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
+            <span className="text-2xl font-bold text-(--color-base-primary-typo)">
               {formatSize(backups.reduce((sum, b) => sum + b.size, 0))}
             </span>
           </div>
         </Card>
         <Card variant="flat">
           <div className="flex flex-col gap-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-base-secondary-typo)' }}
-            >
+            <span className="text-sm font-medium text-(--color-base-secondary-typo)">
               Total Registros
             </span>
-            <span
-              className="text-2xl font-bold"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
+            <span className="text-2xl font-bold text-(--color-base-primary-typo)">
               {backups
                 .filter((b) => b.status === 'AVAILABLE')
                 .reduce((sum, b) => sum + b.recordsCount, 0)
@@ -626,16 +588,10 @@ export function BackupsList() {
         </Card>
         <Card variant="flat">
           <div className="flex flex-col gap-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-base-secondary-typo)' }}
-            >
+            <span className="text-sm font-medium text-(--color-base-secondary-typo)">
               Último Respaldo
             </span>
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
+            <span className="text-sm font-medium text-(--color-base-primary-typo)">
               {backups.length > 0
                 ? formatDate(backups[0].completedAt || backups[0].createdAt)
                 : 'N/A'}
@@ -704,19 +660,15 @@ export function BackupsList() {
       >
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <p
-              className="text-sm"
-              style={{ color: 'var(--color-base-primary-typo)' }}
-            >
-              Seleccione un archivo de respaldo (.gzip) para restaurar la base
+            <p className="text-sm text-(--color-base-primary-typo)">
+              Seleccione un archivo de respaldo (.enc) para restaurar la base
               de datos.
             </p>
 
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="backup-file"
-                className="text-sm font-medium"
-                style={{ color: 'var(--color-base-primary-typo)' }}
+                className="text-sm font-medium text-(--color-base-primary-typo)"
               >
                 Archivo de Respaldo *
               </label>
@@ -724,27 +676,18 @@ export function BackupsList() {
                 <input
                   id="backup-file"
                   type="file"
-                  accept=".gzip"
+                  accept=".enc"
                   onChange={handleFileSelect}
-                  className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:cursor-pointer file:bg-(--color-primary-color) file:text-white hover:file:opacity-90"
-                  style={{
-                    color: 'var(--color-base-primary-typo)',
-                  }}
+                  className="block w-full text-sm text-(--color-base-primary-typo) file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:cursor-pointer file:bg-(--color-primary-color) file:text-white hover:file:opacity-90"
                 />
                 {selectedFile && (
                   <Card variant="flat">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-col gap-1">
-                        <span
-                          className="text-sm font-medium"
-                          style={{ color: 'var(--color-base-primary-typo)' }}
-                        >
+                        <span className="text-sm font-medium text-(--color-base-primary-typo)">
                           {selectedFile.name}
                         </span>
-                        <span
-                          className="text-xs"
-                          style={{ color: 'var(--color-base-secondary-typo)' }}
-                        >
+                        <span className="text-xs text-(--color-base-secondary-typo)">
                           {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                         </span>
                       </div>
@@ -787,9 +730,6 @@ export function BackupsList() {
               onClick={handleConfirmUpload}
               disabled={!selectedFile || isUploading}
               isLoading={isUploading}
-              style={{
-                backgroundColor: 'var(--color-primary-color)',
-              }}
             >
               {isUploading ? 'Subiendo...' : 'Subir y Restaurar'}
             </Button>
@@ -823,10 +763,7 @@ export function BackupsList() {
         {selectedBackupId && (
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <p
-                style={{ color: 'var(--color-base-primary-typo)' }}
-                className="text-sm"
-              >
+              <p className="text-sm text-(--color-base-primary-typo)">
                 ¿Está seguro de que desea restaurar este respaldo?
               </p>
               {(() => {
@@ -837,82 +774,42 @@ export function BackupsList() {
                     <Card variant="flat">
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between">
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: 'var(--color-base-secondary-typo)',
-                            }}
-                          >
+                          <span className="text-sm text-(--color-base-secondary-typo)">
                             Nombre:
                           </span>
-                          <span
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-base-primary-typo)' }}
-                          >
+                          <span className="text-sm font-medium text-(--color-base-primary-typo)">
                             {backup.name}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: 'var(--color-base-secondary-typo)',
-                            }}
-                          >
+                          <span className="text-sm text-(--color-base-secondary-typo)">
                             Tablas:
                           </span>
-                          <span
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-base-primary-typo)' }}
-                          >
+                          <span className="text-sm font-medium text-(--color-base-primary-typo)">
                             {backup.tablesCount} tablas
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: 'var(--color-base-secondary-typo)',
-                            }}
-                          >
+                          <span className="text-sm text-(--color-base-secondary-typo)">
                             Registros:
                           </span>
-                          <span
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-base-primary-typo)' }}
-                          >
+                          <span className="text-sm font-medium text-(--color-base-primary-typo)">
                             {backup.recordsCount.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: 'var(--color-base-secondary-typo)',
-                            }}
-                          >
+                          <span className="text-sm text-(--color-base-secondary-typo)">
                             Fecha:
                           </span>
-                          <span
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-base-primary-typo)' }}
-                          >
+                          <span className="text-sm font-medium text-(--color-base-primary-typo)">
                             {formatDate(backup.createdAt)}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: 'var(--color-base-secondary-typo)',
-                            }}
-                          >
+                          <span className="text-sm text-(--color-base-secondary-typo)">
                             Tamaño:
                           </span>
-                          <span
-                            className="text-sm font-medium"
-                            style={{ color: 'var(--color-base-primary-typo)' }}
-                          >
+                          <span className="text-sm font-medium text-(--color-base-primary-typo)">
                             {formatSize(backup.size)}
                           </span>
                         </div>
